@@ -452,6 +452,11 @@ export class BerichtenService {
     return fn({ messageId }).then(r => r.data);
   }
 
+  deleteThread(threadId: string, groepId: string): Promise<{ success: boolean }> {
+    const fn = httpsCallable<{ threadId: string; groepId: string }, { success: boolean }>(functions, 'deleteThread');
+    return fn({ threadId, groepId }).then(r => r.data);
+  }
+
   markMessageRead(messageId: string, threadId: string, groepId: string): Promise<{ success: boolean }> {
     const fn = httpsCallable<{ messageId: string; threadId: string; groepId: string }, { success: boolean }>(functions, 'markMessageRead');
     return fn({ messageId, threadId, groepId }).then(r => r.data);

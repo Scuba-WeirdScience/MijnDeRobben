@@ -1,11 +1,9 @@
-<div class="flex flex-col gap-4 p-6">
-  <h3 class="text-base font-semibold text-gray-900 dark:text-white">Nieuwe thread</h3>
+<div class="flex flex-col gap-4">
 
   <div>
     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel <span class="text-red-500">*</span></label>
     <app-input
-      [value]="title()"
-      (valueChange)="title.set($event)"
+      [(value)]="title"
       placeholder="Geef de thread een titel…"
       [disabled]="saving()">
     </app-input>
@@ -14,8 +12,7 @@
   <div>
     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Eerste bericht <span class="text-gray-400 font-normal">(optioneel)</span></label>
     <app-textarea
-      [value]="body()"
-      (valueChange)="body.set($event)"
+      [(value)]="body"
       placeholder="Schrijf een eerste bericht…"
       [rows]="4"
       [disabled]="saving()">

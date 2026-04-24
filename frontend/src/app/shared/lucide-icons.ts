@@ -49,6 +49,7 @@ import {
   LucidePencil,
   LucideFileText,
   LucideSearch,
+  LucideSmile,
 } from '@lucide/angular';
 
 export {
@@ -87,6 +88,7 @@ export {
   LucidePencil,
   LucideFileText,
   LucideSearch,
+  LucideSmile,
 };
 
 export const LUCIDE_ICONS = [
@@ -125,5 +127,6 @@ export const LUCIDE_ICONS = [
   LucidePencil,
   LucideFileText,
   LucideSearch,
+  LucideSmile,
 ] as const;
 

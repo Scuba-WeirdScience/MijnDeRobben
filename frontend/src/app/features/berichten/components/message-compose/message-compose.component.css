@@ -1,0 +1,73 @@
+/* Compact Quill editor for chat */
+:host ::ng-deep .ql-toolbar.ql-snow {
+  border: none !important;
+  border-bottom: 1px solid rgb(229 231 235) !important;
+  padding: 4px 8px !important;
+  background: transparent;
+  line-height: 1;
+}
+
+:host ::ng-deep .ql-container.ql-snow {
+  border: none !important;
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .ql-editor {
+  min-height: 2.5rem !important;
+  max-height: 8rem;
+  overflow-y: auto;
+  padding: 0.5rem 0.75rem !important;
+  color: rgb(17 24 39);
+  line-height: 1.5;
+}
+
+:host ::ng-deep .ql-editor.ql-blank::before {
+  color: rgb(156 163 175);
+  font-style: normal;
+  left: 0.75rem;
+  right: 0.75rem;
+}
+
+:host ::ng-deep .ql-toolbar .ql-formats {
+  margin-right: 6px !important;
+}
+
+:host ::ng-deep .ql-toolbar button {
+  width: 22px !important;
+  height: 22px !important;
+  padding: 2px !important;
+}
+
+:host ::ng-deep .ql-toolbar button svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Dark mode */
+:host-context(.dark) ::ng-deep .ql-toolbar.ql-snow {
+  border-bottom-color: rgb(75 85 99) !important;
+}
+
+:host-context(.dark) ::ng-deep .ql-toolbar .ql-stroke {
+  stroke: rgb(209 213 219);
+}
+
+:host-context(.dark) ::ng-deep .ql-toolbar .ql-fill {
+  fill: rgb(209 213 219);
+}
+
+:host-context(.dark) ::ng-deep .ql-editor {
+  color: rgb(243 244 246);
+}
+
+:host-context(.dark) ::ng-deep .ql-editor.ql-blank::before {
+  color: rgb(107 114 128);
+}
+
+/* Emoji picker positioning */
+.emoji-picker-container {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+}

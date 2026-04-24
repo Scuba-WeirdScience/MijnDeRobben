@@ -71,7 +71,7 @@ export {
   // Thread-based messaging v2
   createThread, sendMessage,
   saveMessageConcept, publishMessageConcept, deleteMessageConcept,
-  pinThread, pinMessage, deleteMessage,
+  pinThread, pinMessage, deleteMessage, deleteThread,
   markMessageRead, markMessageUnread,
 } from './berichten/berichten.functions';
 

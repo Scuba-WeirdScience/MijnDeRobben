@@ -42,6 +42,11 @@ export class BerichtenPageComponent {
   showBeheer = signal(false);
   showNewThread = signal(false);
 
+  constructor() {
+    // Ensure token claims are fresh so role-gated UI shows correctly
+    this.auth.refreshUser();
+  }
+
   onGroepSelected(): void {
     this.mobilePanel.set('threads');
   }

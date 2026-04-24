@@ -1,4 +1,4 @@
-import { Component, inject, signal, output } from '@angular/core';
+import { Component, inject, model, signal, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BerichtenService } from '../../berichten.service';
@@ -18,8 +18,8 @@ export class ThreadComposeComponent {
   readonly created = output<string>();
   readonly cancelled = output<void>();
 
-  title = signal('');
-  body = signal('');
+  title = model('');
+  body = model('');
   saving = signal(false);
 
   get canSubmit(): boolean {

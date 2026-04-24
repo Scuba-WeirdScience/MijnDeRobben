@@ -897,3 +897,38 @@ export const markMessageUnread = onCall({ region: REGION }, async (request) => {
 
   return { success: true };
 });
+
+export const deleteThread = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const { threadId, groepId } = request.data as { threadId: string; groepId: string };
+  const uid = request.auth.uid;
+  const claims = request.auth.token as Record<string, unknown>;
+
+  const threadRef = db.collection('groepen').doc(groepId).collection('threads').doc(threadId);
+  const threadSnap = await threadRef.get();
+  if (!threadSnap.exists) throw new HttpsError('not-found', 'Thread niet gevonden.');
+  const threadData = threadSnap.data() as ThreadDoc;
+
+  const isAuthor = threadData.authorUid === uid;
+  const isAdmin = isAdminClaim(claims);
+  if (!isAuthor && !isAdmin) throw new HttpsError('permission-denied', 'Geen toegang.');
+
+  // Delete all messages (and their lezingen subcollections) in batches
+  const messagesSnap = await db.collection('messages')
+    .where('threadId', '==', threadId)
+    .get();
+
+  // Delete lezingen subcollections for each message
+  for (const msgDoc of messagesSnap.docs) {
+    const lezingenSnap = await msgDoc.ref.collection('lezingen').get();
+    const batch = db.batch();
+    lezingenSnap.docs.forEach(l => batch.delete(l.ref));
+    batch.delete(msgDoc.ref);
+    await batch.commit();
+  }
+
+  // Delete the thread itself
+  await threadRef.delete();
+
+  return { success: true };
+});

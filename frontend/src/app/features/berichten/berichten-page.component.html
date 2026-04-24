@@ -1,4 +1,4 @@
-<div class="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-gray-950">
+<div class="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-950">
 
   <!-- ── GROEPEN sidebar ─────────────────────────────────────── -->
   <aside
@@ -57,14 +57,14 @@
 
 <!-- ── Side panel: Groep beheer ───────────────────────────── -->
 @if (showBeheer()) {
-  <app-side-panel title="Groepen beheren" [class.max-w-xl]="true" (closed)="showBeheer.set(false)">
+  <app-side-panel title="Groepen beheren" size="lg" (closed)="showBeheer.set(false)">
     <app-groep-beheer class="flex flex-col h-full"></app-groep-beheer>
   </app-side-panel>
 }
 
 <!-- ── Side panel: Nieuwe thread ─────────────────────────── -->
 @if (showNewThread()) {
-  <app-side-panel title="Nieuwe thread" [class.max-w-lg]="true" (closed)="showNewThread.set(false)">
+  <app-side-panel title="Nieuwe thread" size="md" (closed)="showNewThread.set(false)">
     <app-thread-compose
       (created)="onThreadCreated($event)"
       (cancelled)="showNewThread.set(false)">

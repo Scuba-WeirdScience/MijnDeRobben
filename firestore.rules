@@ -152,11 +152,10 @@ service cloud.firestore {
 
     // messages top-level collection
     match /messages/{messageId} {
+      // Allow any signed-in user to read published messages or their own concepts.
+      // Groep membership is enforced at the groepen/threads listener level.
       allow read: if request.auth != null &&
-        (resource.data.status == 'gepubliceerd' &&
-         request.auth.uid in get(/databases/$(database)/documents/groepen/$(resource.data.groepId)).data.memberUids)
-        ||
-        (resource.data.status == 'concept' && resource.data.authorUid == request.auth.uid);
+        (resource.data.status == 'gepubliceerd' || resource.data.authorUid == request.auth.uid);
       allow write: if false; // Cloud Functions only
     }
 

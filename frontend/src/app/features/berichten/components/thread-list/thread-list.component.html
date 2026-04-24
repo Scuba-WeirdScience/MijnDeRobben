@@ -1,23 +1,59 @@
 <div class="flex flex-col h-full">
+
   <!-- Header -->
   <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-    <div>
-      <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+    <div class="min-w-0 flex-1">
+      <h2 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
         {{ service.activeGroep()?.name ?? 'Threads' }}
       </h2>
       @if (service.activeGroep()?.description) {
-        <p class="text-xs text-gray-500 dark:text-gray-400">{{ service.activeGroep()?.description }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ service.activeGroep()?.description }}</p>
       }
     </div>
-    @if (isNonLid()) {
+    @if (!showForm()) {
       <button
-        (click)="newThread.emit()"
+        (click)="openForm()"
         class="w-7 h-7 rounded-full bg-scuba-600 hover:bg-scuba-700 text-white flex items-center justify-center transition-colors flex-shrink-0"
         title="Nieuwe thread">
         <svg lucidePlus class="w-4 h-4"></svg>
       </button>
     }
   </div>
+
+  <!-- Inline new-thread form -->
+  @if (showForm()) {
+    <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-col gap-3 flex-shrink-0">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Titel <span class="text-red-500">*</span>
+        </label>
+        <app-input
+          [(value)]="newTitle"
+          placeholder="Geef de thread een titel…"
+          [disabled]="saving()">
+        </app-input>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Eerste bericht <span class="text-gray-400 font-normal">(optioneel)</span>
+        </label>
+        <app-textarea
+          [(value)]="newBody"
+          placeholder="Schrijf een eerste bericht…"
+          [rows]="3"
+          [disabled]="saving()">
+        </app-textarea>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <app-button variant="secondary" (click)="cancelForm()" [disabled]="saving()">
+          Annuleer
+        </app-button>
+        <app-button variant="primary" (click)="submitForm()" [disabled]="!newTitle().trim() || saving()" [loading]="saving()">
+          Aanmaken
+        </app-button>
+      </div>
+    </div>
+  }
 
   <!-- Thread list -->
   <div class="flex-1 overflow-y-auto">
@@ -28,39 +64,51 @@
         <svg lucideHash class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"></svg>
         <p class="text-sm text-gray-500 dark:text-gray-400">Nog geen threads.</p>
         @if (isNonLid()) {
-          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Maak de eerste thread aan.</p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Klik op + om de eerste thread aan te maken.</p>
         }
       </div>
     } @else {
       @for (thread of service.threads(); track thread.id) {
         @let unread = getThreadUnread(thread);
-        <button
-          (click)="selectThread(thread.id)"
-          class="w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        <div
+          class="w-full text-left border-b border-gray-100 dark:border-gray-800 flex items-stretch group"
           [ngClass]="service.activeThreadId() === thread.id
             ? 'bg-scuba-50 border-l-2 border-scuba-500 dark:bg-scuba-900/20 dark:border-scuba-400'
             : (thread.pinnedAt ? 'border-l-2 border-amber-400 bg-amber-50 dark:bg-amber-900/20' : '')">
-          <div class="flex items-start gap-2">
-            @if (thread.pinnedAt) {
-              <svg lucidePin class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500"></svg>
-            } @else {
-              <svg lucideHash class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500"></svg>
-            }
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ thread.title }}</span>
-                @if (unread > 0) {
-                  <span class="flex-shrink-0 min-w-[1.25rem] h-5 rounded-full bg-scuba-600 text-white text-xs font-bold flex items-center justify-center px-1">
-                    {{ unread }}
-                  </span>
+          <button
+            (click)="selectThread(thread.id)"
+            class="flex-1 text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors min-w-0">
+            <div class="flex items-start gap-2">
+              @if (thread.pinnedAt) {
+                <svg lucidePin class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500"></svg>
+              } @else {
+                <svg lucideHash class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500"></svg>
+              }
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ thread.title }}</span>
+                  @if (unread > 0) {
+                    <span class="flex-shrink-0 min-w-[1.25rem] h-5 rounded-full bg-scuba-600 text-white text-xs font-bold flex items-center justify-center px-1">
+                      {{ unread }}
+                    </span>
+                  }
+                </div>
+                @if (thread.lastMessageBody) {
+                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ thread.lastMessageBody }}</p>
                 }
               </div>
-              @if (thread.lastMessageBody) {
-                <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ thread.lastMessageBody }}</p>
-              }
             </div>
-          </div>
-        </button>
+          </button>
+          @if (canDeleteThread(thread)) {
+            <button
+              (click)="deleteThread(thread)"
+              [disabled]="deletingThreadId() === thread.id"
+              class="flex-shrink-0 w-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500 dark:hover:text-red-400 disabled:opacity-30"
+              title="Thread verwijderen">
+              <svg lucideTrash2 class="w-3.5 h-3.5"></svg>
+            </button>
+          }
+        </div>
       }
     }
   </div>
