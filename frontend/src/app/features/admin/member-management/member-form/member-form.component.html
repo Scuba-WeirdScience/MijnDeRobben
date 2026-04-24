@@ -1,0 +1,205 @@
+<app-side-panel
+  [title]="member() ? 'Lid bewerken' : 'Nieuw lid toevoegen'"
+  [subtitle]="member() ? (member()!.firstName + ' ' + member()!.lastName) : undefined"
+  size="md"
+  (closed)="cancelled.emit()">
+
+  <!-- ── Tabs (only when editing) ─────────────────────────── -->
+  @if (member()) {
+    <div class="flex border-b border-gray-200 dark:border-gray-700 -mx-6 px-6 mb-6 flex-shrink-0">
+      <button
+        (click)="activeTab.set('gegevens')"
+        [class]="tabClass('gegevens')"
+      >Gegevens</button>
+      <button
+        (click)="activeTab.set('brevetten')"
+        [class]="tabClass('brevetten')"
+      >Brevetten &amp; Organisaties</button>
+      @if (canViewLeningen()) {
+        <button
+          (click)="activeTab.set('leningen')"
+          [class]="tabClass('leningen')"
+        >Leningen</button>
+      }
+    </div>
+  }
+
+  <!-- ── Gegevens tab ────────────────────────────────────────────── -->
+  @if (activeTab() === 'gegevens') {
+    <form (ngSubmit)="onSubmit()" novalidate class="space-y-4">
+
+      <!-- Email (only shown when creating a new member) -->
+      @if (!member()) {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-mailadres *</label>
+          <input type="email"
+            [value]="form.fields.email?.value() ?? ''"
+            (input)="setText('email', $any($event.target).value)"
+            (blur)="form.fields.email?.touched?.set(true)"
+            placeholder="naam@voorbeeld.nl"
+            autocomplete="off"
+            class="w-full rounded-lg border px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+            [class.border-red-500]="form.fields.email?.invalid()"
+            [class.border-gray-300]="!form.fields.email?.invalid()"
+          />
+          @if (form.fields.email?.invalid()) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.fields.email?.errors()?.[0] }}</p>
+          }
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Het lid ontvangt geen e-mail. Ze kunnen inloggen met dit adres zodra ze hun account activeren.
+          </p>
+        </div>
+      }
+
+      <!-- First / Last name -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Voornaam *</label>
+          <input type="text"
+            [value]="form.fields.firstName.value()"
+            (input)="setText('firstName', $any($event.target).value)"
+            (blur)="form.fields.firstName.touched.set(true)"
+            class="w-full rounded-lg border px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+            [class.border-red-500]="form.fields.firstName.invalid()"
+            [class.border-gray-300]="!form.fields.firstName.invalid()"
+          />
+          @if (form.fields.firstName.invalid()) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.fields.firstName.errors()[0] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Achternaam *</label>
+          <input type="text"
+            [value]="form.fields.lastName.value()"
+            (input)="setText('lastName', $any($event.target).value)"
+            (blur)="form.fields.lastName.touched.set(true)"
+            class="w-full rounded-lg border px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+            [class.border-red-500]="form.fields.lastName.invalid()"
+            [class.border-gray-300]="!form.fields.lastName.invalid()"
+          />
+          @if (form.fields.lastName.invalid()) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.fields.lastName.errors()[0] }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Geboortedatum *</label>
+          <app-locale-date-input
+            [value]="form.fields.dateOfBirth.value()"
+            [invalid]="form.fields.dateOfBirth.invalid()"
+            (valueChange)="setText('dateOfBirth', $event)"
+            (blur)="form.fields.dateOfBirth.touched.set(true)"
+          />
+          @if (form.fields.dateOfBirth.invalid()) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.fields.dateOfBirth.errors()[0] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lid sinds</label>
+          <app-locale-date-input
+            [value]="form.fields.joinDate.value()"
+            [invalid]="form.fields.joinDate.invalid()"
+            (valueChange)="setText('joinDate', $event)"
+            (blur)="form.fields.joinDate.touched.set(true)"
+          />
+          @if (form.fields.joinDate.invalid()) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ form.fields.joinDate.errors()[0] }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Einde lidmaatschap -->
+      <app-form-field
+        label="Einde lidmaatschap"
+        hint="Laat leeg voor geen vervaldatum. Het lid wordt automatisch gedeactiveerd op deze datum.">
+        <app-locale-date-input
+          [value]="form.fields.endOfMembership.value() ?? ''"
+          [invalid]="form.fields.endOfMembership.invalid()"
+          (valueChange)="setText('endOfMembership', $event)"
+          (blur)="form.fields.endOfMembership.touched.set(true)" />
+      </app-form-field>
+      @if (member()?.endOfMembership && member()!.endOfMembership! <= today()) {
+        <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-2.5 flex items-center gap-2">
+          <svg lucideTriangleAlert class="w-4 h-4 text-amber-500 flex-shrink-0"></svg>
+          <p class="text-xs text-amber-700 dark:text-amber-300 font-medium">
+            Dit lidmaatschap is vervallen op {{ member()!.endOfMembership }}.
+          </p>
+        </div>
+      }
+
+      <!-- isActive -->
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="isActive"
+          [checked]="form.fields.isActive.value()"
+          (change)="form.fields.isActive.value.set($any($event.target).checked)"
+          class="h-4 w-4 rounded border-gray-300 text-scuba-600 focus:ring-scuba-500"
+        />
+        <label for="isActive" class="text-sm text-gray-700 dark:text-gray-300">Actief lid</label>
+      </div>
+
+      <!-- Submit error banner -->
+      @if (submitError()) {
+        <div class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+          {{ submitError() }}
+        </div>
+      }
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <app-button type="button" variant="secondary" (click)="cancelled.emit()">Annuleren</app-button>
+        <app-button type="submit" variant="primary" [loading]="saving()">Opslaan</app-button>
+      </div>
+
+    </form>
+  }
+
+  <!-- ── Brevetten & Organisaties tab ───────────────────────────── -->
+  @if (activeTab() === 'brevetten' && member()) {
+    <app-member-brevet-panel
+      [memberId]="member()!.id"
+      [readonly]="brevettenReadonly()"
+    />
+  }
+
+  <!-- ── Leningen tab ─────────────────────────────────────────────── -->
+  @if (activeTab() === 'leningen' && member()) {
+    <div>
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Uitgeleend materiaal</h3>
+
+      @if (leningenLoading()) {
+        <app-spinner size="sm" />
+      } @else if (leningen().length === 0) {
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">Dit lid heeft geen materiaal uitgeleend.</p>
+      } @else {
+        <div class="space-y-3">
+          @for (l of leningen(); track l.id) {
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ l.materiaalNaam }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Uitgeleend: {{ l.uitgeleendDatum }}
+                    @if (l.retourdatum) {
+                      — Retour: {{ l.retourdatum }}
+                    } @else {
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 ml-1">
+                        Actief
+                      </span>
+                    }
+                  </p>
+                </div>
+              </div>
+              @if (l.notities) {
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">{{ l.notities }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</app-side-panel>

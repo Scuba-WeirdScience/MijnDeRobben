@@ -1,0 +1,33 @@
+@if (service.activeGroepId()) {
+  <div class="border-t border-gray-200 dark:border-gray-700 px-4 py-3 bg-white dark:bg-gray-900">
+    <div class="flex items-end gap-3" (keydown)="onKeydown($event)">
+      <div class="flex-1">
+        <app-form-field>
+          <app-textarea
+            [(value)]="body"
+            placeholder="Schrijf een bericht... (Enter om te versturen)"
+            [rows]="2" />
+        </app-form-field>
+      </div>
+      <div class="flex flex-col gap-2 pb-0.5">
+        <app-button
+          variant="secondary"
+          size="sm"
+          [loading]="savingConcept()"
+          [disabled]="savingConcept() || sending() || !body().trim()"
+          (click)="saveAsConcept()"
+          title="Opslaan als concept">
+          <svg lucideFileText class="w-4 h-4"></svg>
+        </app-button>
+        <app-button
+          variant="primary"
+          size="sm"
+          [loading]="sending()"
+          [disabled]="sending() || savingConcept() || !body().trim()"
+          (click)="send()">
+          <svg lucideSend class="w-4 h-4"></svg>
+        </app-button>
+      </div>
+    </div>
+  </div>
+}

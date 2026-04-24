@@ -1,0 +1,46 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-40 bg-black/40"
+     (click)="closed.emit()">
+</div>
+
+<!-- Side panel -->
+<div class="fixed inset-y-0 right-0 z-50 flex flex-col w-full bg-white dark:bg-gray-900 shadow-2xl"
+     [class.max-w-sm]="size() === 'sm'"
+     [class.max-w-lg]="size() === 'md'"
+     [class.max-w-2xl]="size() === 'lg'"
+     [class.max-w-4xl]="size() === 'xl'">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex-shrink-0">
+
+    <!-- Titel + ondertitel -->
+    <div class="min-w-0 flex-1">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+        {{ title() }}
+      </h2>
+      @if (subtitle()) {
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 truncate">
+          {{ subtitle() }}
+        </p>
+      }
+    </div>
+
+    <!-- Optionele header-actions via TemplateRef input -->
+    @if (headerActions()) {
+      <ng-container *ngTemplateOutlet="headerActions()" />
+    }
+
+    <!-- Sluitknop -->
+    <button (click)="closed.emit()"
+            class="flex-shrink-0 rounded-lg p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Sluiten">
+      <svg lucideX class="h-5 w-5"></svg>
+    </button>
+  </div>
+
+  <!-- Scrollbare inhoud -->
+  <div class="flex-1 overflow-y-auto px-6 py-6">
+    <ng-content />
+  </div>
+
+</div>

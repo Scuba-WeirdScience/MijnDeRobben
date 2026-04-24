@@ -1,0 +1,11 @@
+<select
+  [disabled]="disabled()"
+  [attr.aria-invalid]="invalid()"
+  [attr.aria-required]="required()"
+  [class]="cls()"
+  [value]="value()"
+  (change)="onChange($event)"
+  (blur)="onBlur()"
+>
+  <ng-content />
+</select>

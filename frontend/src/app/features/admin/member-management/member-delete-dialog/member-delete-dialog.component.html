@@ -1,0 +1,8 @@
+<app-confirm-dialog
+  title="Lid verwijderen"
+  [message]="message()"
+  confirmLabel="Verwijderen"
+  confirmVariant="danger"
+  (confirmed)="confirmed.emit()"
+  (cancelled)="cancelled.emit()"
+/>

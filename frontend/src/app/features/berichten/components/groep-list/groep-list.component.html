@@ -1,0 +1,47 @@
+<div class="flex flex-col h-full">
+
+  <!-- Header -->
+  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Groepen</h2>
+  </div>
+
+  <!-- Group list -->
+  <nav class="flex-1 overflow-y-auto py-2 space-y-0.5 px-2">
+    @if (service.loadingGroepen()) {
+      <div class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">Laden...</div>
+    } @else if (service.groepen().length === 0) {
+      <div class="px-3 py-4 text-sm text-gray-400 dark:text-gray-500 text-center">
+        <svg lucideUsers class="w-8 h-8 mx-auto mb-2 opacity-40"></svg>
+        Geen groepen
+      </div>
+    } @else {
+      @for (groep of service.groepen(); track groep.id) {
+        <button
+          (click)="selectGroep(groep)"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors"
+          [ngClass]="service.activeGroepId() === groep.id
+            ? 'bg-scuba-50 dark:bg-scuba-900/20 text-scuba-700 dark:text-scuba-300 font-semibold border-l-2 border-scuba-500'
+            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'">
+          <svg lucideMessageSquare class="w-4 h-4 flex-shrink-0"></svg>
+          <span class="flex-1 text-sm truncate">{{ groep.name }}</span>
+          @if (groep.unreadCount > 0) {
+            <app-badge variant="primary" size="sm">{{ groep.unreadCount }}</app-badge>
+          }
+        </button>
+      }
+    }
+  </nav>
+
+  <!-- Concepten tab -->
+  <div class="border-t border-gray-200 dark:border-gray-700 p-2">
+    <button
+      (click)="selectConcepten.emit()"
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+      <svg lucideFileText class="w-4 h-4 flex-shrink-0"></svg>
+      <span class="flex-1 text-sm">Concepten</span>
+      @if (service.concepten().length > 0) {
+        <app-badge variant="warning" size="sm">{{ service.concepten().length }}</app-badge>
+      }
+    </button>
+  </div>
+</div>

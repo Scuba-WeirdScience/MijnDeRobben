@@ -1,0 +1,31 @@
+<div class="flex flex-col gap-4 p-6">
+  <h3 class="text-base font-semibold text-gray-900 dark:text-white">Nieuwe thread</h3>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel <span class="text-red-500">*</span></label>
+    <app-input
+      [value]="title()"
+      (valueChange)="title.set($event)"
+      placeholder="Geef de thread een titel…"
+      [disabled]="saving()">
+    </app-input>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Eerste bericht <span class="text-gray-400 font-normal">(optioneel)</span></label>
+    <app-textarea
+      [value]="body()"
+      (valueChange)="body.set($event)"
+      placeholder="Schrijf een eerste bericht…"
+      [rows]="4"
+      [disabled]="saving()">
+    </app-textarea>
+  </div>
+
+  <div class="flex gap-3 justify-end">
+    <app-button variant="secondary" (click)="cancelled.emit()" [disabled]="saving()">Annuleer</app-button>
+    <app-button variant="primary" (click)="submit()" [disabled]="!canSubmit || saving()" [loading]="saving()">
+      Aanmaken
+    </app-button>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+{
+  "name": "de-robben-migration",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "migrate": "node --loader ts-node/esm migrate.ts"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "mssql": "^10.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}

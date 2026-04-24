@@ -1,0 +1,73 @@
+<div class="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-gray-950">
+
+  <!-- ── GROEPEN sidebar ─────────────────────────────────────── -->
+  <aside
+    class="w-56 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col"
+    [ngClass]="mobilePanel() === 'groepen' ? 'flex' : 'hidden md:flex'">
+    <app-groep-list
+      (groepSelected)="onGroepSelected()"
+      (openBeheer)="showBeheer.set(true)">
+    </app-groep-list>
+  </aside>
+
+  <!-- ── THREADS panel ──────────────────────────────────────── -->
+  <div
+    class="w-72 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col"
+    [ngClass]="mobilePanel() === 'threads' ? 'flex w-full' : (mobilePanel() === 'groepen' ? 'hidden md:flex' : 'hidden md:flex')">
+
+    <!-- Mobile back button -->
+    <div class="md:hidden flex items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+      <button (click)="mobilePanel.set('groepen')" class="flex items-center gap-1 text-sm text-scuba-600 dark:text-scuba-400">
+        <svg lucideChevronLeft class="w-4 h-4"></svg>
+        Groepen
+      </button>
+    </div>
+
+    @if (service.activeGroepId()) {
+      <app-thread-list
+        (newThread)="onNewThread()"
+        (threadSelected)="onThreadSelected()"
+        class="flex-1 overflow-hidden flex flex-col">
+      </app-thread-list>
+    } @else {
+      <div class="flex-1 flex items-center justify-center p-6 text-center">
+        <p class="text-sm text-gray-400 dark:text-gray-500">Selecteer een groep.</p>
+      </div>
+    }
+  </div>
+
+  <!-- ── MESSAGES panel ────────────────────────────────────── -->
+  <main
+    class="flex-1 flex flex-col overflow-hidden"
+    [ngClass]="mobilePanel() === 'messages' ? 'flex' : 'hidden md:flex'">
+
+    <!-- Mobile back button -->
+    <div class="md:hidden flex items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex-shrink-0">
+      <button (click)="mobilePanel.set('threads')" class="flex items-center gap-1 text-sm text-scuba-600 dark:text-scuba-400">
+        <svg lucideChevronLeft class="w-4 h-4"></svg>
+        Threads
+      </button>
+    </div>
+
+    <app-message-list class="flex-1 overflow-hidden flex flex-col"></app-message-list>
+    <app-message-compose></app-message-compose>
+  </main>
+
+</div>
+
+<!-- ── Side panel: Groep beheer ───────────────────────────── -->
+@if (showBeheer()) {
+  <app-side-panel title="Groepen beheren" [class.max-w-xl]="true" (closed)="showBeheer.set(false)">
+    <app-groep-beheer class="flex flex-col h-full"></app-groep-beheer>
+  </app-side-panel>
+}
+
+<!-- ── Side panel: Nieuwe thread ─────────────────────────── -->
+@if (showNewThread()) {
+  <app-side-panel title="Nieuwe thread" [class.max-w-lg]="true" (closed)="showNewThread.set(false)">
+    <app-thread-compose
+      (created)="onThreadCreated($event)"
+      (cancelled)="showNewThread.set(false)">
+    </app-thread-compose>
+  </app-side-panel>
+}

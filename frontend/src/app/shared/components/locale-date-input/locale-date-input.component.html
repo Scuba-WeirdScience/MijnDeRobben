@@ -1,0 +1,14 @@
+    <input
+      type="text"
+      inputmode="numeric"
+      [placeholder]="placeholder"
+      [value]="displayValue()"
+      [class.border-red-500]="invalid()"
+      [class.border-gray-300]="!invalid()"
+      [class.dark:border-gray-600]="!invalid()"
+      class="w-full rounded-lg border px-3 py-2 text-sm text-gray-900 dark:text-white
+             bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+      (focus)="onFocus()"
+      (input)="onInput($any($event.target).value)"
+      (blur)="onBlur($any($event.target).value)"
+    />

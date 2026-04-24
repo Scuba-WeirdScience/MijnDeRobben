@@ -1,0 +1,67 @@
+<div class="flex flex-col h-full">
+  <!-- Header -->
+  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+    <div>
+      <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+        {{ service.activeGroep()?.name ?? 'Threads' }}
+      </h2>
+      @if (service.activeGroep()?.description) {
+        <p class="text-xs text-gray-500 dark:text-gray-400">{{ service.activeGroep()?.description }}</p>
+      }
+    </div>
+    @if (isNonLid()) {
+      <button
+        (click)="newThread.emit()"
+        class="w-7 h-7 rounded-full bg-scuba-600 hover:bg-scuba-700 text-white flex items-center justify-center transition-colors flex-shrink-0"
+        title="Nieuwe thread">
+        <svg lucidePlus class="w-4 h-4"></svg>
+      </button>
+    }
+  </div>
+
+  <!-- Thread list -->
+  <div class="flex-1 overflow-y-auto">
+    @if (service.loadingThreads()) {
+      <div class="p-4 text-sm text-gray-500 dark:text-gray-400">Laden…</div>
+    } @else if (service.threads().length === 0) {
+      <div class="p-6 text-center">
+        <svg lucideHash class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"></svg>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Nog geen threads.</p>
+        @if (isNonLid()) {
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Maak de eerste thread aan.</p>
+        }
+      </div>
+    } @else {
+      @for (thread of service.threads(); track thread.id) {
+        @let unread = getThreadUnread(thread);
+        <button
+          (click)="selectThread(thread.id)"
+          class="w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          [ngClass]="service.activeThreadId() === thread.id
+            ? 'bg-scuba-50 border-l-2 border-scuba-500 dark:bg-scuba-900/20 dark:border-scuba-400'
+            : (thread.pinnedAt ? 'border-l-2 border-amber-400 bg-amber-50 dark:bg-amber-900/20' : '')">
+          <div class="flex items-start gap-2">
+            @if (thread.pinnedAt) {
+              <svg lucidePin class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500"></svg>
+            } @else {
+              <svg lucideHash class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500"></svg>
+            }
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ thread.title }}</span>
+                @if (unread > 0) {
+                  <span class="flex-shrink-0 min-w-[1.25rem] h-5 rounded-full bg-scuba-600 text-white text-xs font-bold flex items-center justify-center px-1">
+                    {{ unread }}
+                  </span>
+                }
+              </div>
+              @if (thread.lastMessageBody) {
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ thread.lastMessageBody }}</p>
+              }
+            </div>
+          </div>
+        </button>
+      }
+    }
+  </div>
+</div>

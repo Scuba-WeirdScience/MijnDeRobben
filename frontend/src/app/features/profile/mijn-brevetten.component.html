@@ -1,0 +1,58 @@
+    <div class="max-w-2xl mx-auto px-4 py-10">
+
+      <!-- Header -->
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">Mijn brevetten &amp; specialiteiten</h1>
+
+      @if (loading()) {
+        <app-spinner size="md" />
+      } @else if (error()) {
+        <div class="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-4 text-red-700 dark:text-red-300">
+          {{ error() }}
+        </div>
+      } @else if (brevetten().length === 0) {
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <p class="text-sm text-gray-400 dark:text-gray-500 italic">Nog geen brevetten geregistreerd.</p>
+        </div>
+      } @else {
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+          <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+            @for (brevet of brevetten(); track brevet.id) {
+              <li class="px-4 py-3 space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  @if (brevet.brevetType === 'Specialiteit') {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300">
+                      Specialiteit
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-scuba-100 dark:bg-scuba-900 text-scuba-700 dark:text-scuba-300">
+                      Brevet
+                    </span>
+                  }
+                  <span class="font-semibold text-gray-900 dark:text-white text-sm">
+                    {{ brevet.organisatie === 'Anders' && brevet.organisatieNaam
+                       ? brevet.organisatieNaam
+                       : brevet.organisatie }}
+                  </span>
+                  <span class="text-scuba-600 dark:text-scuba-400 font-medium text-sm">— {{ brevet.niveau }}</span>
+                  @if (brevet.behaaldDatum) {
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      (behaald {{ brevet.behaaldDatum }})
+                    </span>
+                  }
+                </div>
+                @if (brevet.notities) {
+                  <p class="text-sm text-gray-600 dark:text-gray-400 italic">{{ brevet.notities }}</p>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      <!-- Back link -->
+      <div class="mt-6">
+        <a routerLink="/members" class="text-sm text-scuba-600 dark:text-scuba-400 hover:underline">
+          ← Terug naar ledenlijst
+        </a>
+      </div>
+    </div>

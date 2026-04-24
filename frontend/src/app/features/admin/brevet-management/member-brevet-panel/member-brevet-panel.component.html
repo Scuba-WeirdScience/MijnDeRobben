@@ -1,0 +1,297 @@
+    <div class="space-y-6">
+
+      <!-- Read-only notice -->
+      @if (readonlyInput()) {
+        <div class="rounded-lg bg-gray-50 dark:bg-gray-800/20 px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+          Alleen InstructieKader kan brevetten en organisatiekoppelingen beheren.
+        </div>
+      }
+
+      <!-- ── Brevetten (checkbox UI) ────────────────────────────────────────── -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Brevetten</h3>
+          @if (!readonlyInput()) {
+            <button
+              (click)="saveBrevetten()"
+              [disabled]="checkboxSaving()"
+              class="inline-flex items-center gap-1 rounded-lg bg-scuba-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-scuba-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              @if (checkboxSaving()) { Opslaan… } @else { Opslaan }
+            </button>
+          }
+        </div>
+
+        @if (brevLoading() || brevetTypeDefsLoading()) {
+          <app-spinner size="sm" />
+        } @else if (checkboxGroups().length === 0) {
+          <p class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center italic">
+            Geen brevet types geconfigureerd. Voeg brevet types toe via het beheer menu.
+          </p>
+        } @else {
+          <div class="space-y-3">
+            @for (group of checkboxGroups(); track group.organisatie) {
+              <!-- Accordion header per organisatie -->
+              <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  (click)="toggleOrgGroup(group)"
+                  class="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                >
+                  <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ group.organisatie }}</span>
+                  <span class="text-gray-400 dark:text-gray-500 text-xs">
+                    {{ group.rows.length }} types
+                    @if (group.isExpanded()) { ▲ } @else { ▼ }
+                  </span>
+                </button>
+
+                @if (group.isExpanded()) {
+                  <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    @for (row of group.rows; track row.def.id) {
+                      <div class="flex items-center gap-3 px-4 py-2.5"
+                           [class]="row.checked ? 'bg-scuba-50 dark:bg-scuba-900/20' : ''">
+                        <!-- Checkbox -->
+                        <input
+                          type="checkbox"
+                          [id]="'brevet-' + row.def.id"
+                          [checked]="row.checked"
+                          [disabled]="readonlyInput()"
+                          (change)="toggleBrevetType(row)"
+                          class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-scuba-600 focus:ring-scuba-500 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <!-- Label -->
+                        <label
+                          [for]="'brevet-' + row.def.id"
+                          class="flex-1 text-sm text-gray-800 dark:text-gray-200 cursor-pointer select-none"
+                          [class.font-medium]="row.checked"
+                        >
+                          {{ row.def.naam }}
+                        </label>
+                        <!-- Behaald datum (only when checked) -->
+                        @if (row.checked && !readonlyInput()) {
+                          <input
+                            type="date"
+                            [value]="row.behaaldDatum"
+                            (change)="onDateChange(row, $any($event.target).value)"
+                            placeholder="Behaald op"
+                            class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-scuba-500 dark:text-white w-36"
+                          />
+                        } @else if (row.checked && readonlyInput() && row.behaaldDatum) {
+                          <span class="text-xs text-gray-500 dark:text-gray-400">{{ row.behaaldDatum }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- ── Organisatiekoppelingen ──────────────────────────────────────────── -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Organisatiekoppelingen</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Logboeknummer en begindatum per organisatie (CMAS / PADI / SSI / NELOS / NOB)
+            </p>
+          </div>
+          @if (!readonlyInput()) {
+            <button
+              (click)="openOrgForm()"
+              [disabled]="availableOrgsForAdd().length === 0"
+              class="inline-flex items-center gap-1 rounded-lg bg-scuba-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-scuba-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              + Organisatie koppelen
+            </button>
+          }
+        </div>
+
+        @if (orgLoading()) {
+          <app-spinner size="sm" />
+        } @else if (organisaties().length === 0) {
+          <p class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center italic">
+            Nog geen organisaties gekoppeld.
+          </p>
+        } @else {
+          <div class="space-y-3">
+            @for (org of organisaties(); track org.id) {
+              <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-3">
+                      <span class="font-semibold text-gray-900 dark:text-white text-sm">{{ org.organisatie }}</span>
+                      @if (org.logboeknummer) {
+                        <span class="text-xs text-gray-600 dark:text-gray-400">
+                          Logboek: <span class="font-medium">{{ org.logboeknummer }}</span>
+                        </span>
+                      }
+                      @if (org.beginDatum) {
+                        <span class="text-xs text-gray-600 dark:text-gray-400">
+                          Lid sinds: <span class="font-medium">{{ org.beginDatum }}</span>
+                        </span>
+                      }
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        {{ org.brevetten.length }} brevet{{ org.brevetten.length === 1 ? '' : 'ten' }}
+                      </span>
+                    </div>
+                    @if (org.brevetten.length > 0) {
+                      <ul class="mt-1 space-y-0.5 pl-2 border-l-2 border-scuba-200 dark:border-scuba-700">
+                        @for (b of org.brevetten; track b.id) {
+                          <li class="text-xs text-gray-600 dark:text-gray-400">
+                            <span class="font-medium">{{ b.niveau }}</span>
+                            @if (b.brevetType === 'Specialiteit') {
+                              <span class="ml-1 text-amber-600 dark:text-amber-400">(Specialiteit)</span>
+                            }
+                            @if (b.behaaldDatum) {
+                              <span class="ml-1 text-gray-400">– {{ b.behaaldDatum }}</span>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                  @if (!readonlyInput()) {
+                    <div class="flex gap-2 flex-shrink-0">
+                      <button
+                        (click)="openOrgForm(org)"
+                        class="text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200"
+                      >Bewerken</button>
+                      <button
+                        (click)="confirmOrgDelete(org)"
+                        class="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                      >Verwijderen</button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Delete brevet confirm dialog ────────────────────────────────────── -->
+    @if (brevetToDelete()) {
+      <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Brevet verwijderen</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Weet je zeker dat je het brevet
+            <strong>{{ brevetToDelete()!.niveau }}</strong> ({{ brevetToDelete()!.organisatie }})
+            wilt verwijderen? Dit kan niet ongedaan worden gemaakt.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button
+              (click)="brevetToDelete.set(null)"
+              class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              Annuleren
+            </button>
+            <button
+              (click)="onDeleteConfirmed()"
+              class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">
+              Verwijderen
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Organisatie form modal ───────────────────────────────────────────── -->
+    @if (showOrgForm()) {
+      <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" (click)="closeOrgForm()">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md p-6 space-y-5"
+             (click)="$event.stopPropagation()">
+
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ editOrg() ? 'Organisatiekoppeling bewerken' : 'Organisatie koppelen' }}
+          </h2>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Organisatie *</label>
+            @if (editOrg()) {
+              <div class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
+                {{ orgForm.organisatie }}
+              </div>
+              <p class="mt-1 text-xs text-gray-400">Organisatie kan niet worden gewijzigd. Verwijder de koppeling en maak een nieuwe aan om te wijzigen.</p>
+            } @else {
+              <select
+                [(ngModel)]="orgForm.organisatie"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scuba-500 dark:text-white"
+              >
+                <option value="">— Kies organisatie —</option>
+                @for (o of availableOrgsForAdd(); track o) {
+                  <option [value]="o">{{ o }}</option>
+                }
+              </select>
+            }
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logboeknummer (optioneel)</label>
+            <input
+              type="text"
+              [(ngModel)]="orgForm.logboeknummer"
+              placeholder="Bijv. CMAS-BE-12345"
+              maxlength="100"
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scuba-500 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lid geworden op (optioneel)</label>
+            <input
+              type="date"
+              [(ngModel)]="orgForm.beginDatum"
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scuba-500 dark:text-white"
+            />
+          </div>
+
+          @if (orgFormError()) {
+            <p class="text-sm text-red-600 dark:text-red-400">{{ orgFormError() }}</p>
+          }
+
+          <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <button
+              (click)="closeOrgForm()"
+              class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              Annuleren
+            </button>
+            <button
+              (click)="saveOrg()"
+              [disabled]="orgSaving()"
+              class="px-4 py-2 rounded-lg text-sm font-medium bg-scuba-600 text-white hover:bg-scuba-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              @if (orgSaving()) { Opslaan… } @else { Opslaan }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Delete organisatie confirm dialog ────────────────────────────────── -->
+    @if (orgToDelete()) {
+      <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Organisatiekoppeling verwijderen</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Weet je zeker dat je de koppeling met
+            <strong>{{ orgToDelete()!.organisatie }}</strong> wilt verwijderen?
+            De brevetten blijven behouden maar worden niet meer gegroepeerd weergegeven.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button
+              (click)="orgToDelete.set(null)"
+              class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              Annuleren
+            </button>
+            <button
+              (click)="onOrgDeleteConfirmed()"
+              class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">
+              Verwijderen
+            </button>
+          </div>
+        </div>
+      </div>
+    }

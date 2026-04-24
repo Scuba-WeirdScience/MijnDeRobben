@@ -1,0 +1,125 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "berichten",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPinned", "order": "DESCENDING" },
+        { "fieldPath": "aangemaaktOp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "leningen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "memberId", "order": "ASCENDING" },
+        { "fieldPath": "retourdatum", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "leningen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "materiaalId", "order": "ASCENDING" },
+        { "fieldPath": "retourdatum", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "leningen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "memberId", "order": "ASCENDING" },
+        { "fieldPath": "materiaalTypeId", "order": "ASCENDING" },
+        { "fieldPath": "retourdatum", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "members",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "lastName", "order": "ASCENDING" },
+        { "fieldPath": "firstName", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "members",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastName", "order": "ASCENDING" },
+        { "fieldPath": "firstName", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "materialen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "materiaalTypeId", "order": "ASCENDING" },
+        { "fieldPath": "naam", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "brevetten",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "memberId", "order": "ASCENDING" },
+        { "fieldPath": "behaaldDatum", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nieuwBerichten",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "groepId", "order": "ASCENDING" },
+        { "fieldPath": "status",  "order": "ASCENDING" },
+        { "fieldPath": "createdAt","order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nieuwBerichten",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authorUid","order": "ASCENDING" },
+        { "fieldPath": "status",  "order": "ASCENDING" },
+        { "fieldPath": "createdAt","order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "threadId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authorUid", "order": "ASCENDING" },
+        { "fieldPath": "threadId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "threads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "groepId", "order": "ASCENDING" },
+        { "fieldPath": "pinnedAt", "order": "DESCENDING" },
+        { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "groepen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "memberUids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "name", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

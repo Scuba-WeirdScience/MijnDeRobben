@@ -1,0 +1,136 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+  <app-page-header title="Specialiteiten beheer">
+    <div actions>
+      <app-button variant="primary" size="sm" (click)="openForm(null)">
+        + Specialiteit toevoegen
+      </app-button>
+    </div>
+  </app-page-header>
+
+  <!-- Accordion wrapper -->
+  <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+    <!-- Accordion header -->
+    <button
+      type="button"
+      (click)="isExpanded.set(!isExpanded())"
+      class="w-full flex items-center justify-between px-5 py-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors select-none"
+    >
+      <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        Specialiteiten
+        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-scuba-100 dark:bg-scuba-900 text-scuba-700 dark:text-scuba-300">
+          {{ filtered().length }}
+        </span>
+      </span>
+      <!-- Chevron -->
+      <svg lucideChevronDown
+        class="h-5 w-5 text-gray-400 transition-transform duration-200"
+        [class.rotate-180]="isExpanded()">
+      </svg>
+    </button>
+
+    @if (isExpanded()) {
+      <div class="p-5 space-y-4 bg-white dark:bg-gray-900">
+
+        <!-- Org tab filter -->
+        <div class="flex flex-wrap gap-2">
+          <button (click)="selectedOrg.set(null)" [class]="tabClass(null)">Alle</button>
+          @for (org of organisaties; track org) {
+            <button (click)="selectedOrg.set(org)" [class]="tabClass(org)">{{ org }}</button>
+          }
+        </div>
+
+        <!-- List -->
+        @if (loading()) {
+          <app-spinner size="md" />
+        } @else if (filtered().length === 0) {
+          <app-empty-state message="Geen specialiteiten gevonden." icon="none" />
+        } @else {
+          <div class="rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Organisatie</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Volgorde</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acties</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                @for (st of filtered(); track st.id) {
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <app-badge variant="primary">{{ st.organisatie }}</app-badge>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{{ st.naam }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ st.volgorde }}</td>
+                    <td class="px-4 py-3 text-right">
+                      <div class="flex justify-end gap-3">
+                        <app-button variant="ghost" size="sm" (click)="openForm(st)">Bewerken</app-button>
+                        <app-button variant="danger" size="sm" (click)="confirmDelete(st)">Verwijderen</app-button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ── Form side panel ───────────────────────────────────────────────── -->
+@if (showForm()) {
+  <app-side-panel
+    [title]="editItem() ? 'Specialiteit bewerken' : 'Specialiteit toevoegen'"
+    [subtitle]="editItem()?.naam"
+    (closed)="closeForm()">
+
+    <form (ngSubmit)="save()" novalidate class="space-y-5">
+
+      <app-form-field label="Organisatie *" [error]="firstError(formState.organisatie())">
+        <app-select [(value)]="formState.organisatie().value">
+          <option value="">— Kies organisatie —</option>
+          @for (org of organisaties; track org) {
+            <option [value]="org">{{ org }}</option>
+          }
+        </app-select>
+      </app-form-field>
+
+      <app-form-field label="Naam *" hint="Bijv. Nitrox, Wreck Diver, …"
+        [error]="firstError(formState.naam())">
+        <app-input [(value)]="formState.naam().value" placeholder="Naam" [maxLength]="200" />
+      </app-form-field>
+
+      <app-form-field label="Volgorde (sortering)"
+        [error]="firstError(formState.volgorde())">
+        <app-input [value]="volgordeAsString()" (input)="onVolgordeInput($any($event.target).value)" type="number" [min]="0" />
+      </app-form-field>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+        <app-button type="button" variant="secondary" (click)="closeForm()">Annuleren</app-button>
+        <app-button type="submit" variant="primary" [loading]="saving()">Opslaan</app-button>
+      </div>
+
+    </form>
+
+  </app-side-panel>
+}
+
+<!-- ── Delete confirm ─────────────────────────────────────────────────── -->
+@if (itemToDelete()) {
+  <app-confirm-dialog
+    title="Specialiteit verwijderen"
+    [message]="'Weet je zeker dat je ' + itemToDelete()!.naam + ' (' + itemToDelete()!.organisatie + ') wilt verwijderen? Dit kan niet ongedaan worden gemaakt.'"
+    confirmLabel="Verwijderen"
+    confirmVariant="danger"
+    (confirmed)="onDeleteConfirmed()"
+    (cancelled)="itemToDelete.set(null)"
+  />
+}

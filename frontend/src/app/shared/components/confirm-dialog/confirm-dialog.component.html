@@ -1,0 +1,31 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-40 bg-black/50"
+     (click)="cancelled.emit()">
+</div>
+
+<!-- Centered dialog -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 shadow-2xl p-6 space-y-4">
+
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+      {{ title() }}
+    </h2>
+
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      {{ message() }}
+    </p>
+
+    <!-- Optional extra content slot (bv. waarschuwingsdetails) -->
+    <ng-content />
+
+    <div class="flex justify-end gap-3 pt-2">
+      <app-button variant="secondary" [disabled]="loading()" (click)="cancelled.emit()">
+        Annuleren
+      </app-button>
+      <app-button [variant]="confirmVariant()" [loading]="loading()" (click)="confirmed.emit()">
+        {{ confirmLabel() }}
+      </app-button>
+    </div>
+
+  </div>
+</div>

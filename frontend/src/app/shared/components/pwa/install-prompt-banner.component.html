@@ -1,0 +1,31 @@
+@if (pwa.isInstallable()) {
+  <div class="fixed top-16 left-0 right-0 z-50 flex justify-center px-4 pt-2 pointer-events-none">
+    <div class="pointer-events-auto w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg flex items-center gap-3 px-4 py-3" role="banner" aria-label="App installeren">
+      <!-- Icon -->
+      <div class="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-scuba-100 dark:bg-scuba-900">
+        <svg lucideSmartphone class="w-5 h-5 text-scuba-600 dark:text-scuba-400"></svg>
+      </div>
+
+      <!-- Text -->
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-900 dark:text-white leading-snug">Installeer De Robben app</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Voeg toe aan je beginscherm voor snelle toegang.</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="shrink-0 flex items-center gap-2">
+        <button
+          (click)="pwa.promptInstall()"
+          class="rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-xs font-semibold px-3 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-scuba-500">
+          Installeer
+        </button>
+        <button
+          (click)="pwa.dismissInstall()"
+          class="rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 transition-colors focus:outline-none"
+          title="Sluiten">
+          <svg lucideX class="w-4 h-4"></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+}

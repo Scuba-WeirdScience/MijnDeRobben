@@ -1,0 +1,62 @@
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Mijn materialen</h1>
+        <a routerLink="/members"
+           class="text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
+          ← Terug naar leden
+        </a>
+      </div>
+
+      @if (loading()) {
+        <div class="flex justify-center py-20">
+          <div class="animate-spin rounded-full h-10 w-10 border-4 border-scuba-600 border-t-transparent"></div>
+        </div>
+      } @else if (leningen().length === 0) {
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-12 text-center">
+          <div class="text-5xl mb-4">🤿</div>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Geen materialen geleend
+          </h2>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">
+            Je hebt momenteel geen materialen geleend.
+          </p>
+          <a routerLink="/members"
+             class="inline-block px-6 py-2.5 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white font-semibold">
+            Bekijk beschikbaar materiaal
+          </a>
+        </div>
+      } @else {
+        <div class="space-y-4">
+          @for (lening of leningen(); track lening.id) {
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ lening.materiaalNaam }}
+                  </h3>
+                  @if (lening.materiaalTypeNaam) {
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {{ lening.materiaalTypeNaam }}
+                    </p>
+                  }
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    Actief
+                  </span>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">
+                  Geleend op {{ lening.uitgeleendDatum }}
+                </span>
+                <span class="text-gray-400 dark:text-gray-500">
+                  ID: {{ lening.id.slice(0, 8) }}...
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>

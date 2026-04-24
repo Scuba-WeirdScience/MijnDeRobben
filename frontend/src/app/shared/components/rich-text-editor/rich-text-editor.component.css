@@ -1,0 +1,44 @@
+:host ::ng-deep .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid rgb(209 213 219) !important;
+  background: rgb(249 250 251);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+:host ::ng-deep .ql-container {
+  border: none !important;
+  font-size: 0.875rem;
+  min-height: 180px;
+}
+:host ::ng-deep .ql-editor {
+  min-height: 180px;
+  padding: 0.75rem 1rem;
+  color: rgb(17 24 39);
+}
+
+/* Dark mode */
+:host-context(.dark) ::ng-deep .ql-toolbar {
+  border-bottom-color: rgb(75 85 99) !important;
+  background: rgb(31 41 55);
+}
+:host-context(.dark) ::ng-deep .ql-toolbar .ql-stroke {
+  stroke: rgb(209 213 219);
+}
+:host-context(.dark) ::ng-deep .ql-toolbar .ql-fill {
+  fill: rgb(209 213 219);
+}
+:host-context(.dark) ::ng-deep .ql-toolbar .ql-picker-label {
+  color: rgb(209 213 219);
+}
+:host-context(.dark) ::ng-deep .ql-toolbar .ql-picker-options {
+  background: rgb(31 41 55);
+  color: rgb(209 213 219);
+}
+:host-context(.dark) ::ng-deep .ql-container {
+  background: rgb(31 41 55);
+}
+:host-context(.dark) ::ng-deep .ql-editor {
+  color: rgb(243 244 246);
+}
+:host-context(.dark) ::ng-deep .ql-editor.ql-blank::before {
+  color: rgb(107 114 128);
+}

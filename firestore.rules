@@ -1,0 +1,168 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.get(role, false) == true;
+    }
+
+    function isBeheer() {
+      return hasRole('Beheer');
+    }
+
+    function isBestuur() {
+      return hasRole('Bestuur') || isBeheer();
+    }
+
+    function isMateriaalCommissie() {
+      return hasRole('MateriaalCommissie') || isBestuur();
+    }
+
+    function isInstructieKader() {
+      return hasRole('InstructieKader') || isBestuur();
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isBeheer();
+      allow write: if false; // written only by Cloud Functions
+    }
+
+    // ── Members ───────────────────────────────────────────────────────────
+    match /members/{memberId} {
+      allow read: if isSignedIn();
+      allow create: if isBeheer();
+      allow update: if isBeheer()
+        || (isSignedIn() && resource.data.userId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['avatarUrl', 'updatedAt']));
+      allow delete: if isBeheer();
+
+      match /brevetten/{brevetId} {
+        allow read: if isSignedIn();
+        allow write: if isInstructieKader()
+          || (isSignedIn() && get(/databases/$(database)/documents/members/$(memberId)).data.userId == request.auth.uid);
+      }
+
+      match /organisaties/{orgId} {
+        allow read: if isSignedIn();
+        allow write: if isInstructieKader()
+          || (isSignedIn() && get(/databases/$(database)/documents/members/$(memberId)).data.userId == request.auth.uid);
+      }
+    }
+
+    // ── Brevet type definitions ────────────────────────────────────────────
+    match /brevet-types/{id} {
+      allow read: if isSignedIn();
+      allow write: if isInstructieKader();
+    }
+
+    // ── Specialty types ────────────────────────────────────────────────────
+    match /specialty-types/{id} {
+      allow read: if isSignedIn();
+      allow write: if isInstructieKader();
+    }
+
+    // ── Materiaal types + items ────────────────────────────────────────────
+    match /materiaal-types/{typeId} {
+      allow read: if isSignedIn();
+      allow write: if isMateriaalCommissie();
+
+      match /materialen/{itemId} {
+        allow read: if isSignedIn();
+        allow write: if isMateriaalCommissie();
+      }
+    }
+
+    // ── Leningen ──────────────────────────────────────────────────────────
+    match /leningen/{leningId} {
+      allow read: if isSignedIn();
+      allow create: if false; // via Cloud Function (validates limits)
+      allow update: if false; // via Cloud Function
+      allow delete: if isMateriaalCommissie();
+    }
+
+    // ── Berichten ─────────────────────────────────────────────────────────
+    match /berichten/{berichtId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if false; // via Cloud Function
+      allow delete: if isBeheer() || isBestuur()
+        || (isSignedIn() && resource.data.zenderId == request.auth.uid);
+
+      match /lezingen/{memberId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isOwner(memberId);
+      }
+    }
+
+    // ── Groepen ────────────────────────────────────────────────────────────────
+    function isAdmin() {
+      return isBeheer() || isBestuur();
+    }
+
+    match /groepen/{groepId} {
+      allow read: if request.auth != null &&
+        (request.auth.uid in resource.data.memberUids || isAdmin());
+      allow write: if false; // all writes via Cloud Functions
+    }
+
+    // ── Nieuw Berichten (group-based) ──────────────────────────────────────────
+    match /nieuwBerichten/{berichtId} {
+      allow read: if request.auth != null && (
+        (resource.data.status == 'gepubliceerd' &&
+         resource.data.groepId != null &&
+         request.auth.uid in get(/databases/$(database)/documents/groepen/$(resource.data.groepId)).data.memberUids)
+        ||
+        (resource.data.status == 'concept' &&
+         resource.data.authorUid == request.auth.uid)
+      );
+      allow write: if false;
+
+      match /replies/{replyId} {
+        allow read: if request.auth != null &&
+          get(/databases/$(database)/documents/nieuwBerichten/$(berichtId)).data.status == 'gepubliceerd' &&
+          get(/databases/$(database)/documents/nieuwBerichten/$(berichtId)).data.groepId != null &&
+          request.auth.uid in get(/databases/$(database)/documents/groepen/$(get(/databases/$(database)/documents/nieuwBerichten/$(berichtId)).data.groepId)).data.memberUids;
+        allow write: if false;
+      }
+
+      match /lezingen/{uid} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // threads subcollection under groepen
+    match /groepen/{groepId}/threads/{threadId} {
+      allow read: if request.auth != null &&
+        (request.auth.uid in get(/databases/$(database)/documents/groepen/$(groepId)).data.memberUids ||
+         request.auth.token.Beheer == true || request.auth.token.Bestuur == true);
+      allow write: if false; // Cloud Functions only
+    }
+
+    // messages top-level collection
+    match /messages/{messageId} {
+      allow read: if request.auth != null &&
+        (resource.data.status == 'gepubliceerd' &&
+         request.auth.uid in get(/databases/$(database)/documents/groepen/$(resource.data.groepId)).data.memberUids)
+        ||
+        (resource.data.status == 'concept' && resource.data.authorUid == request.auth.uid);
+      allow write: if false; // Cloud Functions only
+    }
+
+    // lezingen under messages
+    match /messages/{messageId}/lezingen/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

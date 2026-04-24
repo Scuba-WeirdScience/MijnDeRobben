@@ -1,0 +1,322 @@
+    <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+
+      <!-- Verzorger context banner -->
+      @if (verzorgerCtx.isActingAsKind()) {
+        <div class="bg-scuba-600 dark:bg-scuba-700 text-white px-4 py-1.5 flex items-center justify-between text-sm">
+          <span>
+            Je bekijkt nu als: <strong>{{ verzorgerCtx.activeKind()!.firstName }} {{ verzorgerCtx.activeKind()!.lastName }}</strong>
+          </span>
+          <button
+            (click)="verzorgerCtx.clearKind()"
+            class="ml-4 text-scuba-200 hover:text-white underline text-xs transition-colors">
+            Terug naar eigen profiel
+          </button>
+        </div>
+      }
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+
+          <!-- Logo -->
+          <div class="flex items-center gap-2">
+            <img src="https://duikclubderobben.nl/gallery/resources-2b22198790b197-de12899a9a.GIF?ts=1772784821" alt="Duikclub De Robben" class="h-8 w-auto object-contain" />
+            <span class="font-bold text-lg text-scuba-900 dark:text-scuba-100 hidden sm:block">
+              Duikclub De Robben
+            </span>
+          </div>
+
+          <!-- Desktop nav links -->
+          <div class="hidden md:flex items-center gap-6">
+            <a routerLink="/members" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
+               class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
+              Leden
+            </a>
+
+            @if (auth.isAuthenticated()) {
+              <a routerLink="/berichten" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
+                 class="relative flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
+                Berichten
+                @if (berichten.unreadCount() > 0) {
+                  <span class="inline-flex items-center justify-center min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-scuba-600 text-white text-[0.6rem] font-bold leading-none">
+                    {{ berichten.unreadCount() > 99 ? '99+' : berichten.unreadCount() }}
+                  </span>
+                }
+              </a>
+            }
+
+            <!-- Beheer dropdown (only for admin users) -->
+            <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur', 'InstructieKader', 'MateriaalCommissie'])">
+              <div class="relative" data-admin-menu>
+                <!-- Trigger -->
+                <button (click)="toggleAdminMenu()"
+                  class="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors"
+                  [class.text-scuba-600]="adminMenuOpen()"
+                  [class.dark:text-scuba-400]="adminMenuOpen()"
+                  [class.font-semibold]="adminMenuOpen()">
+                  Beheer
+                  <svg lucideChevronDown class="w-4 h-4 transition-transform" [class.rotate-180]="adminMenuOpen()"></svg>
+                </button>
+
+                <!-- Dropdown panel -->
+                @if (adminMenuOpen()) {
+                  <div class="absolute left-0 mt-2 w-52 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-50 overflow-hidden">
+                    <div class="py-1">
+                      <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
+                        <a routerLink="/admin/members" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg lucideUsers class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                          Ledenbeheer
+                        </a>
+                      </ng-container>
+                      <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
+                        <a routerLink="/admin/groepen" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg lucideMessageSquare class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                          Groepenbeheer
+                        </a>
+                      </ng-container>
+                      <ng-container *ngIf="auth.hasAnyRole(['Beheer'])">
+                        <a routerLink="/admin/roles" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg lucideShieldCheck class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                          Gebruikersbeheer
+                        </a>
+                      </ng-container>
+                      <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
+                        <a routerLink="/admin/brevetten" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg lucideAward class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                          Brevetten &amp; Specialiteiten
+                        </a>
+                      </ng-container>
+                      <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
+                        <a routerLink="/admin/specialiteiten" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg lucideTag class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                          Specialiteiten
+                        </a>
+                      </ng-container>
+                      <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
+                        <a routerLink="/admin/brevet-types" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <svg lucideClipboardCheck class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                          Brevet types
+                        </a>
+                      </ng-container>
+                      <ng-container *ngIf="auth.hasAnyRole(['MateriaalCommissie', 'Bestuur', 'Beheer'])">
+                        <a routerLink="/admin/materialen" (click)="closeAdminMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <span class="text-base leading-none w-4 text-center">🤿</span>
+                          Materiaal
+                        </a>
+                      </ng-container>
+                    </div>
+                  </div>
+                }
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Right side: theme dropdown + install button + user menu -->
+          <div class="flex items-center gap-3">
+            <!-- Theme dropdown -->
+            <div class="relative" data-theme-menu>
+              <button (click)="toggleThemeMenu()"
+                      class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      [title]="'Thema: ' + theme.theme()">
+                <span>{{ currentThemeIcon() }}</span>
+              </button>
+              @if (themeMenuOpen()) {
+                <div class="absolute right-0 mt-1 w-36 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-1 z-50">
+                  @for (opt of themeOptions; track opt.value) {
+                    <button
+                      (click)="selectTheme(opt.value)"
+                      class="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left transition-colors"
+                      [ngClass]="theme.theme() === opt.value
+                        ? 'bg-scuba-50 dark:bg-scuba-900/20 text-scuba-700 dark:text-scuba-300 font-medium'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                    >
+                      <span>{{ opt.icon }}</span>
+                      <span>{{ opt.label }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Install app button (only shown when browser supports install) -->
+            @if (pwa.isInstallable()) {
+              <button (click)="pwa.promptInstall()"
+                      title="Installeer app"
+                      class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-scuba-600 hover:bg-scuba-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-scuba-500">
+                <svg lucideDownload class="w-3.5 h-3.5"></svg>
+                Installeer
+              </button>
+              <!-- Mobile: icon only -->
+              <button (click)="pwa.promptInstall()"
+                      title="Installeer app"
+                      class="sm:hidden p-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-scuba-500">
+                <svg lucideDownload class="w-4 h-4"></svg>
+              </button>
+            }
+
+            <!-- User dropdown -->
+            @if (auth.isAuthenticated()) {
+              <div class="relative" data-user-menu>
+                <!-- Dropdown trigger button -->
+                <button
+                  (click)="toggleUserMenu()"
+                  class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-scuba-500 p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  [title]="auth.currentUser()?.email ?? 'Gebruiker'">
+                  @if (avatarState.avatarUrl()) {
+                    <img
+                      [src]="avatarState.avatarUrl()!"
+                      alt="Profielfoto"
+                      class="w-8 h-8 rounded-full object-cover border border-scuba-200 dark:border-scuba-700"
+                    />
+                  } @else {
+                    <div class="w-8 h-8 rounded-full bg-scuba-100 dark:bg-scuba-800 border border-scuba-200 dark:border-scuba-700 flex items-center justify-center">
+                      <span class="text-xs font-bold text-scuba-600 dark:text-scuba-300 select-none">
+                        {{ userInitial() }}
+                      </span>
+                    </div>
+                  }
+                  <!-- Dropdown arrow -->
+                  <svg lucideChevronDown class="w-4 h-4 text-gray-400 dark:text-gray-500 hidden sm:block"></svg>
+                </button>
+
+                <!-- Dropdown panel -->
+                @if (userMenuOpen()) {
+                  <div class="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-50 overflow-hidden">
+                    <!-- Email header -->
+                    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {{ auth.currentUser()?.email }}
+                      </p>
+                    </div>
+                    <!-- Menu items -->
+                    <div class="py-1">
+                      <a routerLink="/profile" (click)="closeUserMenu()"
+                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                         <svg lucideUser class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                         Mijn profiel
+                       </a>
+                      <a routerLink="/profile/brevetten" (click)="closeUserMenu()"
+                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                         <svg lucideAward class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                         Mijn brevetten &amp; specialiteiten
+                       </a>
+                       <a routerLink="/mijn-materialen" (click)="closeUserMenu()"
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                         <span class="text-base leading-none">🤿</span>
+                         Mijn materialen
+                       </a>
+                    </div>
+                    <!-- Logout -->
+                    <div class="border-t border-gray-100 dark:border-gray-700 py-1">
+                      <button (click)="logout()"
+                              class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <svg lucideLogOut class="w-4 h-4"></svg>
+                        Afmelden
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Mobile hamburger -->
+            <button (click)="mobileOpen = !mobileOpen"
+                    class="md:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <svg lucideMenu class="w-6 h-6"></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile menu -->
+        @if (mobileOpen) {
+          <div class="md:hidden pb-4 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
+            <a routerLink="/members" (click)="mobileOpen=false"
+               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              Leden
+            </a>
+
+            @if (auth.isAuthenticated()) {
+              <a routerLink="/berichten" (click)="mobileOpen=false"
+                 class="flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <span>Berichten</span>
+                @if (berichten.unreadCount() > 0) {
+                  <span class="inline-flex items-center justify-center min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-scuba-600 text-white text-[0.6rem] font-bold leading-none">
+                    {{ berichten.unreadCount() > 99 ? '99+' : berichten.unreadCount() }}
+                  </span>
+                }
+              </a>
+            }
+
+            <!-- Beheer section header (only for admin users) -->
+            @if (auth.hasAnyRole(['Beheer', 'Bestuur', 'InstructieKader', 'MateriaalCommissie'])) {
+              <div data-admin-menu>
+                <!-- Toggle button -->
+                <button (click)="toggleAdminMenu()"
+                  class="w-full flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <span class="font-medium">Beheer</span>
+                  <svg lucideChevronDown class="w-4 h-4 transition-transform" [class.rotate-180]="adminMenuOpen()"></svg>
+                </button>
+
+                <!-- Sub-items -->
+                @if (adminMenuOpen()) {
+                  <div class="pl-4 space-y-1">
+                    <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
+                      <a routerLink="/admin/members" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Ledenbeheer
+                      </a>
+                    </ng-container>
+                    <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
+                      <a routerLink="/admin/groepen" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Groepenbeheer
+                      </a>
+                    </ng-container>
+                    <ng-container *ngIf="auth.hasAnyRole(['Beheer'])">
+                      <a routerLink="/admin/roles" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                         Gebruikersbeheer
+                      </a>
+                    </ng-container>
+                    <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
+                      <a routerLink="/admin/brevetten" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Brevetten &amp; Specialiteiten
+                      </a>
+                    </ng-container>
+                    <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
+                      <a routerLink="/admin/specialiteiten" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Specialiteiten
+                      </a>
+                    </ng-container>
+                    <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
+                      <a routerLink="/admin/brevet-types" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Brevet types
+                      </a>
+                    </ng-container>
+                    <ng-container *ngIf="auth.hasAnyRole(['MateriaalCommissie', 'Bestuur', 'Beheer'])">
+                      <a routerLink="/admin/materialen" (click)="closeAdminMenu()"
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Materiaal
+                      </a>
+                    </ng-container>
+                  </div>
+                }
+              </div>
+            }
+
+            <a routerLink="/profile" (click)="mobileOpen=false"
+               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              Mijn profiel
+            </a>
+          </div>
+        }
+      </div>
+    </nav>

@@ -1,0 +1,61 @@
+<div class="border-t border-gray-200 dark:border-gray-700 pt-5">
+  <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+    Leninggeschiedenis
+  </h3>
+
+  @if (loading()) {
+    <div class="flex justify-center py-6">
+      <app-spinner size="sm" />
+    </div>
+  } @else if (error()) {
+    <p class="text-sm text-red-500 dark:text-red-400 py-4 text-center">
+      Kon leninggeschiedenis niet laden.
+    </p>
+  } @else if (leningen().length === 0) {
+    <div class="rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 px-4 py-6 text-center">
+      <p class="text-sm text-gray-400 dark:text-gray-500 italic">
+        Nog nooit uitgeleend.
+      </p>
+    </div>
+  } @else {
+    <div class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-800">
+          <tr>
+            <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lid</th>
+            <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uitgeleend</th>
+            <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Retour</th>
+            <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-900">
+          @for (l of leningen(); track l.id) {
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td class="px-4 py-3">
+                <span class="text-sm text-gray-900 dark:text-white">{{ l.memberNaam }}</span>
+              </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                {{ l.uitgeleendDatum }}
+              </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                {{ l.retourdatum ?? '—' }}
+              </td>
+              <td class="px-4 py-3">
+                @if (l.retourdatum) {
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                    Geretourneerd
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    Actief
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

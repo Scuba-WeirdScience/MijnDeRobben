@@ -1,0 +1,80 @@
+<app-side-panel
+  [title]="editingType() ? 'Type bewerken' : 'Type toevoegen'"
+  [subtitle]="editingType()?.naam"
+  (closed)="cancelled.emit()">
+
+  <div class="space-y-5">
+
+    <app-form-field label="Naam *" hint="Bijv. Duikflessen, Trimvesten, …"
+      [error]="firstError(typeFormState.naam())">
+      <app-input [value]="naam()" (valueChange)="setNaam($event)" [maxLength]="100" placeholder="Naam" />
+    </app-form-field>
+
+    <app-form-field label="Beschrijving">
+      <app-textarea [(value)]="beschrijving" [rows]="3" [maxLength]="500" placeholder="Optionele beschrijving…" />
+    </app-form-field>
+
+    <div class="grid grid-cols-3 gap-3">
+      <app-form-field label="Volgorde">
+        <app-input [value]="volgordeAsString()" (input)="onVolgordeInput($any($event.target).value)" type="number" [min]="0" />
+      </app-form-field>
+      <app-form-field label="Max. leningen/lid" hint="Leeg = onbeperkt">
+        <app-input [value]="maxLeningenAsString()" (input)="onMaxLeningenInput($any($event.target).value)" type="number" [min]="0" />
+      </app-form-field>
+      <app-form-field label="Huurprijs (€)" hint="Leeg = gratis">
+        <app-input [value]="huurprijsAsString()" (input)="onHuurprijsInput($any($event.target).value)" type="number" [min]="0" [attr.step]="'0.01'" placeholder="0,00" />
+      </app-form-field>
+    </div>
+
+    <!-- Extra velden -->
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Extra velden</label>
+        <button type="button" (click)="addCustomProperty()"
+          class="text-xs text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium">
+          + Veld toevoegen
+        </button>
+      </div>
+
+      @if (customProperties().length === 0) {
+        <p class="text-xs text-gray-500 dark:text-gray-400 italic">
+          Nog geen extra velden. Klik "Veld toevoegen" om velden zoals "Inhoud", "Maat" of "Kleur" toe te voegen.
+        </p>
+      } @else {
+        <div class="space-y-2">
+          @for (prop of customProperties(); track prop.id; let i = $index) {
+            <div class="flex items-end gap-2">
+              <app-form-field label="Veldnaam (key)" class="flex-1">
+                <app-input
+                  [value]="prop.key"
+                  (input)="updatePropKey(i, $any($event.target).value)"
+                  [maxLength]="50"
+                  placeholder="bijv. maat"
+                />
+              </app-form-field>
+              <app-form-field label="Label (weergavenaam)" class="flex-1">
+                <app-input
+                  [value]="prop.label"
+                  (input)="updatePropLabel(i, $any($event.target).value)"
+                  [maxLength]="100"
+                  placeholder="bijv. Maat"
+                />
+              </app-form-field>
+              <button type="button" (click)="removeCustomProperty(i)" title="Veld verwijderen"
+                class="shrink-0 mb-[9px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                <svg lucideX class="w-4 h-4"></svg>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+      <app-button variant="secondary" (click)="cancelled.emit()">Annuleren</app-button>
+      <app-button variant="primary" [loading]="saving()" (click)="onSave()">Opslaan</app-button>
+    </div>
+
+  </div>
+
+</app-side-panel>

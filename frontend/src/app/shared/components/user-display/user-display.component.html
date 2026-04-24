@@ -1,0 +1,25 @@
+    <div class="flex items-center gap-2">
+      <!-- Avatar -->
+      @if (member().avatarUrl) {
+        <img
+          [src]="apiBase + member().avatarUrl"
+          [alt]="fullName()"
+          [ngClass]="avatarSizeClass()"
+          class="rounded-full object-cover flex-shrink-0 border border-scuba-200 dark:border-scuba-700"
+        />
+      } @else {
+        <div
+          [style.backgroundColor]="bgColor()"
+          [ngClass]="avatarSizeClass()"
+          class="rounded-full flex items-center justify-center flex-shrink-0"
+        >
+          <span class="text-white font-bold select-none" [ngClass]="textSizeClass()">
+            {{ initials() }}
+          </span>
+        </div>
+      }
+      <!-- Name -->
+      <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
+        {{ fullName() }}
+      </span>
+    </div>

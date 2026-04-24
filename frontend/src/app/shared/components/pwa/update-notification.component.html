@@ -1,0 +1,23 @@
+@if (pwa.updateAvailable()) {
+  <div class="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 flex justify-center pointer-events-none">
+    <div class="pointer-events-auto w-full max-w-md bg-scuba-700 dark:bg-scuba-800 text-white rounded-xl shadow-2xl border border-scuba-600 dark:border-scuba-600 flex items-center gap-4 px-5 py-4">
+      <!-- Icon -->
+      <div class="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-scuba-600">
+        <svg lucideRefreshCw class="w-5 h-5 text-white"></svg>
+      </div>
+
+      <!-- Text -->
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold leading-snug">Nieuwe versie beschikbaar</p>
+        <p class="text-xs text-scuba-200 mt-0.5">Herlaad de pagina om de laatste updates te krijgen.</p>
+      </div>
+
+      <!-- Action -->
+      <button
+        (click)="pwa.activateUpdate()"
+        class="shrink-0 rounded-lg bg-white text-scuba-700 text-xs font-semibold px-3 py-1.5 hover:bg-scuba-50 transition-colors focus:outline-none focus:ring-2 focus:ring-white">
+        Herladen
+      </button>
+    </div>
+  </div>
+}

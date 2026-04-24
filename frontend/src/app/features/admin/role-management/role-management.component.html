@@ -1,0 +1,70 @@
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Gebruikersbeheer</h1>
+
+      @if (loading()) {
+        <app-spinner />
+      } @else {
+
+        <!-- Users table -->
+        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-100 dark:bg-gray-900">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gebruiker</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Naam</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Rollen</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acties</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+              @for (user of users(); track user.id) {
+                <tr class="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ user.email }}</div>
+                  </td>
+                  <td class="px-6 py-4 hidden sm:table-cell">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ user.userName }}</div>
+                  </td>
+                  <td class="px-6 py-4 hidden md:table-cell">
+                    <div class="flex flex-wrap gap-1">
+                      @for (role of user.roles; track role) {
+                        <span [ngClass]="roleBadgeClass(role)"
+                              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                          {{ role }}
+                        </span>
+                      }
+                      @if (!user.roles.length) {
+                        <span class="text-xs text-gray-400 dark:text-gray-500 italic">Geen rollen</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <button
+                      (click)="openPanel(user)"
+                      class="text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 transition-colors"
+                    >Bewerken</button>
+                  </td>
+                </tr>
+              }
+              @if (!users().length) {
+                <tr>
+                  <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                    Geen gebruikers gevonden.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- User detail slide-over -->
+    @if (selectedUser()) {
+      <app-user-detail-panel
+        [user]="selectedUser()!"
+        [allRoles]="roles()"
+        (closed)="closePanel()"
+        (emailChanged)="onEmailChanged($event)"
+      />
+    }

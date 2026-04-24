@@ -1,0 +1,13 @@
+<app-navbar />
+
+<!-- Install prompt banner — appears just below navbar when installable -->
+<app-install-prompt-banner />
+
+<main class="min-h-screen bg-white dark:bg-gray-900 pt-16">
+  <router-outlet />
+</main>
+
+<app-toast />
+
+<!-- Update notification — fixed bottom banner when new SW version is ready -->
+<app-update-notification />

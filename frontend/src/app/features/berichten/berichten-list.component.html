@@ -1,0 +1,224 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Header -->
+  <div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Berichten</h1>
+    <app-button variant="primary" (click)="openCompose()">
+      <svg lucidePlus class="w-4 h-4 mr-1.5 inline-block"></svg>
+      Nieuw bericht
+    </app-button>
+  </div>
+
+  @if (loading()) {
+    <app-spinner />
+  } @else if (berichten().length === 0) {
+    <app-empty-state
+      message="Nog geen berichten geplaatst."
+      icon="document">
+      <app-button variant="primary" (click)="openCompose()">Schrijf het eerste bericht</app-button>
+    </app-empty-state>
+  } @else {
+    <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+      @for (bericht of berichten(); track bericht.id) {
+        <div
+          (click)="openDetail(bericht)"
+          class="group cursor-pointer flex items-start gap-3 px-6 py-4 transition-colors divide-y divide-gray-100 dark:divide-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+          [ngClass]="bericht.isGelezen
+            ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800'
+            : 'bg-scuba-50 dark:bg-scuba-900/20 hover:bg-scuba-100 dark:hover:bg-scuba-900/30'">
+
+          <!-- Unread indicator -->
+          <div class="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full"
+               [ngClass]="bericht.isGelezen ? 'bg-transparent' : 'bg-scuba-500'">
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-sm text-gray-900 dark:text-white truncate"
+                    [ngClass]="{'font-bold': !bericht.isGelezen, 'font-semibold': bericht.isGelezen}">
+                {{ bericht.onderwerp }}
+              </span>
+              @if (bericht.isPinned) {
+                <app-badge variant="info" size="sm">Vastgezet</app-badge>
+              }
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+              {{ bericht.inhoudPreview }}
+            </p>
+          </div>
+
+          <!-- Meta + actions -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="text-right hidden sm:block">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ bericht.zender.firstName }} {{ bericht.zender.lastName }}
+              </p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                {{ bericht.aangemaaktOp | date:'d MMM y' }}
+              </p>
+            </div>
+
+            <!-- Toggle gelezen / ongelezen -->
+            <button
+              (click)="toggleGelezenFromList(bericht, $event)"
+              class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all"
+              [ngClass]="bericht.isGelezen
+                ? 'text-gray-400 hover:text-scuba-600 hover:bg-scuba-50 dark:hover:bg-scuba-900/30'
+                : 'text-scuba-500 hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
+              [title]="bericht.isGelezen ? 'Markeer als ongelezen' : 'Markeer als gelezen'">
+              @if (bericht.isGelezen) {
+                <!-- envelope open → mark as unread -->
+                <svg lucideMailOpen class="w-4 h-4"></svg>
+              } @else {
+                <!-- envelope → mark as read -->
+                <svg lucideMail class="w-4 h-4"></svg>
+              }
+            </button>
+
+            @if (isAdmin()) {
+              <button
+                (click)="confirmDelete(bericht, $event)"
+                class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                title="Verwijder bericht">
+                <svg lucideTrash2 class="w-4 h-4"></svg>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ── Detail side panel ──────────────────────────────────────────────────── -->
+@if (detailOpen()) {
+  <app-side-panel
+    [title]="selectedBericht()?.onderwerp ?? 'Bericht'"
+    [class.max-w-2xl]="true"
+    (closed)="detailOpen.set(false)">
+
+    @if (detailLoading()) {
+      <div class="flex justify-center py-16">
+        <app-spinner />
+      </div>
+    } @else if (selectedBericht(); as detail) {
+      <div class="space-y-5">
+
+        <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+          @if (detail.zender.avatarUrl) {
+            <img [src]="detail.zender.avatarUrl" class="w-8 h-8 rounded-full object-cover" alt="avatar"/>
+          } @else {
+            <div class="w-8 h-8 rounded-full bg-scuba-100 dark:bg-scuba-800 flex items-center justify-center text-xs font-bold text-scuba-600 dark:text-scuba-300">
+              {{ detail.zender.firstName[0] }}
+            </div>
+          }
+          <div>
+            <span class="font-medium text-gray-700 dark:text-gray-300">
+              {{ detail.zender.firstName }} {{ detail.zender.lastName }}
+            </span>
+            <span class="mx-1.5">·</span>
+            <span>{{ detail.aangemaaktOp | date:'d MMMM y, HH:mm' }}</span>
+          </div>
+          @if (detail.isPinned) {
+            <app-badge variant="info" size="sm">Vastgezet</app-badge>
+          }
+        </div>
+
+        <div class="text-gray-800 dark:text-gray-200 leading-relaxed text-sm border-t border-gray-100 dark:border-gray-700 pt-5 prose prose-sm dark:prose-invert max-w-none"
+             [innerHTML]="safeHtml(detail.inhoud)">
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-700 pt-4 flex items-center gap-3">
+          <app-button
+            variant="secondary"
+            size="sm"
+            [loading]="togglingGelezen()"
+            [disabled]="togglingGelezen()"
+            (click)="toggleGelezenFromDetail(detail)">
+            @if (isBerichtGelezen(detail.id)) {
+              Markeer als ongelezen
+            } @else {
+              Markeer als gelezen
+            }
+          </app-button>
+
+          @if (isAdmin()) {
+            <app-button
+              variant="danger"
+              size="sm"
+              (click)="deleteFromDetail(detail)">
+              Verwijder bericht
+            </app-button>
+          }
+        </div>
+      </div>
+    }
+  </app-side-panel>
+}
+
+<!-- ── Compose side panel ─────────────────────────────────────────────────── -->
+@if (composeOpen()) {
+  <app-side-panel
+    title="Nieuw bericht"
+    subtitle="Stuur een bericht naar alle leden"
+    [class.max-w-xl]="true"
+    (closed)="composeOpen.set(false)">
+
+    <div class="space-y-5">
+      <app-form-field label="Onderwerp" [required]="true">
+        <app-input
+          [(value)]="onderwerp"
+          placeholder="Onderwerp van het bericht"
+          [maxLength]="200" />
+      </app-form-field>
+
+      <app-form-field label="Bericht" [required]="true">
+        <app-rich-text-editor
+          [(value)]="inhoud"
+          placeholder="Schrijf hier je bericht..." />
+      </app-form-field>
+
+      @if (isAdmin()) {
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            [checked]="isPinned()"
+            (change)="isPinned.set($any($event.target).checked)"
+            class="w-4 h-4 rounded border-gray-300 text-scuba-600 focus:ring-scuba-500" />
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Bericht vastpinnen (bovenaan tonen)
+          </span>
+        </label>
+      }
+
+      <div class="flex gap-3 pt-2">
+        <app-button
+          variant="primary"
+          [loading]="saving()"
+          [disabled]="saving()"
+          (click)="submitBericht()">
+          Verstuur bericht
+        </app-button>
+        <app-button
+          variant="secondary"
+          [disabled]="saving()"
+          (click)="composeOpen.set(false)">
+          Annuleren
+        </app-button>
+      </div>
+    </div>
+  </app-side-panel>
+}
+
+<!-- ── Delete confirm dialog ──────────────────────────────────────────────── -->
+@if (deleteTarget()) {
+  <app-confirm-dialog
+    title="Bericht verwijderen"
+    [message]="'Wil je het bericht \'' + deleteTarget()!.onderwerp + '\' definitief verwijderen? Dit kan niet ongedaan worden gemaakt.'"
+    confirmLabel="Verwijderen"
+    confirmVariant="danger"
+    [loading]="deleting()"
+    (confirmed)="executeDelete()"
+    (cancelled)="deleteTarget.set(null)" />
+}

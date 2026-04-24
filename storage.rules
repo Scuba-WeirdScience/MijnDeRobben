@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Avatars: readable by any authenticated user, writable only by the owner
+    // (Cloud Functions handle the actual upload/delete)
+    match /avatars/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if false; // written only by Cloud Functions
+    }
+  }
+}

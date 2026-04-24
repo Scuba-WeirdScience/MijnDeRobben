@@ -1,0 +1,174 @@
+<app-side-panel
+  title="Gebruiker bewerken"
+  [subtitle]="user().email"
+  size="sm"
+  (closed)="closed.emit()">
+
+  @if (loading()) {
+    <app-spinner />
+  } @else {
+
+    <div class="space-y-8">
+
+      <!-- ── Roles ─────────────────────────────────────────── -->
+      <section>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Rollen</h3>
+
+        <!-- Current roles -->
+        <div class="flex flex-wrap gap-2 mb-4 min-h-[2rem]">
+          @for (role of userRoles(); track role) {
+            <span class="inline-flex items-center gap-1 rounded-full bg-scuba-100 dark:bg-scuba-900/30 text-scuba-700 dark:text-scuba-300 px-3 py-1 text-xs font-medium">
+              {{ role }}
+              <button
+                (click)="removeRole(role)"
+                [disabled]="rolesBusy()"
+                class="ml-0.5 text-scuba-400 hover:text-red-600 disabled:opacity-40 transition-colors"
+                [attr.aria-label]="'Verwijder rol ' + role"
+              >&times;</button>
+            </span>
+          }
+          @if (!userRoles().length) {
+            <span class="text-xs text-gray-400 dark:text-gray-500">Geen rollen toegewezen</span>
+          }
+        </div>
+
+        <!-- Add role -->
+        <div class="flex items-center gap-2">
+          <select
+            [(ngModel)]="selectedRole"
+            class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500"
+          >
+            <option value="">-- kies rol --</option>
+            @for (role of availableRoles(); track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+          <app-button
+            variant="primary"
+            size="sm"
+            [disabled]="!selectedRole || rolesBusy()"
+            (click)="addRole()"
+          >Toevoegen</app-button>
+        </div>
+      </section>
+
+      <!-- ── Gekoppelde leden ───────────────────────────────── -->
+      <section>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Gekoppelde leden</h3>
+
+        <!-- Currently linked -->
+        <div class="space-y-1 mb-4 min-h-[2rem]">
+          @for (lid of gekoppeldeLeden(); track lid.id) {
+            <div class="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2">
+              <span class="text-sm text-gray-800 dark:text-gray-200">{{ lid.firstName }} {{ lid.lastName }}</span>
+              <button
+                (click)="ontkoppelLid(lid)"
+                [disabled]="ledenBusy()"
+                class="text-xs text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors"
+              >Ontkoppelen</button>
+            </div>
+          }
+          @if (!gekoppeldeLeden().length) {
+            <p class="text-xs text-gray-400 dark:text-gray-500">Geen leden gekoppeld</p>
+          }
+        </div>
+
+        <!-- Search to link -->
+        <div class="flex items-center gap-2 mb-2">
+          <input
+            type="text"
+            [(ngModel)]="ledenSearch"
+            placeholder="Zoek op naam..."
+            class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500"
+          />
+          <app-button
+            variant="secondary"
+            size="sm"
+            [disabled]="!ledenSearch || ledenBusy()"
+            (click)="zoekLeden()"
+          >Zoeken</app-button>
+        </div>
+
+        <!-- Search results -->
+        @if (ledenSearchResults().length) {
+          <div class="space-y-1 max-h-40 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600">
+            @for (lid of ledenSearchResults(); track lid.id) {
+              <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <span class="text-sm text-gray-800 dark:text-gray-200">{{ lid.firstName }} {{ lid.lastName }}</span>
+                <button
+                  (click)="koppelLid(lid)"
+                  [disabled]="ledenBusy()"
+                  class="text-xs text-scuba-600 dark:text-scuba-400 hover:text-scuba-800 disabled:opacity-40 transition-colors font-medium"
+                >Koppelen</button>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- ── Email ─────────────────────────────────────────── -->
+      <section>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">E-mailadres</h3>
+        <div class="space-y-2">
+          <input
+            type="email"
+            [(ngModel)]="emailDraft"
+            (ngModelChange)="emailError.set('')"
+            placeholder="nieuw@email.nl"
+            autocomplete="off"
+            [class]="'w-full rounded-lg border px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-scuba-500 '
+              + (emailError() ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600')"
+          />
+          @if (emailError()) {
+            <p class="text-xs text-red-600 dark:text-red-400">{{ emailError() }}</p>
+          }
+          <app-button
+            variant="primary"
+            size="sm"
+            [loading]="emailBusy()"
+            [disabled]="!emailDraft || emailDraft === user().email"
+            (click)="saveEmail()"
+            class="w-full"
+          >E-mail opslaan</app-button>
+        </div>
+      </section>
+
+      <!-- ── Password ──────────────────────────────────────── -->
+      <section>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Wachtwoord wijzigen</h3>
+        <div class="space-y-2">
+          <input
+            type="password"
+            [(ngModel)]="newPassword"
+            (ngModelChange)="passwordError.set('')"
+            placeholder="Nieuw wachtwoord"
+            autocomplete="new-password"
+            [class]="'w-full rounded-lg border px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-scuba-500 '
+              + (passwordError() ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600')"
+          />
+          <input
+            type="password"
+            [(ngModel)]="confirmPassword"
+            (ngModelChange)="passwordError.set('')"
+            placeholder="Herhaal wachtwoord"
+            autocomplete="new-password"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+          />
+          @if (passwordError()) {
+            <p class="text-xs text-red-600 dark:text-red-400">{{ passwordError() }}</p>
+          }
+          <app-button
+            variant="primary"
+            size="sm"
+            [loading]="passwordBusy()"
+            [disabled]="!newPassword || !confirmPassword"
+            (click)="savePassword()"
+            class="w-full"
+          >Wachtwoord opslaan</app-button>
+        </div>
+      </section>
+
+    </div>
+  }
+
+</app-side-panel>

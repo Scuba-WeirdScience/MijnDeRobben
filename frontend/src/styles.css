@@ -1,0 +1,73 @@
+@import 'quill/dist/quill.snow.css';
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+/* ── Dark mode: toggle via .dark class on <html> ───────────────────────── */
+@variant dark (&:where(.dark, .dark *));
+
+/* ── Custom theme tokens ────────────────────────────────────────────────── */
+@theme {
+  /* primary palette */
+  --color-primary-50:  #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* scuba palette */
+  --color-scuba-50:  #e0f7ff;
+  --color-scuba-100: #b3edff;
+  --color-scuba-200: #80e2ff;
+  --color-scuba-300: #4dd7ff;
+  --color-scuba-400: #26cdff;
+  --color-scuba-500: #00b4d8;
+  --color-scuba-600: #0077b6;
+  --color-scuba-700: #005f92;
+  --color-scuba-800: #004a73;
+  --color-scuba-900: #03045e;
+}
+
+/*
+ * ── Safelist note ────────────────────────────────────────────────────────────
+ * Classes built dynamically inside Angular computed() are safelisted directly
+ * in the respective DSC component .ts files as _TW_SAFELIST string arrays.
+ * Tailwind v4 scans .ts files as plain text and picks up those tokens.
+ * @source inline() with variant: prefixes (focus:, dark:, hover:, etc.) does
+ * NOT work in Tailwind v4 — the brace-expansion syntax only handles simple
+ * class name segments, not variant prefixes.
+ *)
+
+/* ── Base layer ─────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200;
+  }
+}
+
+/* ── Quill editor: reset @tailwindcss/forms interference ───────────────── */
+/* @tailwindcss/forms applies appearance:none + background-image to all     */
+/* <select> elements globally, which breaks Quill's hidden picker selects.  */
+.ql-snow .ql-toolbar select,
+.ql-snow.ql-toolbar select {
+  appearance: auto !important;
+  background-image: none !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: inherit !important;
+  color: inherit !important;
+}
+.ql-snow .ql-picker-options input[type="text"],
+.ql-snow .ql-toolbar input {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}

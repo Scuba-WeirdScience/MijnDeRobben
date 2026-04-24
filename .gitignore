@@ -1,0 +1,42 @@
+# ── Secrets & credentials ─────────────────────────────────────────────────────
+service-account.json
+**/appsettings.Development.json
+
+# ── Log / temp output files ───────────────────────────────────────────────────
+*.log
+*-out.txt
+*-err.txt
+
+# ── .NET ──────────────────────────────────────────────────────────────────────
+**/bin/
+**/obj/
+
+# ── Node / Angular ────────────────────────────────────────────────────────────
+**/node_modules/
+**/dist/
+**/dist-test/
+frontend/.angular/cache
+frontend/playwright-report/
+frontend/test-results/
+frontend/tw-debug-out.css
+frontend/tw-test-input.css
+
+# ── Firebase / Firestore emulator ─────────────────────────────────────────────
+emulator-data/
+functions/lib/
+functions/firebase-export-*/
+firestore-debug.log
+functions/firestore-debug.log
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

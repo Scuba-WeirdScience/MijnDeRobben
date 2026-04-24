@@ -1,0 +1,16 @@
+<input
+  [type]="type()"
+  [placeholder]="placeholder()"
+  [disabled]="disabled()"
+  [attr.autocomplete]="autocomplete()"
+  [attr.maxlength]="maxLength()"
+  [attr.min]="min()"
+  [attr.max]="max()"
+  [attr.minlength]="minLength()"
+  [attr.aria-invalid]="invalid()"
+  [attr.aria-required]="required()"
+  [class]="cls()"
+  [value]="value()"
+  (input)="onInput($event)"
+  (blur)="onBlur()"
+/>
