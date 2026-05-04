@@ -1,6 +1,7 @@
 import {
   Component, inject, signal, ViewChild, ElementRef,
-  AfterViewInit, OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA, HostListener,
+  OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA, HostListener,
+  effect, afterNextRender,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Quill from 'quill';
@@ -16,12 +17,12 @@ import { LucideSend, LucideFileText, LucideSmile } from '../../../../shared/luci
   imports: [CommonModule, LucideSend, LucideFileText, LucideSmile],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class MessageComposeComponent implements AfterViewInit, OnDestroy {
+export class MessageComposeComponent implements OnDestroy {
   protected readonly service = inject(BerichtenService);
   private readonly toast = inject(ToastService);
   private readonly zone = inject(NgZone);
 
-  @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('editorMount') editorMount?: ElementRef<HTMLDivElement>;
 
   private quill: Quill | null = null;
   body = signal('');
@@ -35,9 +36,25 @@ export class MessageComposeComponent implements AfterViewInit, OnDestroy {
     ['clean'],
   ];
 
-  ngAfterViewInit(): void {
+  constructor() {
+    // Re-initialise Quill each time a thread becomes active (editorMount enters the DOM)
+    effect(() => {
+      const threadId = this.service.activeThreadId();
+      if (!threadId) {
+        this.destroyQuill();
+        return;
+      }
+      // Wait one render cycle for #editorMount to be stamped into the DOM
+      afterNextRender(() => {
+        if (!this.editorMount || this.quill) return;
+        this.initQuill(this.editorMount.nativeElement);
+      });
+    });
+  }
+
+  private initQuill(container: HTMLDivElement): void {
     this.zone.runOutsideAngular(() => {
-      this.quill = new Quill(this.editorContainer.nativeElement, {
+      this.quill = new Quill(container, {
         theme: 'snow',
         modules: {
           toolbar: this.toolbarOptions,
@@ -58,7 +75,7 @@ export class MessageComposeComponent implements AfterViewInit, OnDestroy {
       });
 
       this.quill.on('text-change', () => {
-        const editor = this.editorContainer.nativeElement.querySelector('.ql-editor') as HTMLElement;
+        const editor = container.querySelector('.ql-editor') as HTMLElement;
         const html = editor?.innerHTML ?? '';
         this.zone.run(() => {
           this.body.set(html === '<p><br></p>' ? '' : html);
@@ -73,8 +90,13 @@ export class MessageComposeComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
+  private destroyQuill(): void {
     this.quill = null;
+    this.body.set('');
+  }
+
+  ngOnDestroy(): void {
+    this.destroyQuill();
   }
 
   onEmojiSelect(event: any): void {

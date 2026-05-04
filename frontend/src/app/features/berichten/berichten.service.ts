@@ -110,6 +110,7 @@ export class BerichtenService {
 
   // ── Groepen ────────────────────────────────────────────────────────────────
   readonly groepen = signal<Groep[]>([]);
+  readonly allGroepen = signal<Groep[]>([]);
   readonly loadingGroepen = signal<boolean>(false);
 
   readonly activeGroepId = signal<string | null>(null);
@@ -149,6 +150,7 @@ export class BerichtenService {
   // ── Internal ───────────────────────────────────────────────────────────────
   private unsubUserDoc: (() => void) | null = null;
   private unsubGroepen: (() => void) | null = null;
+  private unsubAllGroepen: (() => void) | null = null;
   private unsubThreads: (() => void) | null = null;
   private unsubMessages: (() => void) | null = null;
   private unsubConceptMessages: (() => void) | null = null;
@@ -161,8 +163,10 @@ export class BerichtenService {
 
       this.unsubUserDoc?.();
       this.unsubGroepen?.();
+      this.unsubAllGroepen?.();
       this.unsubUserDoc = null;
       this.unsubGroepen = null;
+      this.unsubAllGroepen = null;
 
       if (!user) {
         this.unreadCount.set(0);
@@ -205,6 +209,25 @@ export class BerichtenService {
         });
         this.groepen.set(groepen);
         this.loadingGroepen.set(false);
+      });
+
+      // All groepen (for admin beheer panel — no memberUids filter)
+      const allGroepenQ = query(
+        collection(firestore, 'groepen'),
+        orderBy('name', 'asc')
+      );
+      this.unsubAllGroepen = onSnapshot(allGroepenQ, (snap) => {
+        const all: Groep[] = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            name: data['name'],
+            description: data['description'] ?? '',
+            memberUids: data['memberUids'] ?? [],
+            unreadCount: this.unreadPerGroep()[d.id] ?? 0,
+          };
+        });
+        this.allGroepen.set(all);
       });
     });
 

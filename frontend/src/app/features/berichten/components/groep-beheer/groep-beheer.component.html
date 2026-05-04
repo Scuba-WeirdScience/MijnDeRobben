@@ -18,7 +18,7 @@
       <div class="flex justify-center py-12">
         <app-spinner />
       </div>
-    } @else if (service.groepen().length === 0) {
+    } @else if (service.allGroepen().length === 0) {
       <app-empty-state
         message="Nog geen groepen aangemaakt."
         icon="users">
@@ -26,7 +26,7 @@
       </app-empty-state>
     } @else {
       <div class="divide-y divide-gray-100 dark:divide-gray-700">
-        @for (groep of service.groepen(); track groep.id) {
+        @for (groep of service.allGroepen(); track groep.id) {
           <div class="px-6 py-4 flex items-center gap-4">
             <div class="w-9 h-9 rounded-full bg-scuba-100 dark:bg-scuba-900/30 flex items-center justify-center flex-shrink-0">
               <svg lucideUsers class="w-4 h-4 text-scuba-600 dark:text-scuba-400"></svg>
@@ -104,15 +104,16 @@
 
         <!-- Dropdown input -->
         <div class="relative">
-          <app-form-field>
-            <app-input
-              [(value)]="memberSearch"
-              placeholder="Lid toevoegen..."
-              (focus)="dropdownOpen.set(true)"
-              (blur)="onSearchBlur()" />
-          </app-form-field>
+          <input
+            type="text"
+            [value]="memberSearch()"
+            (input)="memberSearch.set($any($event.target).value)"
+            (focus)="dropdownOpen.set(true)"
+            (blur)="onSearchBlur()"
+            placeholder="Lid toevoegen..."
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-scuba-500 focus:border-transparent transition-colors" />
 
-          @if (dropdownOpen() && memberSearch().length > 0) {
+          @if (dropdownOpen()) {
             <div class="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
               @if (availableMembers().length === 0) {
                 <p class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">Geen leden gevonden</p>
