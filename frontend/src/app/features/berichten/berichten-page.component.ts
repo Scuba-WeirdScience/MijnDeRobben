@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -15,6 +15,11 @@ import { SidePanelComponent } from '../../shared/components/design-system';
 import { LucideChevronLeft } from '../../shared/lucide-icons';
 
 type MobilePanel = 'groepen' | 'threads' | 'messages';
+
+const COMPOSE_MIN_PX = 80;
+const COMPOSE_MAX_PX = 500;
+const COMPOSE_DEFAULT_PX = 160;
+const STORAGE_KEY = 'berichten-compose-height';
 
 @Component({
   selector: 'app-berichten-page',
@@ -36,10 +41,10 @@ type MobilePanel = 'groepen' | 'threads' | 'messages';
 export class BerichtenPageComponent {
   protected readonly service = inject(BerichtenService);
   protected readonly auth = inject(AuthService);
+  private readonly host = inject(ElementRef<HTMLElement>);
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
-  // Reactive breakpoint — true when viewport < md (768px), matches Tailwind's md breakpoint
   readonly isMobile = toSignal(
     inject(BreakpointObserver).observe('(max-width: 767px)').pipe(
       map(result => result.matches)
@@ -47,29 +52,51 @@ export class BerichtenPageComponent {
     { initialValue: false }
   );
 
-  // Mobile navigation
   mobilePanel = signal<MobilePanel>('groepen');
-
-  // Side panels
   showBeheer = signal(false);
   showNewThread = signal(false);
 
+  // ── Resizable compose bar ─────────────────────────────────────────────────
+  composeHeight = signal<number>(
+    Number(localStorage.getItem(STORAGE_KEY)) || COMPOSE_DEFAULT_PX
+  );
+
+  private dragging = false;
+  private dragStartY = 0;
+  private dragStartHeight = 0;
+
+  onDragStart(event: MouseEvent | TouchEvent): void {
+    this.dragging = true;
+    this.dragStartY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    this.dragStartHeight = this.composeHeight();
+    event.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDragMove(event: MouseEvent | TouchEvent): void {
+    if (!this.dragging) return;
+    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    const delta = this.dragStartY - clientY; // dragging up = larger compose
+    const newHeight = Math.min(COMPOSE_MAX_PX, Math.max(COMPOSE_MIN_PX, this.dragStartHeight + delta));
+    this.composeHeight.set(newHeight);
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  onDragEnd(): void {
+    if (!this.dragging) return;
+    this.dragging = false;
+    localStorage.setItem(STORAGE_KEY, String(this.composeHeight()));
+  }
+
   constructor() {
-    // Ensure token claims are fresh so role-gated UI shows correctly
     this.auth.refreshUser();
   }
 
-  onGroepSelected(): void {
-    this.mobilePanel.set('threads');
-  }
-
-  onThreadSelected(): void {
-    this.mobilePanel.set('messages');
-  }
-
-  onNewThread(): void {
-    this.showNewThread.set(true);
-  }
+  onGroepSelected(): void { this.mobilePanel.set('threads'); }
+  onThreadSelected(): void { this.mobilePanel.set('messages'); }
+  onNewThread(): void { this.showNewThread.set(true); }
 
   onThreadCreated(threadId: string): void {
     this.showNewThread.set(false);

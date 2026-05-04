@@ -1,20 +1,27 @@
 import {
   Component, inject, signal, ViewChild, ElementRef,
-  OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA, HostListener,
+  OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA,
   effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Quill from 'quill';
 import { BerichtenService } from '../../berichten.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { LucideSend, LucideFileText, LucideSmile } from '../../../../shared/lucide-icons';
+import { LucideSend, LucideFileText } from '../../../../shared/lucide-icons';
+
+interface EmojiSuggestion {
+  id: string;
+  native: string;
+  name: string;
+}
 
 @Component({
   selector: 'app-message-compose',
   templateUrl: './message-compose.component.html',
   styleUrl: './message-compose.component.css',
+  host: { class: 'flex flex-col overflow-hidden' },
   standalone: true,
-  imports: [CommonModule, LucideSend, LucideFileText, LucideSmile],
+  imports: [CommonModule, LucideSend, LucideFileText],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class MessageComposeComponent implements OnDestroy {
@@ -24,7 +31,6 @@ export class MessageComposeComponent implements OnDestroy {
 
   @ViewChild('editorMount') set editorMount(el: ElementRef<HTMLDivElement> | undefined) {
     if (el && !this.quill) {
-      // Defer to next microtask so the element is fully in the DOM
       Promise.resolve().then(() => this.initQuill(el.nativeElement));
     }
   }
@@ -33,7 +39,11 @@ export class MessageComposeComponent implements OnDestroy {
   body = signal('');
   sending = signal(false);
   savingConcept = signal(false);
-  showEmojiPicker = signal(false);
+
+  // ── Emoji shortcode autocomplete state ─────────────────────────────────────
+  emojiSuggestions = signal<EmojiSuggestion[]>([]);
+  emojiSelectedIndex = signal(0);
+  private emojiSearchStart: number | null = null; // cursor index where ':' was typed
 
   private readonly toolbarOptions = [
     ['bold', 'italic', 'underline', 'strike'],
@@ -42,7 +52,6 @@ export class MessageComposeComponent implements OnDestroy {
   ];
 
   constructor() {
-    // Destroy Quill when thread is deselected so the setter can re-init it next time
     effect(() => {
       const threadId = this.service.activeThreadId();
       if (!threadId) {
@@ -63,14 +72,57 @@ export class MessageComposeComponent implements OnDestroy {
                 key: 'Enter',
                 shiftKey: false,
                 handler: () => {
+                  // If emoji picker is open, confirm selection instead of sending
+                  if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
+                    this.zone.run(() => this.confirmEmojiSuggestion());
+                    return false;
+                  }
                   this.zone.run(() => this.send());
                   return false;
+                },
+              },
+              arrowUp: {
+                key: 'ArrowUp',
+                handler: () => {
+                  if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
+                    this.zone.run(() =>
+                      this.emojiSelectedIndex.update(i =>
+                        (i - 1 + this.emojiSuggestions().length) % this.emojiSuggestions().length
+                      )
+                    );
+                    return false;
+                  }
+                  return true;
+                },
+              },
+              arrowDown: {
+                key: 'ArrowDown',
+                handler: () => {
+                  if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
+                    this.zone.run(() =>
+                      this.emojiSelectedIndex.update(i =>
+                        (i + 1) % this.emojiSuggestions().length
+                      )
+                    );
+                    return false;
+                  }
+                  return true;
+                },
+              },
+              escape: {
+                key: 'Escape',
+                handler: () => {
+                  if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
+                    this.zone.run(() => this.clearEmojiSuggestions());
+                    return false;
+                  }
+                  return true;
                 },
               },
             },
           },
         },
-        placeholder: 'Schrijf een bericht… (Enter om te versturen)',
+        placeholder: 'Schrijf een bericht… (Enter om te versturen, : voor emoji)',
       });
 
       this.quill.on('text-change', () => {
@@ -78,48 +130,87 @@ export class MessageComposeComponent implements OnDestroy {
         const html = editor?.innerHTML ?? '';
         this.zone.run(() => {
           this.body.set(html === '<p><br></p>' ? '' : html);
+          this.handleEmojiAutocomplete();
         });
       });
     });
 
-    // Pre-load emoji-mart so the picker opens instantly
+    // Pre-load emoji-mart data
     import('@emoji-mart/data').then(async ({ default: data }) => {
       const { init } = await import('emoji-mart');
       init({ data });
     });
   }
 
+  private async handleEmojiAutocomplete(): Promise<void> {
+    if (!this.quill) return;
+
+    const range = this.quill.getSelection();
+    if (!range) { this.clearEmojiSuggestions(); return; }
+
+    const cursorIndex = range.index;
+    const text = this.quill.getText(0, cursorIndex);
+
+    // Find the last ':' before the cursor that starts a potential shortcode
+    const colonIndex = text.lastIndexOf(':');
+    if (colonIndex === -1) { this.clearEmojiSuggestions(); return; }
+
+    const query = text.slice(colonIndex + 1);
+
+    // Only search when query is 2-20 chars, no spaces, no second colon
+    if (query.length < 2 || query.includes(' ') || query.includes(':') || query.length > 20) {
+      this.clearEmojiSuggestions();
+      return;
+    }
+
+    this.emojiSearchStart = colonIndex;
+
+    try {
+      const { SearchIndex } = await import('emoji-mart');
+      const results = await SearchIndex.search(query);
+      const suggestions: EmojiSuggestion[] = (results ?? []).slice(0, 8).map((e: any) => ({
+        id: e.id,
+        native: e.skins[0].native,
+        name: e.name,
+      }));
+      this.emojiSuggestions.set(suggestions);
+      this.emojiSelectedIndex.set(0);
+    } catch {
+      this.clearEmojiSuggestions();
+    }
+  }
+
+  confirmEmojiSuggestion(index?: number): void {
+    const suggestions = this.emojiSuggestions();
+    const idx = index ?? this.emojiSelectedIndex();
+    const chosen = suggestions[idx];
+    if (!chosen || !this.quill || this.emojiSearchStart === null) return;
+
+    const range = this.quill.getSelection(true);
+    const deleteFrom = this.emojiSearchStart;
+    const deleteCount = range.index - deleteFrom;
+
+    this.quill.deleteText(deleteFrom, deleteCount, 'user');
+    this.quill.insertText(deleteFrom, chosen.native, 'user');
+    this.quill.setSelection(deleteFrom + (chosen.native.length as any), 0);
+
+    this.clearEmojiSuggestions();
+  }
+
+  clearEmojiSuggestions(): void {
+    this.emojiSuggestions.set([]);
+    this.emojiSelectedIndex.set(0);
+    this.emojiSearchStart = null;
+  }
+
   private destroyQuill(): void {
     this.quill = null;
     this.body.set('');
+    this.clearEmojiSuggestions();
   }
 
   ngOnDestroy(): void {
     this.destroyQuill();
-  }
-
-  onEmojiSelect(event: any): void {
-    const emoji: string = event?.detail?.native ?? event?.native ?? '';
-    if (!emoji || !this.quill) return;
-    const range = this.quill.getSelection(true);
-    this.quill.insertText(range.index, emoji, 'user');
-    this.quill.setSelection(range.index + (emoji.length as any), 0);
-    this.showEmojiPicker.set(false);
-  }
-
-  toggleEmojiPicker(): void {
-    this.showEmojiPicker.update(v => !v);
-  }
-
-  closeEmojiPicker(): void {
-    this.showEmojiPicker.set(false);
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (this.showEmojiPicker()) {
-      this.showEmojiPicker.set(false);
-    }
   }
 
   clearEditor(): void {

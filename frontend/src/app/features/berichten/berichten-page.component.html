@@ -49,8 +49,17 @@
       </button>
     </div>
 
-    <app-message-list class="flex-1 overflow-hidden flex flex-col"></app-message-list>
-    <app-message-compose></app-message-compose>
+    <app-message-list class="flex-1 overflow-hidden flex flex-col min-h-0"></app-message-list>
+
+    <!-- ── Drag handle ──────────────────────────────────────── -->
+    <div
+      class="flex-shrink-0 h-1.5 cursor-row-resize bg-gray-200 dark:bg-gray-700 hover:bg-scuba-400 dark:hover:bg-scuba-500 transition-colors flex items-center justify-center group"
+      (mousedown)="onDragStart($event)"
+      (touchstart)="onDragStart($event)">
+      <div class="w-8 h-0.5 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:bg-scuba-500 dark:group-hover:bg-scuba-400 transition-colors"></div>
+    </div>
+
+    <app-message-compose [style.height.px]="composeHeight()" class="flex-shrink-0 overflow-hidden flex flex-col"></app-message-compose>
   </main>
 
 </div>

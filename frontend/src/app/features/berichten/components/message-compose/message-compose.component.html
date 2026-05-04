@@ -1,30 +1,32 @@
 @if (service.activeThreadId()) {
-  <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex-shrink-0">
+  <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col flex-1 min-h-0 overflow-hidden">
 
-    <div class="flex items-end gap-2 px-3 py-2">
+    <div class="flex items-end gap-2 px-3 py-2 flex-1 min-h-0 overflow-hidden">
 
-      <!-- Quill editor: toolbar on top, input below, all inside rounded border -->
-      <div class="flex-1 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 min-w-0">
-        <div #editorMount></div>
+      <!-- Quill editor with emoji suggestion dropdown -->
+      <div class="flex-1 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 min-w-0 min-h-0 overflow-hidden relative flex flex-col">
+        <div #editorMount class="editor-mount flex-1 min-h-0 overflow-hidden"></div>
+
+        <!-- Emoji shortcode suggestion list -->
+        @if (emojiSuggestions().length > 0) {
+          <div class="emoji-suggestions">
+            @for (suggestion of emojiSuggestions(); track suggestion.id; let i = $index) {
+              <button
+                type="button"
+                (mousedown)="$event.preventDefault(); confirmEmojiSuggestion(i)"
+                [class.bg-gray-100]="i === emojiSelectedIndex()"
+                [class.dark:bg-gray-700]="i === emojiSelectedIndex()"
+                class="emoji-suggestion-item">
+                <span class="text-lg leading-none">{{ suggestion.native }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ suggestion.name }}</span>
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <!-- Action buttons column -->
       <div class="flex flex-col gap-1 flex-shrink-0">
-
-        <!-- Emoji -->
-        <div class="relative">
-          <button
-            (click)="toggleEmojiPicker(); $event.stopPropagation()"
-            title="Emoji"
-            class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-scuba-600 dark:hover:text-scuba-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-            <svg lucideSmile class="w-4 h-4"></svg>
-          </button>
-          @if (showEmojiPicker()) {
-            <div class="emoji-picker-container" (click)="$event.stopPropagation()">
-              <em-emoji-picker (emoji-select)="onEmojiSelect($event)" locale="nl" theme="auto"></em-emoji-picker>
-            </div>
-          }
-        </div>
 
         <!-- Save as concept -->
         <button

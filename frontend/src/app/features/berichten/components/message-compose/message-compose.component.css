@@ -5,16 +5,27 @@
   padding: 4px 8px !important;
   background: transparent;
   line-height: 1;
+  flex-shrink: 0;
 }
 
+/*
+ * Quill injects .ql-toolbar + .ql-container into the .editor-mount div.
+ * The mount div itself must flex-stretch so the editor fills the given height.
+ */
+:host ::ng-deep .editor-mount,
 :host ::ng-deep .ql-container.ql-snow {
   border: none !important;
   font-size: 0.875rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 :host ::ng-deep .ql-editor {
-  min-height: 2.5rem !important;
-  max-height: 8rem;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 0.5rem 0.75rem !important;
   color: rgb(17 24 39);
@@ -64,10 +75,3 @@
   color: rgb(107 114 128);
 }
 
-/* Emoji picker positioning */
-.emoji-picker-container {
-  position: absolute;
-  bottom: calc(100% + 4px);
-  right: 0;
-  z-index: 50;
-}
