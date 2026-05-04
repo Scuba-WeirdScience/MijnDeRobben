@@ -17,34 +17,30 @@
         <div class="flex justify-center py-12">
           <app-spinner />
         </div>
-      } @else if (filteredGroepen().length === 0) {
-        <app-empty-state message="Geen groepen gevonden.">
-          <app-button variant="primary" (click)="openCreate()">Eerste groep aanmaken</app-button>
-        </app-empty-state>
       } @else {
         <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-800">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Omschrijving</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leden</th>
-                <th class="px-4 py-3"></th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Omschrijving</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leden</th>
+                <th class="px-6 py-3 w-px whitespace-nowrap"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               @for (groep of filteredGroepen(); track groep.id) {
                 <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                  <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                     {{ groep.name }}
                   </td>
-                  <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {{ groep.description || '—' }}
                   </td>
-                  <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {{ groep.memberUids.length }}
                   </td>
-                  <td class="px-4 py-4 text-right whitespace-nowrap">
+                  <td class="px-6 py-4 text-right w-px whitespace-nowrap">
                     <div class="flex items-center justify-end gap-3">
                       <button
                         (click)="openEdit(groep)"
@@ -60,6 +56,13 @@
                   </td>
                 </tr>
               }
+              @if (filteredGroepen().length === 0) {
+                <tr>
+                  <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                    Geen groepen gevonden.
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
@@ -69,7 +72,7 @@
 } @else {
 
   <!-- Inline create / edit form -->
-  <div class="flex flex-col h-full -mt-6 -mx-6">
+  <div class="flex flex-col h-full">
 
     <!-- Form header -->
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 flex-shrink-0">
