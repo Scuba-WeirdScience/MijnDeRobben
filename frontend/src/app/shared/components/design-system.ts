@@ -26,6 +26,7 @@ export { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.componen
 
 // ── Layout & Structuur ─────────────────────────────────────────────────────
 export { CardComponent }          from './card/card.component';
+export { PageContainerComponent } from './page-container/page-container.component';
 export { PageHeaderComponent }    from './page-header/page-header.component';
 export { SidePanelComponent }     from './side-panel/side-panel.component';
 export { TabsComponent }          from './tabs/tabs.component';

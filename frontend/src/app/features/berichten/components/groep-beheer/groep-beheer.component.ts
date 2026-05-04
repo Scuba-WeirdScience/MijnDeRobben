@@ -10,6 +10,7 @@ import {
   InputComponent,
   TextareaComponent,
   ConfirmDialogComponent,
+  PageContainerComponent,
 } from '../../../../shared/components/design-system';
 import { LucideX } from '../../../../shared/lucide-icons';
 
@@ -32,6 +33,7 @@ const _TW_SAFELIST = [
     InputComponent,
     TextareaComponent,
     ConfirmDialogComponent,
+    PageContainerComponent,
     LucideX,
   ],
   templateUrl: './groep-beheer.component.html',

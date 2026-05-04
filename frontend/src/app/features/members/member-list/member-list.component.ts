@@ -8,13 +8,14 @@ import { SpinnerComponent } from '../../../shared/components/spinner/spinner.com
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { UserDisplayComponent } from '../../../shared/components/user-display/user-display.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import { PageContainerComponent } from '../../../shared/components/design-system';
 
 const ADMIN_ROLES = ['Beheer', 'Bestuur', 'MateriaalCommissie', 'InstructieKader'];
 
 @Component({
   selector: 'app-member-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, SpinnerComponent, MemberStatusPipe, UserDisplayComponent, DatePipe],
+  imports: [RouterLink, FormsModule, SpinnerComponent, MemberStatusPipe, UserDisplayComponent, DatePipe, PageContainerComponent],
   templateUrl: './member-list.component.html',
 })
 export class MemberListComponent {

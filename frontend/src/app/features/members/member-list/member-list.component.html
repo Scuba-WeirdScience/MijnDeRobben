@@ -1,97 +1,97 @@
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="sm:flex sm:items-center sm:justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Leden</h1>
-      </div>
+<app-page-container>
+  <div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Leden</h1>
+  </div>
 
-      <!-- Search bar -->
-      <div class="mb-6">
-        <input
-          type="search"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearch()"
-          placeholder="Zoek op naam of e-mail..."
-          class="w-full sm:w-96 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-scuba-500"
-        />
-      </div>
+  <!-- Search bar -->
+  <div class="mb-6">
+    <input
+      type="search"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearch()"
+      placeholder="Zoek op naam of e-mail..."
+      class="w-full sm:w-96 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+    />
+  </div>
 
-      @if (loading()) {
-        <app-spinner />
-      } @else if (error()) {
-        <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-700 dark:text-red-400">
-          {{ error() }}
-        </div>
-      } @else {
-        <!-- Table -->
-        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-100 dark:bg-gray-800">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
-                @if (isAdmin()) {
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Lid sinds</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                }
-                <th class="px-6 py-3 w-px whitespace-nowrap"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-              @for (member of result()?.items ?? []; track member.id) {
-                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                  <td class="px-6 py-4">
-                    <app-user-display [member]="member" />
-                  </td>
-                   @if (isAdmin()) {
-                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
-                       {{ member.joinDate | date:'dd/MM/yyyy' }}
-                     </td>
-                     <td class="px-6 py-4">
-                       <span
-                         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                         [class]="member.isActive
-                           ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                           : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'"
-                       >
-                         {{ member | memberStatus }}
-                       </span>
-                     </td>
-                   }
-                  <td class="px-6 py-4 text-right w-px whitespace-nowrap">
-                    <a
-                      [routerLink]="['/members', member.id]"
-                      class="text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200"
-                    >Details</a>
-                  </td>
-                </tr>
-              }
-              @if (!result()?.items?.length) {
-                <tr>
-                  <td [attr.colspan]="isAdmin() ? 4 : 2" class="px-6 py-12 text-center text-sm text-gray-400 dark:text-gray-500">
-                    Geen leden gevonden.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        @if ((result()?.total ?? 0) > pageSize) {
-          <div class="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-            <span>{{ result()?.total }} leden totaal</span>
-            <div class="flex gap-2">
-              <button
-                (click)="changePage(page() - 1)"
-                [disabled]="page() <= 1"
-                class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >Vorige</button>
-              <span class="px-3 py-1">Pagina {{ page() }}</span>
-              <button
-                (click)="changePage(page() + 1)"
-                [disabled]="(page() * pageSize) >= (result()?.total ?? 0)"
-                class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >Volgende</button>
-            </div>
-          </div>
-        }
-      }
+  @if (loading()) {
+    <app-spinner />
+  } @else if (error()) {
+    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-700 dark:text-red-400">
+      {{ error() }}
     </div>
+  } @else {
+    <!-- Table -->
+    <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-100 dark:bg-gray-800">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
+            @if (isAdmin()) {
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Lid sinds</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            }
+            <th class="px-6 py-3 w-px whitespace-nowrap"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+          @for (member of result()?.items ?? []; track member.id) {
+            <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <td class="px-6 py-4">
+                <app-user-display [member]="member" />
+              </td>
+              @if (isAdmin()) {
+                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
+                  {{ member.joinDate | date:'dd/MM/yyyy' }}
+                </td>
+                <td class="px-6 py-4">
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    [class]="member.isActive
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'"
+                  >
+                    {{ member | memberStatus }}
+                  </span>
+                </td>
+              }
+              <td class="px-6 py-4 text-right w-px whitespace-nowrap">
+                <a
+                  [routerLink]="['/members', member.id]"
+                  class="text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200"
+                >Details</a>
+              </td>
+            </tr>
+          }
+          @if (!result()?.items?.length) {
+            <tr>
+              <td [attr.colspan]="isAdmin() ? 4 : 2" class="px-6 py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                Geen leden gevonden.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if ((result()?.total ?? 0) > pageSize) {
+      <div class="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+        <span>{{ result()?.total }} leden totaal</span>
+        <div class="flex gap-2">
+          <button
+            (click)="changePage(page() - 1)"
+            [disabled]="page() <= 1"
+            class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >Vorige</button>
+          <span class="px-3 py-1">Pagina {{ page() }}</span>
+          <button
+            (click)="changePage(page() + 1)"
+            [disabled]="(page() * pageSize) >= (result()?.total ?? 0)"
+            class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >Volgende</button>
+        </div>
+      </div>
+    }
+  }
+</app-page-container>
