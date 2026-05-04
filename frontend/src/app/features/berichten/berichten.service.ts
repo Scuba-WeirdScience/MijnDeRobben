@@ -384,6 +384,12 @@ export class BerichtenService {
 
   // ── Mappers ────────────────────────────────────────────────────────────────
 
+  private stripHtml(html: string): string {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent ?? div.innerText ?? '';
+  }
+
   private mapThread(d: QueryDocumentSnapshot<DocumentData>, groepId: string): Thread {
     const data = d.data();
     return {
@@ -396,7 +402,7 @@ export class BerichtenService {
       createdAt: data['createdAt'],
       updatedAt: data['updatedAt'],
       lastMessageAt: data['lastMessageAt'] ?? null,
-      lastMessageBody: data['lastMessageBody'] ?? '',
+      lastMessageBody: this.stripHtml(data['lastMessageBody'] ?? ''),
       messageCount: data['messageCount'] ?? 0,
       unreadPerUser: data['unreadPerUser'] ?? {},
     };
