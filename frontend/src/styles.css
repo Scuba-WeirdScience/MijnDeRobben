@@ -54,6 +54,12 @@
     overflow: hidden;
     height: 100%;
   }
+  app-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
 }
 
 /* ── Quill editor: reset @tailwindcss/forms interference ───────────────── */

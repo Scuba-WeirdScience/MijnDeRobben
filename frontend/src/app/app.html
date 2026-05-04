@@ -6,7 +6,7 @@
 <main
   class="bg-white dark:bg-gray-900"
   [ngClass]="isFullscreen()
-    ? 'h-[calc(100vh-4rem)] mt-16 overflow-hidden flex flex-col'
+    ? 'flex-1 min-h-0 mt-16 overflow-hidden flex flex-col'
     : 'min-h-screen pt-16'">
   <router-outlet />
 </main>

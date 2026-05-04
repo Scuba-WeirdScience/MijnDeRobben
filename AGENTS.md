@@ -104,6 +104,9 @@ The `as any` cast is required because `z.coerce.number()` produces `ZodCoercedNu
 - **`<app-user-display>`** for all avatar/name blocks — never build them inline.
 - **UI language is Dutch** (Belgian). All labels, toasts, placeholders, and error messages in Dutch.
 - **`$any()` in templates** only works for DOM events (`$any($event.target).value`). Use TypeScript type assertions in `.ts` files.
+- **Full-page list views** (e.g. Ledenbeheer, Groepenbeheer) follow one pattern: bordered `<table>` inside a rounded card, a plain search `<input>` above, and text action links ("Bewerken" / "Verwijderen") right-aligned in the last column. No icon buttons in list rows. Reference: `member-list.component.html`.
+- **Components rendered inside `<app-side-panel>`** must NOT render a nested `<app-side-panel>` for sub-forms. Use an `@if`/`@else` swap to show the list or the form inline within the same panel.
+- **No page-level scrollbar**: `html`, `body`, and `app-root` all have `overflow: hidden; height: 100%`. Fullscreen routes use `flex-1 min-h-0` on `<main>` (not `h-[calc(...)]`). Every flex child in the chain must have `min-h-0` to prevent overflow escape.
 
 ---
 

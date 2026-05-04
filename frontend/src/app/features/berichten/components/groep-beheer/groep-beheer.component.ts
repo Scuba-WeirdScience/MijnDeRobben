@@ -1,11 +1,9 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { BerichtenService, Groep } from '../../berichten.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { MemberService, Member } from '../../../../features/members/services/member.service';
 import {
   ButtonComponent,
-  SidePanelComponent,
   SpinnerComponent,
   EmptyStateComponent,
   FormFieldComponent,
@@ -13,7 +11,7 @@ import {
   TextareaComponent,
   ConfirmDialogComponent,
 } from '../../../../shared/components/design-system';
-import { LucidePlus, LucideEdit2, LucideTrash2, LucideUsers, LucideX } from '../../../../shared/lucide-icons';
+import { LucideX } from '../../../../shared/lucide-icons';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
@@ -27,19 +25,13 @@ const _TW_SAFELIST = [
   selector: 'app-groep-beheer',
   standalone: true,
   imports: [
-    CommonModule,
     ButtonComponent,
-    SidePanelComponent,
     SpinnerComponent,
     EmptyStateComponent,
     FormFieldComponent,
     InputComponent,
     TextareaComponent,
     ConfirmDialogComponent,
-    LucidePlus,
-    LucideEdit2,
-    LucideTrash2,
-    LucideUsers,
     LucideX,
   ],
   templateUrl: './groep-beheer.component.html',
@@ -65,6 +57,16 @@ export class GroepBeheerComponent {
   // Delete
   readonly deleteTarget = signal<Groep | null>(null);
   readonly deleting = signal(false);
+
+  // Search
+  readonly search = signal('');
+  readonly filteredGroepen = computed(() => {
+    const q = this.search().toLowerCase().trim();
+    if (!q) return this.service.allGroepen();
+    return this.service.allGroepen().filter(g =>
+      g.name.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q)
+    );
+  });
 
   readonly selectedMembers = computed(() => {
     const uids = this.selectedUids();
