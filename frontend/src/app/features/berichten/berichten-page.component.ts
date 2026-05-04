@@ -1,5 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { map } from 'rxjs';
 import { BerichtenService } from './berichten.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroepListComponent } from './components/groep-list/groep-list.component';
@@ -36,9 +39,13 @@ export class BerichtenPageComponent {
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
-  isMobile(): boolean {
-    return window.innerWidth < 768;
-  }
+  // Reactive breakpoint — true when viewport < md (768px), matches Tailwind's md breakpoint
+  readonly isMobile = toSignal(
+    inject(BreakpointObserver).observe('(max-width: 767px)').pipe(
+      map(result => result.matches)
+    ),
+    { initialValue: false }
+  );
 
   // Mobile navigation
   mobilePanel = signal<MobilePanel>('groepen');
