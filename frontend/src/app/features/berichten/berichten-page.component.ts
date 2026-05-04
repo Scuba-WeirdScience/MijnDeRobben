@@ -16,6 +16,7 @@ type MobilePanel = 'groepen' | 'threads' | 'messages';
 @Component({
   selector: 'app-berichten-page',
   templateUrl: './berichten-page.component.html',
+  host: { class: 'flex-1 min-h-0 flex flex-col' },
   standalone: true,
   imports: [
     CommonModule,

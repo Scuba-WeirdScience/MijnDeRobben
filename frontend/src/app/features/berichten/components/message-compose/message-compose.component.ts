@@ -1,7 +1,7 @@
 import {
   Component, inject, signal, ViewChild, ElementRef,
   OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA, HostListener,
-  effect, afterNextRender,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Quill from 'quill';
@@ -22,7 +22,12 @@ export class MessageComposeComponent implements OnDestroy {
   private readonly toast = inject(ToastService);
   private readonly zone = inject(NgZone);
 
-  @ViewChild('editorMount') editorMount?: ElementRef<HTMLDivElement>;
+  @ViewChild('editorMount') set editorMount(el: ElementRef<HTMLDivElement> | undefined) {
+    if (el && !this.quill) {
+      // Defer to next microtask so the element is fully in the DOM
+      Promise.resolve().then(() => this.initQuill(el.nativeElement));
+    }
+  }
 
   private quill: Quill | null = null;
   body = signal('');
@@ -37,18 +42,12 @@ export class MessageComposeComponent implements OnDestroy {
   ];
 
   constructor() {
-    // Re-initialise Quill each time a thread becomes active (editorMount enters the DOM)
+    // Destroy Quill when thread is deselected so the setter can re-init it next time
     effect(() => {
       const threadId = this.service.activeThreadId();
       if (!threadId) {
         this.destroyQuill();
-        return;
       }
-      // Wait one render cycle for #editorMount to be stamped into the DOM
-      afterNextRender(() => {
-        if (!this.editorMount || this.quill) return;
-        this.initQuill(this.editorMount.nativeElement);
-      });
     });
   }
 
