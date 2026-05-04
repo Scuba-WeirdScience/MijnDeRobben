@@ -94,7 +94,7 @@
                   }
                 </div>
                 @if (thread.lastMessageBody) {
-                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ thread.lastMessageBody }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ thread.lastMessageBody | emoticon }}</p>
                 }
               </div>
             </div>

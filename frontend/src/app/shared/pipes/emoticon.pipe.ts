@@ -27,22 +27,29 @@ const EMOTICON_MAP: [RegExp, string][] = [
   [/:'[\(\)]/g, '😢'],
 ];
 
+function replaceEmoticons(text: string): string {
+  let result = text;
+  for (const [pattern, emoji] of EMOTICON_MAP) {
+    result = result.replace(pattern, emoji);
+  }
+  return result;
+}
+
 /**
- * Converts ASCII emoticons inside HTML text nodes to Unicode emoji.
- * Only replaces inside text nodes — not inside tag attributes — by
- * working on the raw HTML string between tags.
+ * Converts ASCII emoticons to Unicode emoji.
+ * Works on both plain text and HTML strings (only replaces inside text nodes).
  */
 @Pipe({ name: 'emoticon', standalone: true, pure: true })
 export class EmoticonPipe implements PipeTransform {
-  transform(html: string | null | undefined): string {
-    if (!html) return '';
-    // Replace only in text content (between > and <), not inside tag attributes
-    return html.replace(/>([^<]*)</g, (match, text: string) => {
-      let result = text;
-      for (const [pattern, emoji] of EMOTICON_MAP) {
-        result = result.replace(pattern, emoji);
-      }
-      return `>${result}<`;
-    });
+  transform(input: string | null | undefined): string {
+    if (!input) return '';
+    // If the string contains HTML tags, replace only inside text nodes (between > and <)
+    if (/<[a-z]/i.test(input)) {
+      return input.replace(/>([^<]*)</g, (match, text: string) => {
+        return `>${replaceEmoticons(text)}<`;
+      });
+    }
+    // Plain text — replace directly
+    return replaceEmoticons(input);
   }
 }

@@ -46,9 +46,13 @@
 @layer base {
   html {
     @apply antialiased;
+    overflow: hidden;
+    height: 100%;
   }
   body {
     @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200;
+    overflow: hidden;
+    height: 100%;
   }
 }
 

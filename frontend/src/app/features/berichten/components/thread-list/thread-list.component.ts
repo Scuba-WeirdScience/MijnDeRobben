@@ -5,6 +5,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePlus, LucideHash, LucidePin, LucideTrash2 } from '../../../../shared/lucide-icons';
 import { InputComponent, TextareaComponent, ButtonComponent } from '../../../../shared/components/design-system';
+import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 
 const _TW_SAFELIST = [
   'bg-scuba-50', 'border-scuba-500', 'text-scuba-700',
@@ -17,7 +18,7 @@ const _TW_SAFELIST = [
   selector: 'app-thread-list',
   templateUrl: './thread-list.component.html',
   standalone: true,
-  imports: [CommonModule, LucidePlus, LucideHash, LucidePin, LucideTrash2, InputComponent, TextareaComponent, ButtonComponent],
+  imports: [CommonModule, LucidePlus, LucideHash, LucidePin, LucideTrash2, InputComponent, TextareaComponent, ButtonComponent, EmoticonPipe],
 })
 export class ThreadListComponent {
   protected readonly service = inject(BerichtenService);
