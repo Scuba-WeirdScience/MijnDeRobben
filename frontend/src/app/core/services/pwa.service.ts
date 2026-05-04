@@ -1,7 +1,10 @@
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs/operators';
+import { filter, interval } from 'rxjs';
+
+/** Poll for SW updates every 5 minutes */
+const UPDATE_POLL_INTERVAL_MS = 5 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -41,6 +44,12 @@ export class PwaService {
       .subscribe(() => {
         this.updateAvailable.set(true);
       });
+
+    // Periodically poll for updates so long-running sessions (e.g. the chat
+    // page) get notified without requiring a navigation event.
+    interval(UPDATE_POLL_INTERVAL_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.swUpdate.checkForUpdate());
   }
 
   /** Activate the waiting service worker and reload the page */
