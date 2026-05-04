@@ -59,7 +59,11 @@
       <div class="w-8 h-0.5 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:bg-scuba-500 dark:group-hover:bg-scuba-400 transition-colors"></div>
     </div>
 
-    <app-message-compose [style.height.px]="composeHeight()" class="flex-shrink-0 overflow-hidden flex flex-col"></app-message-compose>
+    <app-message-compose
+      [style.height.px]="composeHeight()"
+      [style.--editor-height]="'calc(' + composeHeight() + 'px - 52px)'"
+      class="flex-shrink-0 overflow-hidden flex flex-col">
+    </app-message-compose>
   </main>
 
 </div>
