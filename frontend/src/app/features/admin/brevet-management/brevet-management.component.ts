@@ -6,11 +6,12 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { MemberBrevetPanelComponent } from './member-brevet-panel/member-brevet-panel.component';
 import { Member } from '../../members/models/member.model';
 import { LucideX } from '../../../shared/lucide-icons';
+import { PageContainerComponent } from '../../../shared/components/design-system';
 
 @Component({
   selector: 'app-brevet-management',
   standalone: true,
-  imports: [FormsModule, SpinnerComponent, MemberBrevetPanelComponent, LucideX],
+  imports: [FormsModule, SpinnerComponent, MemberBrevetPanelComponent, LucideX, PageContainerComponent],
   templateUrl: './brevet-management.component.html',
 })
 export class BrevetManagementComponent {

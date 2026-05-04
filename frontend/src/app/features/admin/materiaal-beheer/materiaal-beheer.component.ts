@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MateriaalService } from './materiaal.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
-import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent, EmptyStateComponent, BadgeComponent } from '../../../shared/components/design-system';
+import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent, EmptyStateComponent, BadgeComponent, PageContainerComponent } from '../../../shared/components/design-system';
 import {
   MateriaalTypeWithMaterialen,
   Materiaal,
@@ -15,7 +15,7 @@ import { MateriaalItemFormComponent } from './materiaal-item-form.component';
 @Component({
   selector: 'app-materiaal-beheer',
   standalone: true,
-  imports: [CommonModule, SpinnerComponent, ButtonComponent, ConfirmDialogComponent, EmptyStateComponent, BadgeComponent, MateriaalTypeFormComponent, MateriaalItemFormComponent],
+  imports: [CommonModule, SpinnerComponent, ButtonComponent, ConfirmDialogComponent, EmptyStateComponent, BadgeComponent, MateriaalTypeFormComponent, MateriaalItemFormComponent, PageContainerComponent],
   templateUrl: './materiaal-beheer.component.html',
 })
 export class MateriaalBeheerComponent implements OnInit {

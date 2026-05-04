@@ -9,6 +9,7 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 import { MemberFormComponent } from './member-form/member-form.component';
 import { MemberDeleteDialogComponent } from './member-delete-dialog/member-delete-dialog.component';
 import { DatePipe } from '@angular/common';
+import { PageContainerComponent } from '../../../shared/components/design-system';
 
 @Component({
   selector: 'app-member-management',
@@ -20,6 +21,7 @@ import { DatePipe } from '@angular/common';
     FullNamePipe,
     MemberFormComponent,
     MemberDeleteDialogComponent,
+    PageContainerComponent,
     DatePipe
   ],
   templateUrl: './member-management.component.html',
