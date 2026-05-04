@@ -37,27 +37,27 @@
       } @else {
         <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-800">
+            <thead class="bg-gray-100 dark:bg-gray-800">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Omschrijving</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Leden</th>
-                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acties</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell w-px whitespace-nowrap">Leden</th>
+                <th class="px-6 py-3 w-px whitespace-nowrap"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               @for (groep of filteredGroepen(); track groep.id) {
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                   <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                     {{ groep.name }}
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">
                     {{ groep.description || '—' }}
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
+                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell w-px whitespace-nowrap">
                     {{ groep.memberUids.length }}
                   </td>
-                  <td class="px-6 py-4 text-right">
+                  <td class="px-6 py-4 text-right w-px whitespace-nowrap">
                     <div class="flex items-center justify-end gap-3">
                       <button
                         (click)="openEdit(groep)"
