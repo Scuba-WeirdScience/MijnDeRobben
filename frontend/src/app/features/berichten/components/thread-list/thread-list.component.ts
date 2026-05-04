@@ -1,4 +1,4 @@
-import { Component, computed, inject, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BerichtenService } from '../../berichten.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -46,6 +46,16 @@ export class ThreadListComponent {
   newBody = signal('');
   saving = signal(false);
   deletingThreadId = signal<string | null>(null);
+
+  constructor() {
+    // Reset form when active groep changes
+    effect(() => {
+      this.service.activeGroepId();
+      this.showForm.set(false);
+      this.newTitle.set('');
+      this.newBody.set('');
+    });
+  }
 
   selectThread(threadId: string): void {
     this.service.selectThread(threadId);
