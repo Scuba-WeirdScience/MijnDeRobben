@@ -12,6 +12,7 @@ const _TW_SAFELIST = [
   'dark:bg-scuba-900/20', 'dark:border-scuba-400', 'dark:text-scuba-300',
   'border-amber-400', 'bg-amber-50', 'dark:bg-amber-900/20',
   'hover:text-red-500', 'dark:hover:text-red-400',
+  'bg-scuba-600', 'hover:bg-scuba-700',
 ];
 
 @Component({
