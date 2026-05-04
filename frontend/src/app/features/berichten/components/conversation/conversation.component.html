@@ -107,7 +107,7 @@
                   [ngClass]="isOwnMessage(bericht)
                     ? 'bg-scuba-600 dark:bg-scuba-700 text-white rounded-tr-none'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-none'"
-                  [innerHTML]="bericht.body">
+                  [innerHTML]="bericht.body | emoticon">
                 </div>
               }
 

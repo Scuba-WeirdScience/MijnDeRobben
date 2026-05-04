@@ -4,6 +4,7 @@ import { BerichtenService } from '../../berichten.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePin, LucidePinOff, LucideTrash2, LucideMail, LucideMailOpen, LucideReply, LucideHash } from '../../../../shared/lucide-icons';
+import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 
 const _TW_SAFELIST = [
   'bg-scuba-600', 'bg-scuba-700', 'dark:bg-scuba-700', 'rounded-tr-none',
@@ -25,6 +26,7 @@ const _TW_SAFELIST = [
     LucideMailOpen,
     LucideReply,
     LucideHash,
+    EmoticonPipe,
   ],
 })
 export class MessageListComponent {

@@ -5,6 +5,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { SpinnerComponent, ButtonComponent, FormFieldComponent, InputComponent } from '../../../../shared/components/design-system';
 import { LucidePin, LucideReply, LucideChevronDown, LucideTrash2, LucideMail, LucideMailOpen, LucideMessageSquare } from '../../../../shared/lucide-icons';
+import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
@@ -34,6 +35,7 @@ const _TW_SAFELIST = [
     LucideMail,
     LucideMailOpen,
     LucideMessageSquare,
+    EmoticonPipe,
   ],
   templateUrl: './conversation.component.html',
 })
