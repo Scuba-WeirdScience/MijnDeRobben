@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BerichtenService } from './berichten.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -8,7 +8,7 @@ import { ThreadComposeComponent } from './components/thread-compose/thread-compo
 import { MessageListComponent } from './components/message-list/message-list.component';
 import { MessageComposeComponent } from './components/message-compose/message-compose.component';
 import { GroepBeheerComponent } from './components/groep-beheer/groep-beheer.component';
-import { SidePanelComponent } from '../../shared/components/design-system';
+import { SidePanelComponent, ButtonComponent } from '../../shared/components/design-system';
 import { LucideChevronLeft } from '../../shared/lucide-icons';
 
 type MobilePanel = 'groepen' | 'threads' | 'messages';
@@ -27,6 +27,7 @@ type MobilePanel = 'groepen' | 'threads' | 'messages';
     MessageComposeComponent,
     GroepBeheerComponent,
     SidePanelComponent,
+    ButtonComponent,
     LucideChevronLeft,
   ],
 })
@@ -35,6 +36,8 @@ export class BerichtenPageComponent {
   protected readonly auth = inject(AuthService);
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
+
+  @ViewChild(GroepBeheerComponent) groepBeheer?: GroepBeheerComponent;
 
   // Mobile navigation
   mobilePanel = signal<MobilePanel>('groepen');

@@ -1,41 +1,30 @@
 @if (!formOpen()) {
-  <div class="flex flex-col h-full">
-
-    <!-- Header -->
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-      <div>
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Groepen beheren</h2>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Aanmaken, bewerken en verwijderen</p>
-      </div>
-      <button
-        (click)="openCreate()"
-        class="inline-flex items-center gap-2 rounded-lg bg-scuba-600 px-4 py-2 text-sm font-medium text-white hover:bg-scuba-700 transition-colors focus:outline-none focus:ring-2 focus:ring-scuba-500">
-        + Nieuwe groep
-      </button>
-    </div>
+  <div class="flex flex-col h-full -mt-6 -mx-6">
 
     <!-- Search -->
-    <div class="px-6 pt-4 pb-2 flex-shrink-0">
+    <div class="px-6 pt-5 pb-3 flex-shrink-0">
       <input
         type="search"
         [value]="search()"
         (input)="search.set($any($event.target).value)"
         placeholder="Zoek op naam..."
-        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-scuba-500" />
+        class="w-full sm:w-96 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-scuba-500" />
     </div>
 
     <!-- Table -->
-    <div class="flex-1 overflow-y-auto px-6 pb-6">
+    <div class="flex-1 overflow-y-auto pb-6">
       @if (service.loadingGroepen()) {
         <div class="flex justify-center py-12">
           <app-spinner />
         </div>
       } @else if (filteredGroepen().length === 0) {
-        <app-empty-state message="Geen groepen gevonden.">
-          <app-button variant="primary" (click)="openCreate()">Eerste groep aanmaken</app-button>
-        </app-empty-state>
+        <div class="px-6">
+          <app-empty-state message="Geen groepen gevonden.">
+            <app-button variant="primary" (click)="openCreate()">Eerste groep aanmaken</app-button>
+          </app-empty-state>
+        </div>
       } @else {
-        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="overflow-hidden border-y border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-800">
               <tr>
@@ -82,7 +71,7 @@
 } @else {
 
   <!-- Inline create / edit form -->
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full -mt-6 -mx-6">
 
     <!-- Form header -->
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 flex-shrink-0">
