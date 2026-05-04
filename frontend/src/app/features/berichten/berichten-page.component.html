@@ -57,12 +57,12 @@
 
 <!-- ── Side panel: Groep beheer ───────────────────────────── -->
 @if (showBeheer()) {
-  <app-side-panel title="Groepen beheren" size="lg" [headerActions]="beheerActions" (closed)="showBeheer.set(false)">
-    <app-groep-beheer class="flex flex-col h-full"></app-groep-beheer>
-  </app-side-panel>
   <ng-template #beheerActions>
     <app-button variant="primary" (click)="groepBeheer?.openCreate()">+ Nieuwe groep</app-button>
   </ng-template>
+  <app-side-panel title="Groepen beheren" size="lg" [headerActions]="beheerActions" (closed)="showBeheer.set(false)">
+    <app-groep-beheer class="flex flex-col h-full"></app-groep-beheer>
+  </app-side-panel>
 }
 
 <!-- ── Side panel: Nieuwe thread ─────────────────────────── -->
