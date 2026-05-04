@@ -58,6 +58,17 @@ export interface Message {
   updatedAt: any;
 }
 
+export interface ThreadConcept {
+  id: string;
+  groepId: string;
+  authorUid: string;
+  authorName: string;
+  title: string;
+  body: string;
+  createdAt: any;
+  updatedAt: any;
+}
+
 // ── Legacy types (kept for backwards compat with berichten-list.component) ──
 
 export interface BerichtRaw {
@@ -127,6 +138,8 @@ export class BerichtenService {
     this.threads().find(t => t.id === this.activeThreadId()) ?? null
   );
 
+  readonly threadConcepten = signal<ThreadConcept[]>([]);
+
   // ── Messages ───────────────────────────────────────────────────────────────
   readonly messages = signal<Message[]>([]);
   readonly loadingMessages = signal<boolean>(false);
@@ -152,9 +165,11 @@ export class BerichtenService {
   private unsubGroepen: (() => void) | null = null;
   private unsubAllGroepen: (() => void) | null = null;
   private unsubThreads: (() => void) | null = null;
+  private unsubThreadConcepten: (() => void) | null = null;
   private unsubMessages: (() => void) | null = null;
   private unsubConceptMessages: (() => void) | null = null;
   private lastMessageDoc: QueryDocumentSnapshot<DocumentData> | null = null;
+  private currentUid: string | null = null;
 
   constructor() {
     // Auth state — set up user doc + groepen listeners
@@ -169,11 +184,13 @@ export class BerichtenService {
       this.unsubAllGroepen = null;
 
       if (!user) {
+        this.currentUid = null;
         this.unreadCount.set(0);
         this.unreadPerGroep.set({});
         this.groepen.set([]);
         this.activeGroepId.set(null);
         this.threads.set([]);
+        this.threadConcepten.set([]);
         this.messages.set([]);
         this.conceptMessages.set([]);
         this.readMessageIds.set(new Set());
@@ -181,6 +198,7 @@ export class BerichtenService {
       }
 
       const uid = user.uid;
+      this.currentUid = uid;
 
       // users/{uid} — unread counts
       this.unsubUserDoc = onSnapshot(doc(firestore, 'users', uid), (snap) => {
@@ -236,11 +254,15 @@ export class BerichtenService {
       const groepId = this.activeGroepId();
 
       this.unsubThreads?.();
+      this.unsubThreadConcepten?.();
       this.unsubThreads = null;
+      this.unsubThreadConcepten = null;
       this.threads.set([]);
+      this.threadConcepten.set([]);
 
       if (!groepId) return;
 
+      // ── Threads ──
       this.loadingThreads.set(true);
       const threadsQ = query(
         collection(firestore, 'groepen', groepId, 'threads')
@@ -268,6 +290,20 @@ export class BerichtenService {
         this.threads.set([...pinned, ...unpinned]);
         this.loadingThreads.set(false);
       });
+
+      // ── Thread concepten (scoped to current user + current groep) ──
+      const uid = this.currentUid;
+      if (uid) {
+        const conceptenQ = query(
+          collection(firestore, 'threadConcepten'),
+          where('groepId', '==', groepId),
+          where('authorUid', '==', uid),
+          orderBy('updatedAt', 'desc')
+        );
+        this.unsubThreadConcepten = onSnapshot(conceptenQ, (snap) => {
+          this.threadConcepten.set(snap.docs.map(d => this.mapThreadConcept(d)));
+        });
+      }
     });
 
     // Messages + concept messages listeners — reacts to activeThreadId changes
@@ -426,6 +462,20 @@ export class BerichtenService {
     };
   }
 
+  private mapThreadConcept(d: QueryDocumentSnapshot<DocumentData>): ThreadConcept {
+    const data = d.data();
+    return {
+      id: d.id,
+      groepId: data['groepId'] ?? '',
+      authorUid: data['authorUid'] ?? '',
+      authorName: data['authorName'] ?? '',
+      title: data['title'] ?? '',
+      body: data['body'] ?? '',
+      createdAt: data['createdAt'],
+      updatedAt: data['updatedAt'],
+    };
+  }
+
   private async loadLezingen(uid: string, messageIds: string[]): Promise<void> {
     const readIds = new Set<string>();
     await Promise.all(
@@ -494,6 +544,23 @@ export class BerichtenService {
   markMessageUnread(messageId: string, threadId: string, groepId: string): Promise<{ success: boolean }> {
     const fn = httpsCallable<{ messageId: string; threadId: string; groepId: string }, { success: boolean }>(functions, 'markMessageUnread');
     return fn({ messageId, threadId, groepId }).then(r => r.data);
+  }
+
+  // ── Cloud Function wrappers — thread concepten ────────────────────────────
+
+  saveThreadConcept(groepId: string, title: string, body: string, conceptId?: string): Promise<{ conceptId: string }> {
+    const fn = httpsCallable<{ groepId: string; title: string; body: string; conceptId?: string }, { conceptId: string }>(functions, 'saveThreadConcept');
+    return fn({ groepId, title, body, conceptId }).then(r => r.data);
+  }
+
+  publishThreadConcept(conceptId: string): Promise<{ threadId: string }> {
+    const fn = httpsCallable<{ conceptId: string }, { threadId: string }>(functions, 'publishThreadConcept');
+    return fn({ conceptId }).then(r => r.data);
+  }
+
+  deleteThreadConcept(conceptId: string): Promise<{ success: boolean }> {
+    const fn = httpsCallable<{ conceptId: string }, { success: boolean }>(functions, 'deleteThreadConcept');
+    return fn({ conceptId }).then(r => r.data);
   }
 
   // ── Cloud Function wrappers — groepen ─────────────────────────────────────

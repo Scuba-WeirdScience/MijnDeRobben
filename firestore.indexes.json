@@ -119,6 +119,23 @@
         { "fieldPath": "memberUids", "arrayConfig": "CONTAINS" },
         { "fieldPath": "name", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "member-organisaties",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "memberId", "order": "ASCENDING" },
+        { "fieldPath": "organisatie", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "threadConcepten",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "groepId",   "order": "ASCENDING" },
+        { "fieldPath": "authorUid", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

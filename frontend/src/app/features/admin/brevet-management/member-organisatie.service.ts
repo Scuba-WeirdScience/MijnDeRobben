@@ -1,9 +1,7 @@
-// MemberOrganisatieService — stub implementation.
-// The backend functions for member organisaties are not yet implemented.
-// This stub exists to keep the Angular build clean.
-// TODO: implement getMemberOrganisaties, createMemberOrganisatie, etc. Cloud Functions
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@fire';
+import { from, Observable } from 'rxjs';
 
 export interface MemberOrganisatie {
   id: string;
@@ -27,23 +25,28 @@ export interface UpdateMemberOrganisatieRequest extends Partial<CreateMemberOrga
 
 @Injectable({ providedIn: 'root' })
 export class MemberOrganisatieService {
-  getByMember(_memberId: string): Observable<MemberOrganisatie[]> {
-    return of([]);
+  getByMember(memberId: string): Observable<MemberOrganisatie[]> {
+    const fn = httpsCallable<{ memberId: string }, MemberOrganisatie[]>(functions, 'getMemberOrganisaties');
+    return from(fn({ memberId }).then(r => r.data));
   }
 
   getMyOrganisaties(): Observable<MemberOrganisatie[]> {
-    return of([]);
+    const fn = httpsCallable<void, MemberOrganisatie[]>(functions, 'getMyOrganisaties');
+    return from(fn().then(r => r.data));
   }
 
-  create(_memberId: string, _dto: CreateMemberOrganisatieRequest): Observable<MemberOrganisatie> {
-    throw new Error('Not yet implemented');
+  create(memberId: string, dto: CreateMemberOrganisatieRequest): Observable<MemberOrganisatie> {
+    const fn = httpsCallable<{ memberId: string } & CreateMemberOrganisatieRequest, MemberOrganisatie>(functions, 'createMemberOrganisatie');
+    return from(fn({ memberId, ...dto }).then(r => r.data));
   }
 
-  update(_memberId: string, _id: string, _dto: UpdateMemberOrganisatieRequest): Observable<MemberOrganisatie> {
-    throw new Error('Not yet implemented');
+  update(memberId: string, id: string, dto: UpdateMemberOrganisatieRequest): Observable<MemberOrganisatie> {
+    const fn = httpsCallable<{ id: string; memberId: string } & UpdateMemberOrganisatieRequest, MemberOrganisatie>(functions, 'updateMemberOrganisatie');
+    return from(fn({ id, memberId, ...dto }).then(r => r.data));
   }
 
-  delete(_memberId: string, _id: string): Observable<void> {
-    throw new Error('Not yet implemented');
+  delete(memberId: string, id: string): Observable<{ success: boolean }> {
+    const fn = httpsCallable<{ id: string; memberId: string }, { success: boolean }>(functions, 'deleteMemberOrganisatie');
+    return from(fn({ id, memberId }).then(r => r.data));
   }
 }

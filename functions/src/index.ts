@@ -73,6 +73,8 @@ export {
   saveMessageConcept, publishMessageConcept, deleteMessageConcept,
   pinThread, pinMessage, deleteMessage, deleteThread,
   markMessageRead, markMessageUnread,
+  // Thread concepten
+  saveThreadConcept, publishThreadConcept, deleteThreadConcept,
 } from './berichten/berichten.functions';
 
 // ── Brevetten + Types ─────────────────────────────────────────────────────────
@@ -91,6 +93,15 @@ export {
   updateSpecialtyType,
   deleteSpecialtyType,
 } from './brevetten/brevetten.functions';
+
+// ── Member Organisaties ───────────────────────────────────────────────────────
+export {
+  getMyOrganisaties,
+  getMemberOrganisaties,
+  createMemberOrganisatie,
+  updateMemberOrganisatie,
+  deleteMemberOrganisatie,
+} from './brevetten/member-organisaties.functions';
 
 // ── User Settings ─────────────────────────────────────────────────────────────
 export {

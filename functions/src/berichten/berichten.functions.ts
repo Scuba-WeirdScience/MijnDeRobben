@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { db, REGION } from '../shared/admin';
-import { BerichtDoc, BerichtLeesDoc, MemberDoc, GroepDoc, NieuwBerichtDoc, ReplyDoc, LezingDoc, ThreadDoc, MessageDoc } from '../shared/types';
+import { BerichtDoc, BerichtLeesDoc, MemberDoc, GroepDoc, NieuwBerichtDoc, ReplyDoc, LezingDoc, ThreadDoc, MessageDoc, ThreadConceptDoc } from '../shared/types';
 
 // ── Legacy functions (kept for backwards compatibility) ────────────────────
 
@@ -585,6 +585,17 @@ export const createThread = onCall({ region: REGION }, async (request) => {
   if (!(await isGroepMember(groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
   if (!title?.trim()) throw new HttpsError('invalid-argument', 'Titel is verplicht.');
 
+  return _createThreadInternal(uid, groepId, title, body);
+});
+
+// Internal helper: create a thread (+ optional first message + unread bumps).
+// Called by both createThread and publishThreadConcept.
+async function _createThreadInternal(
+  uid: string,
+  groepId: string,
+  title: string,
+  body: string,
+): Promise<{ threadId: string }> {
   // Get author name
   const memberSnap = await db.collection('members').doc(uid).get();
   const authorName = memberSnap.exists ? `${(memberSnap.data() as any).firstName} ${(memberSnap.data() as any).lastName}`.trim() : uid;
@@ -646,7 +657,7 @@ export const createThread = onCall({ region: REGION }, async (request) => {
   }
 
   return { threadId: threadRef.id };
-});
+}
 
 export const sendMessage = onCall({ region: REGION }, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
@@ -930,5 +941,92 @@ export const deleteThread = onCall({ region: REGION }, async (request) => {
   // Delete the thread itself
   await threadRef.delete();
 
+  return { success: true };
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Thread Concepten
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── saveThreadConcept ─────────────────────────────────────────────────────────
+export const saveThreadConcept = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const { groepId, title, body, conceptId } = request.data as {
+    groepId: string; title: string; body: string; conceptId?: string;
+  };
+  const uid = request.auth.uid;
+  const claims = request.auth.token as Record<string, unknown>;
+
+  if (!isNonLid(claims)) throw new HttpsError('permission-denied', 'Leden kunnen geen thread-concepten aanmaken.');
+  if (!(await isGroepMember(groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
+  if (!title?.trim()) throw new HttpsError('invalid-argument', 'Titel is verplicht.');
+
+  const memberSnap = await db.collection('members').doc(uid).get();
+  const authorName = memberSnap.exists
+    ? `${(memberSnap.data() as any).firstName} ${(memberSnap.data() as any).lastName}`.trim()
+    : uid;
+
+  const now = admin.firestore.Timestamp.now();
+
+  if (conceptId) {
+    const ref = db.collection('threadConcepten').doc(conceptId);
+    const snap = await ref.get();
+    if (!snap.exists) throw new HttpsError('not-found', 'Concept niet gevonden.');
+    const existing = snap.data() as ThreadConceptDoc;
+    if (existing.authorUid !== uid) throw new HttpsError('permission-denied', 'Geen toegang.');
+    await ref.update({ title: title.trim(), body: body?.trim() ?? '', updatedAt: now });
+    return { conceptId };
+  } else {
+    const ref = db.collection('threadConcepten').doc();
+    const doc: ThreadConceptDoc = {
+      id: ref.id,
+      groepId,
+      authorUid: uid,
+      authorName,
+      title: title.trim(),
+      body: body?.trim() ?? '',
+      createdAt: now,
+      updatedAt: now,
+    };
+    await ref.set(doc);
+    return { conceptId: ref.id };
+  }
+});
+
+// ── publishThreadConcept ──────────────────────────────────────────────────────
+export const publishThreadConcept = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const { conceptId } = request.data as { conceptId: string };
+  const uid = request.auth.uid;
+  const claims = request.auth.token as Record<string, unknown>;
+
+  const ref = db.collection('threadConcepten').doc(conceptId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Concept niet gevonden.');
+  const concept = snap.data() as ThreadConceptDoc;
+  if (concept.authorUid !== uid) throw new HttpsError('permission-denied', 'Geen toegang.');
+
+  if (!isNonLid(claims)) throw new HttpsError('permission-denied', 'Leden kunnen geen threads publiceren.');
+  if (!(await isGroepMember(concept.groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
+
+  const { threadId } = await _createThreadInternal(uid, concept.groepId, concept.title, concept.body);
+  await ref.delete();
+
+  return { threadId };
+});
+
+// ── deleteThreadConcept ───────────────────────────────────────────────────────
+export const deleteThreadConcept = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const { conceptId } = request.data as { conceptId: string };
+  const uid = request.auth.uid;
+
+  const ref = db.collection('threadConcepten').doc(conceptId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Concept niet gevonden.');
+  const concept = snap.data() as ThreadConceptDoc;
+  if (concept.authorUid !== uid) throw new HttpsError('permission-denied', 'Geen toegang.');
+
+  await ref.delete();
   return { success: true };
 });

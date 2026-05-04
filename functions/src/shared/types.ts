@@ -213,3 +213,16 @@ export interface MessageDoc {
 export interface MessageLezingDoc {
   readAt: FirebaseFirestore.Timestamp;
 }
+
+// ── Thread Concepten ──────────────────────────────────────────────────────────
+
+export interface ThreadConceptDoc {
+  id: string;
+  groepId: string;
+  authorUid: string;
+  authorName: string;
+  title: string;
+  body: string;
+  createdAt: FirebaseFirestore.Timestamp;
+  updatedAt: FirebaseFirestore.Timestamp;
+}
