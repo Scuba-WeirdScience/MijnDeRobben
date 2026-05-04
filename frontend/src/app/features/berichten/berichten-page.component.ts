@@ -36,6 +36,10 @@ export class BerichtenPageComponent {
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
+  isMobile(): boolean {
+    return window.innerWidth < 768;
+  }
+
   // Mobile navigation
   mobilePanel = signal<MobilePanel>('groepen');
 
