@@ -4,6 +4,7 @@ import { BerichtenService, Message, ThreadConcept } from '../../berichten.servic
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideFileText, LucideMessageSquare } from '../../../../shared/lucide-icons';
 import { EmptyStateComponent } from '../../../../shared/components/design-system';
+import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 
 export interface ThreadConceptSelected {
   type: 'thread';
@@ -24,7 +25,7 @@ const _TW_SAFELIST = [
 @Component({
   selector: 'app-concepten-panel',
   standalone: true,
-  imports: [CommonModule, LucideFileText, LucideMessageSquare, EmptyStateComponent],
+  imports: [CommonModule, LucideFileText, LucideMessageSquare, EmptyStateComponent, EmoticonPipe],
   templateUrl: './concepten-panel.component.html',
 })
 export class ConceptenPanelComponent {

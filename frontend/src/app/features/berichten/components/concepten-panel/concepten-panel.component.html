@@ -51,7 +51,7 @@
             <svg lucideMessageSquare class="w-4 h-4 text-scuba-500 flex-shrink-0 mt-0.5"></svg>
             <div class="flex-1 min-w-0">
               <p class="text-xs font-medium text-scuba-600 dark:text-scuba-400 uppercase tracking-wide mb-0.5">Bericht concept</p>
-              <p class="text-sm text-gray-700 dark:text-gray-200 truncate" [innerHTML]="item.concept.body | slice:0:100"></p>
+              <p class="text-sm text-gray-700 dark:text-gray-200 truncate" [innerHTML]="item.concept.body | emoticon | slice:0:100"></p>
               <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ groepName(item.concept.groepId) }} · {{ threadTitle(item.concept.threadId) }}</p>
             </div>
           </div>
