@@ -35,7 +35,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
     provideSignalFormsConfig({ classes: {} }),
     provideServiceWorker('ngsw-worker.js', {
-      enabled: false,
+      enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
     {
