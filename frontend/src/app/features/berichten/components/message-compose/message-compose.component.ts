@@ -253,6 +253,11 @@ export class MessageComposeComponent implements OnDestroy {
   }
 
   async send(): Promise<void> {
+    // If emoji autocomplete is open, confirm the selection first
+    if (this.emojiSuggestions().length > 0) {
+      this.confirmEmojiSuggestion();
+      return;
+    }
     if (this.saveAsDraft()) {
       await this.saveAsConcept();
     } else {

@@ -151,8 +151,7 @@ export class BerichtenPageComponent {
       // Navigate to groep+thread, then load concept into editor
       const concept = event.concept;
       this.service.pendingConceptEdit.set(concept);
-      this.service.selectGroep(concept.groepId);
-      this.service.selectThread(concept.threadId);
+      this.service.selectGroepAndThread(concept.groepId, concept.threadId);
       this.mobilePanel.set('messages');
     }
   }

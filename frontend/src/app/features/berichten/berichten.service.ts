@@ -417,6 +417,17 @@ export class BerichtenService {
     this.threads.set([]);
   }
 
+  /** Navigate directly to a groep+thread (e.g. from concept panel).
+   *  Does NOT clear activeThreadId so the thread stays selected while
+   *  the Firestore listener re-loads the thread list in the background. */
+  selectGroepAndThread(groepId: string, threadId: string): void {
+    this.activeGroepId.set(groepId);
+    this.activeThreadId.set(threadId);
+    this.messages.set([]);
+    this.threads.set([]);
+    this.readMessageIds.set(new Set());
+  }
+
   selectThread(threadId: string): void {
     this.activeThreadId.set(threadId);
     this.messages.set([]);
