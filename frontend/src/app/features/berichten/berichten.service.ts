@@ -266,8 +266,7 @@ export class BerichtenService {
       // All thread-concepts for this user (cross-group)
       const allThreadConceptenQ = query(
         collection(firestore, 'threadConcepten'),
-        where('authorUid', '==', uid),
-        orderBy('updatedAt', 'desc')
+        where('authorUid', '==', uid)
       );
       this.unsubAllThreadConcepten = onSnapshot(allThreadConceptenQ, (snap) => {
         this.allThreadConcepten.set(snap.docs.map(d => this.mapThreadConcept(d)));
@@ -277,8 +276,7 @@ export class BerichtenService {
       const allMessageConceptenQ = query(
         collection(firestore, 'messages'),
         where('authorUid', '==', uid),
-        where('status', '==', 'concept'),
-        orderBy('updatedAt', 'desc')
+        where('status', '==', 'concept')
       );
       this.unsubAllMessageConcepten = onSnapshot(allMessageConceptenQ, (snap) => {
         this.allMessageConcepten.set(snap.docs.map(d => this.mapMessage(d)));
