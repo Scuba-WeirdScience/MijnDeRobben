@@ -10,6 +10,7 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  getDocs,
   QueryDocumentSnapshot,
   DocumentData,
   Timestamp,
@@ -41,6 +42,8 @@ export interface Thread {
   lastMessageBody: string;
   messageCount: number;
   unreadPerUser: { [uid: string]: number };
+  threadSeenCount: number;
+  threadSeenByUids: string[];
 }
 
 export interface Message {
@@ -67,6 +70,19 @@ export interface ThreadConcept {
   body: string;
   createdAt: any;
   updatedAt: any;
+}
+
+export interface ThreadLezingInfo {
+  uid: string;
+  displayName: string;
+  avatarUrl: string | null;
+  gezien: boolean;
+}
+
+export interface ThreadLezingenResult {
+  lezingen: ThreadLezingInfo[];
+  gezienCount: number;
+  totalCount: number;
 }
 
 // ── Legacy types (kept for backwards compat with berichten-list.component) ──
@@ -154,6 +170,7 @@ export class BerichtenService {
 
   readonly conceptMessages = signal<Message[]>([]);
   readonly readMessageIds = signal<Set<string>>(new Set());
+  readonly messageReaderCounts = signal<Record<string, number>>({});
 
   // ── Backward-compat aliases (used by existing components) ─────────────────
   /** @deprecated use messages */
@@ -486,6 +503,8 @@ export class BerichtenService {
       lastMessageBody: this.stripHtml(data['lastMessageBody'] ?? ''),
       messageCount: data['messageCount'] ?? 0,
       unreadPerUser: data['unreadPerUser'] ?? {},
+      threadSeenCount: data['threadSeenCount'] ?? 0,
+      threadSeenByUids: data['threadSeenByUids'] ?? [],
     };
   }
 
@@ -523,13 +542,27 @@ export class BerichtenService {
 
   private async loadLezingen(uid: string, messageIds: string[]): Promise<void> {
     const readIds = new Set<string>();
+    const counts: Record<string, number> = {};
+    const currentMessages = this.messages();
+
     await Promise.all(
       messageIds.map(async (id) => {
         const snap = await getDoc(doc(firestore, 'messages', id, 'lezingen', uid));
         if (snap.exists()) readIds.add(id);
+
+        // For own messages: count total readers so we can show WhatsApp-style checkmarks
+        const msg = currentMessages.find(m => m.id === id);
+        if (msg?.authorUid === uid) {
+          const lezingenSnap = await getDocs(
+            collection(firestore, 'messages', id, 'lezingen')
+          );
+          counts[id] = lezingenSnap.size;
+        }
       })
     );
+
     this.readMessageIds.set(readIds);
+    this.messageReaderCounts.set(counts);
   }
 
   // ── Cloud Function wrappers — threads ──────────────────────────────────────
@@ -589,6 +622,11 @@ export class BerichtenService {
   markMessageUnread(messageId: string, threadId: string, groepId: string): Promise<{ success: boolean }> {
     const fn = httpsCallable<{ messageId: string; threadId: string; groepId: string }, { success: boolean }>(functions, 'markMessageUnread');
     return fn({ messageId, threadId, groepId }).then(r => r.data);
+  }
+
+  getThreadLezingen(threadId: string, groepId: string): Promise<ThreadLezingenResult> {
+    const fn = httpsCallable<{ threadId: string; groepId: string }, ThreadLezingenResult>(functions, 'getThreadLezingen');
+    return fn({ threadId, groepId }).then(r => r.data);
   }
 
   // ── Cloud Function wrappers — thread concepten ────────────────────────────

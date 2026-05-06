@@ -3,8 +3,8 @@ import { SwUpdate, VersionReadyEvent, UnrecoverableStateEvent } from '@angular/s
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, interval } from 'rxjs';
 
-/** Poll for SW updates every 5 minutes */
-const UPDATE_POLL_INTERVAL_MS = 5 * 60 * 1000;
+/** Poll for SW updates every 2 minutes */
+const UPDATE_POLL_INTERVAL_MS = 2 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -53,11 +53,10 @@ export class PwaService {
         document.location.reload();
       });
 
-    // Check immediately on startup (catches a deploy that happened while the
-    // app was closed, before the 5-minute interval fires)
-    this.swUpdate.checkForUpdate().catch(() => {});
+    // Check after a short delay to ensure the SW is registered before calling
+    setTimeout(() => this.swUpdate.checkForUpdate().catch(() => {}), 2000);
 
-    // Then keep polling every 5 minutes for long-running sessions
+    // Then keep polling every 2 minutes for long-running sessions
     interval(UPDATE_POLL_INTERVAL_MS)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.swUpdate.checkForUpdate().catch(() => {}));

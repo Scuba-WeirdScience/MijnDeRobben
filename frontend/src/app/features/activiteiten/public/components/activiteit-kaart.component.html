@@ -1,0 +1,36 @@
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+
+  @if (occurrence().bannerUrl) {
+    <img [src]="occurrence().bannerUrl!" [alt]="occurrence().titel"
+         class="w-full h-36 object-cover" />
+  }
+
+  <div class="p-4 space-y-2">
+    <p class="text-xs text-scuba-600 dark:text-scuba-400 font-medium">
+      {{ formatDatum(occurrence().startDatumTijd) }}
+    </p>
+
+    <h3 class="text-base font-semibold text-gray-900 dark:text-white leading-snug">
+      {{ occurrence().titel }}
+    </h3>
+
+    @if (occurrence().locatieNaam) {
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        📍 {{ occurrence().locatieNaam }}
+      </p>
+    }
+
+    <div class="flex items-center justify-between pt-2">
+      @if (occurrence().inschrijvingenActief) {
+        <app-badge variant="success">Inschrijvingen open</app-badge>
+      } @else {
+        <span></span>
+      }
+      <a [routerLink]="detailUrl" [queryParams]="queryParams"
+         class="text-sm text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium">
+        Meer info →
+      </a>
+    </div>
+  </div>
+
+</div>

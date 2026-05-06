@@ -1,0 +1,225 @@
+<div class="flex h-full min-h-0">
+
+  <!-- Linkerkolom: lijst van activiteiten -->
+  <aside class="w-80 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Activiteiten</h2>
+        <app-button variant="primary" (click)="openActiviteitForm(null)">+ Activiteit</app-button>
+      </div>
+      <input type="text"
+        [value]="zoekterm()"
+        (input)="zoekterm.set($any($event.target).value)"
+        placeholder="Zoeken…"
+        class="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-scuba-500" />
+      <button type="button" (click)="showLocatiesBeheer.set(true)"
+        class="text-sm text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium">
+        Locaties beheren →
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+      @if (loading()) {
+        <div class="flex justify-center py-8">
+          <app-spinner />
+        </div>
+      } @else if (gefilterd().length === 0) {
+        <app-empty-state message="Geen activiteiten gevonden." icon="document" />
+      } @else {
+        @for (a of gefilterd(); track a.id) {
+          <button
+            type="button"
+            (click)="selectActiviteit(a)"
+            class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            [ngClass]="{ 'bg-scuba-50 dark:bg-scuba-900/20': selectedActiviteit()?.id === a.id }">
+            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ a.titel }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ formatDatum(a.startDatumTijd) }}</p>
+            @if (a.isHerhalend) {
+              <span class="text-xs text-scuba-600 dark:text-scuba-400">↺ Herhalend</span>
+            }
+          </button>
+        }
+      }
+    </div>
+
+  </aside>
+
+  <!-- Rechtergedeelte: detail -->
+  <main class="flex-1 min-h-0 overflow-y-auto p-6">
+
+    @if (!selectedActiviteit()) {
+      <div class="flex items-center justify-center h-full text-gray-400 dark:text-gray-600">
+        <p class="text-sm">Selecteer een activiteit om details te zien.</p>
+      </div>
+    } @else {
+      <div class="space-y-6 max-w-3xl">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedActiviteit()!.titel }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {{ formatDatum(selectedActiviteit()!.startDatumTijd) }}
+              @if (selectedActiviteit()!.locatieNaam) {
+                · {{ selectedActiviteit()!.locatieNaam }}
+              }
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <app-button variant="secondary" (click)="openActiviteitForm(selectedActiviteit())">
+              Bewerken
+            </app-button>
+            <app-button variant="danger" (click)="confirmDeleteActiviteit(selectedActiviteit()!)">
+              Verwijderen
+            </app-button>
+          </div>
+        </div>
+
+        <!-- Aankomende exemplaren -->
+        <section>
+          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            Aankomende exemplaren (volgende {{ previewMaanden() }} maanden)
+          </h2>
+
+          @if (previewOccurrences().length === 0) {
+            <p class="text-sm text-gray-500 dark:text-gray-400">Geen aankomende exemplaren.</p>
+          } @else {
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Datum</th>
+                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Titel</th>
+                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Locatie</th>
+                    <th class="px-4 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                  @for (occ of previewOccurrences(); track occ.occurrenceDatum) {
+                    <tr class="bg-white dark:bg-gray-900"
+                        [ngClass]="{ 'bg-scuba-50 dark:bg-scuba-900/20': selectedOccurrenceDatum() === occ.occurrenceDatum }">
+                      <td class="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                        {{ formatDatum(occ.startDatumTijd) }}
+                      </td>
+                      <td class="px-4 py-2 text-gray-900 dark:text-white">
+                        {{ occ.titel }}
+                        @if (occ.isOverridden) {
+                          <span class="ml-1 text-xs text-amber-600 dark:text-amber-400">(aangepast)</span>
+                        }
+                      </td>
+                      <td class="px-4 py-2 text-gray-500 dark:text-gray-400">{{ occ.locatieNaam ?? '—' }}</td>
+                      <td class="px-4 py-2 text-right whitespace-nowrap">
+                        @if (occ.inschrijvingenActief) {
+                          <button type="button" (click)="selectOccurrence(occ)"
+                            class="text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium text-xs mr-3">
+                            Registraties
+                          </button>
+                        }
+                        <button type="button" (click)="openOccurrenceEdit(occ)"
+                          class="text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium text-xs mr-3">
+                          Bewerken
+                        </button>
+                        <button type="button" (click)="openOccurrenceActie(occ, 'verwijderen')"
+                          class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium text-xs">
+                          Verwijderen
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <!-- Registraties voor geselecteerd exemplaar -->
+        @if (selectedOccurrenceDatum()) {
+          <section>
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+              Registraties voor {{ selectedOccurrenceDatum() }}
+            </h2>
+
+            @if (loadingRegistraties()) {
+              <div class="flex justify-center py-6">
+                <app-spinner />
+              </div>
+            } @else if (registraties().length === 0) {
+              <p class="text-sm text-gray-500 dark:text-gray-400">Geen registraties voor dit exemplaar.</p>
+            } @else {
+              <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Naam</th>
+                      <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Gasten</th>
+                      <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
+                      <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Opmerking</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    @for (reg of registraties(); track reg.id) {
+                      <tr class="bg-white dark:bg-gray-900">
+                        <td class="px-4 py-2 text-gray-900 dark:text-white font-medium">{{ reg.memberNaam }}</td>
+                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">{{ reg.aantalGasten }}</td>
+                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">{{ reg.status }}</td>
+                        <td class="px-4 py-2 text-gray-500 dark:text-gray-400">{{ reg.opmerking ?? '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+        }
+
+      </div>
+    }
+
+  </main>
+
+</div>
+
+<!-- Side panels & dialogs -->
+@if (showActiviteitForm()) {
+  <app-activiteit-form
+    [activiteit]="editingActiviteit()"
+    [locaties]="locaties()"
+    (saved)="onActiviteitSaved()"
+    (cancelled)="onActiviteitFormCancelled()"
+  />
+}
+
+@if (editingOccurrence()) {
+  <app-activiteit-occurrence-edit
+    [occurrence]="editingOccurrence()!"
+    [locaties]="locaties()"
+    (saved)="onOccurrenceEditSaved()"
+    (cancelled)="onOccurrenceEditCancelled()"
+  />
+}
+
+@if (showLocatiesBeheer()) {
+  <app-locaties-beheer (closed)="showLocatiesBeheer.set(false)" />
+}
+
+@if (occurrenceDialogState()) {
+  <app-activiteit-occurrence-dialog
+    [activiteitTitel]="occurrenceDialogState()!.activiteit.titel"
+    [action]="occurrenceDialogState()!.action"
+    (scopeGekozen)="onOccurrenceScopeGekozen($event)"
+    (geannuleerd)="occurrenceDialogState.set(null)"
+  />
+}
+
+@if (activiteitToDelete()) {
+  <app-confirm-dialog
+    title="Activiteit verwijderen"
+    [message]="'Weet je zeker dat je \'' + activiteitToDelete()!.titel + '\' wilt verwijderen?'"
+    confirmLabel="Verwijderen"
+    confirmVariant="danger"
+    [loading]="deleting()"
+    (confirmed)="deleteActiviteitConfirmed()"
+    (cancelled)="activiteitToDelete.set(null)"
+  />
+}

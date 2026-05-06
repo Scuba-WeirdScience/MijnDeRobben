@@ -54,3 +54,59 @@ export const brevetTypeDefFormSchema = z.object({
 });
 
 export type BrevetTypeDefForm = z.infer<typeof brevetTypeDefFormSchema>;
+
+// ── Locatie ────────────────────────────────────────────────────────────────
+
+export const locatieFormSchema = z.object({
+  naam: z.string().min(1, 'Naam is verplicht.').max(200, 'Max 200 tekens.'),
+  adres: z.string().optional(),
+  kaartLink: z.string().optional(),
+  notities: z.string().optional(),
+});
+
+export type LocatieForm = z.infer<typeof locatieFormSchema>;
+
+// ── Activiteit ─────────────────────────────────────────────────────────────
+
+export const activiteitFormSchema = z.object({
+  titel: z.string().min(1, 'Titel is verplicht.').max(200, 'Max 200 tekens.'),
+  startDatumTijd: z.string().min(1, 'Startdatum is verplicht.'),
+  eindDatumTijd: z.string().min(1, 'Einddatum is verplicht.'),
+  locatieId: z.string().nullable().optional(),
+  locatieVrij: z.string().nullable().optional(),
+  beschrijving: z.string().optional(),
+  inschrijvingenActief: z.boolean().default(false),
+  isPubliek: z.boolean().default(false),
+  maxDeelnemers: z.coerce.number().int().min(1).nullable().optional(),
+  registratiesZichtbaar: z.enum(['iedereen', 'aangemeld', 'beheer']).default('iedereen'),
+  gasten: z.boolean().default(false),
+  maxGastenPerInschrijving: z.coerce.number().int().min(0).nullable().optional(),
+  gastKosten: z.coerce.number().min(0).nullable().optional(),
+  lidKosten: z.coerce.number().min(0).nullable().optional(),
+  organisatorId: z.string().nullable().optional(),
+  organisatorLeden: z.array(z.string()).default([]),
+  organisatorGroepId: z.string().nullable().optional(),
+  bannerUrl: z.string().nullable().optional(),
+  threadId: z.string().nullable().optional(),
+  groepId: z.string().nullable().optional(),
+  nieuweThreadTitel: z.string().nullable().optional(),
+  nieuweThreadBericht: z.string().nullable().optional(),
+});
+
+export type ActiviteitForm = z.infer<typeof activiteitFormSchema>;
+
+// ── Activiteit Occurrence Edit ─────────────────────────────────────────────
+
+export const occurrenceEditFormSchema = z.object({
+  titel:          z.string().min(1, 'Titel is verplicht.').max(200, 'Max 200 tekens.'),
+  startDatumTijd: z.string().min(1, 'Startdatum is verplicht.'),
+  eindDatumTijd:  z.string().min(1, 'Einddatum is verplicht.'),
+  locatieId:      z.string().nullable().optional(),
+  locatieVrij:    z.string().nullable().optional(),
+  beschrijving:   z.string().nullable().optional(),
+  bannerUrl:      z.string().nullable().optional(),
+  maxDeelnemers:  z.coerce.number().int().min(1).nullable().optional(),
+  notitie:        z.string().nullable().optional(),
+});
+
+export type OccurrenceEditForm = z.infer<typeof occurrenceEditFormSchema>;

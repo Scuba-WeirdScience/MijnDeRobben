@@ -1,0 +1,18 @@
+@if (occurrences().length === 0) {
+  <app-empty-state message="Geen activiteiten gevonden." icon="document" />
+} @else {
+  <div class="space-y-8">
+    @for (groep of maandGroepen(); track groep.label) {
+      <section>
+        <h2 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4 capitalize">
+          {{ groep.label }}
+        </h2>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          @for (occ of groep.occurrences; track occ.activiteitId + occ.occurrenceDatum) {
+            <app-activiteit-kaart [occurrence]="occ" />
+          }
+        </div>
+      </section>
+    }
+  </div>
+}

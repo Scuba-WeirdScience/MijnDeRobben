@@ -1,0 +1,68 @@
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 space-y-4">
+
+  <h3 class="text-base font-semibold text-gray-900 dark:text-white">Inschrijving</h3>
+
+  @if (occurrence().lidKosten) {
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      Lidkosten: <strong class="text-gray-900 dark:text-white">€ {{ occurrence().lidKosten }}</strong>
+    </p>
+  }
+
+  @if (mijnRegistratie()) {
+    <!-- Al ingeschreven -->
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-green-700 dark:text-green-400">Je bent ingeschreven</p>
+        @if (mijnRegistratie()!.aantalGasten > 0) {
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            + {{ mijnRegistratie()!.aantalGasten }} gast(en)
+          </p>
+        }
+      </div>
+      <app-button variant="danger" [loading]="saving()" (click)="onAnnuleren()">
+        Inschrijving annuleren
+      </app-button>
+    </div>
+  } @else {
+    <!-- Inschrijfformulier -->
+    <div class="space-y-3">
+
+      @if (occurrence().gasten) {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Aantal gasten
+          </label>
+          <input type="number"
+            [value]="aantalGasten()"
+            (input)="aantalGasten.set(+$any($event.target).value || 0)"
+            min="0"
+            [max]="occurrence().maxGastenPerInschrijving ?? 99"
+            class="w-24 text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500" />
+          @if (occurrence().gastKosten) {
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Gastkosten: € {{ occurrence().gastKosten }} per gast
+            </p>
+          }
+        </div>
+      }
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Opmerking (optioneel)
+        </label>
+        <textarea
+          [value]="opmerking()"
+          (input)="opmerking.set($any($event.target).value)"
+          rows="2"
+          placeholder="Eventuele opmerkingen…"
+          class="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-scuba-500 resize-none">
+        </textarea>
+      </div>
+
+      <app-button variant="primary" [loading]="saving()" (click)="onInschrijven()">
+        Inschrijven
+      </app-button>
+    </div>
+  }
+
+</div>

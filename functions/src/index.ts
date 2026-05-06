@@ -73,6 +73,7 @@ export {
   saveMessageConcept, publishMessageConcept, deleteMessageConcept,
   pinThread, pinMessage, deleteMessage, deleteThread,
   markMessageRead, markMessageUnread,
+  getThreadLezingen,
   // Thread concepten
   saveThreadConcept, publishThreadConcept, deleteThreadConcept,
 } from './berichten/berichten.functions';
@@ -108,6 +109,29 @@ export {
   getUserSettings,
   saveUserSettings,
 } from './user-settings/user-settings.functions';
+
+// ── Activiteiten ──────────────────────────────────────────────────────────────
+export {
+  getLocaties,
+  createLocatie,
+  updateLocatie,
+  deleteLocatie,
+  getActiviteiten,
+  getAllActiviteiten,
+  getActiviteit,
+  createActiviteit,
+  updateActiviteit,
+  deleteActiviteit,
+  getOccurrenceOverrides,
+  getAllOccurrenceOverrides,
+  registreerVoorActiviteit,
+  annuleerRegistratie,
+  getRegistratiesVoorOccurrence,
+  getMijnRegistraties,
+  updateRegistratieStatus,
+} from './activiteiten/activiteiten.functions';
+
+export { activiteitenIcs } from './activiteiten/activiteiten-ics.functions';
 
 export {
   getMateriaalTypes,

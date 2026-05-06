@@ -5,12 +5,14 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePin, LucidePinOff, LucideTrash2, LucideMail, LucideMailOpen, LucideReply, LucideHash } from '../../../../shared/lucide-icons';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
+import { ThreadLezingenComponent } from '../thread-lezingen/thread-lezingen.component';
 
 const _TW_SAFELIST = [
   'bg-scuba-600', 'bg-scuba-700', 'dark:bg-scuba-700', 'rounded-tr-none',
   'bg-gray-100', 'dark:bg-gray-800', 'rounded-tl-none',
   'text-scuba-500', 'hover:text-scuba-700', 'dark:hover:text-scuba-300',
   'text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-200',
+  'text-scuba-400', 'dark:text-scuba-300',
 ];
 
 @Component({
@@ -27,6 +29,7 @@ const _TW_SAFELIST = [
     LucideReply,
     LucideHash,
     EmoticonPipe,
+    ThreadLezingenComponent,
   ],
 })
 export class MessageListComponent {
@@ -57,6 +60,10 @@ export class MessageListComponent {
 
   isOwnMessage(message: any): boolean {
     return message.authorUid === this.auth.currentUser()?.uid;
+  }
+
+  getReaderCount(message: any): number {
+    return this.service.messageReaderCounts()[message.id] ?? 0;
   }
 
   canDelete(message: any): boolean {

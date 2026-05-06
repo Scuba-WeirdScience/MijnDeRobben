@@ -1,0 +1,49 @@
+<app-side-panel
+  [title]="locatie() ? 'Locatie bewerken' : 'Locatie toevoegen'"
+  [subtitle]="locatie()?.naam"
+  (closed)="cancelled.emit()">
+
+  <div class="space-y-5">
+
+    <app-form-field label="Naam *" [error]="firstError(formState.naam())">
+      <app-input
+        [value]="formModel().naam"
+        (input)="formModel.update(m => ({ ...m, naam: $any($event.target).value }))"
+        [maxLength]="200"
+        placeholder="Naam van de locatie"
+      />
+    </app-form-field>
+
+    <app-form-field label="Adres">
+      <app-input
+        [value]="formModel().adres ?? ''"
+        (input)="formModel.update(m => ({ ...m, adres: $any($event.target).value }))"
+        placeholder="Straat en nummer, gemeente"
+      />
+    </app-form-field>
+
+    <app-form-field label="Kaartlink" hint="Google Maps of gelijkaardige link">
+      <app-input
+        [value]="formModel().kaartLink ?? ''"
+        (input)="formModel.update(m => ({ ...m, kaartLink: $any($event.target).value }))"
+        placeholder="https://maps.google.com/..."
+      />
+    </app-form-field>
+
+    <app-form-field label="Notities">
+      <app-textarea
+        [value]="formModel().notities ?? ''"
+        (valueChange)="formModel.update(m => ({ ...m, notities: $event }))"
+        [rows]="3"
+        placeholder="Bijkomende info over de locatie…"
+      />
+    </app-form-field>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+      <app-button variant="secondary" (click)="cancelled.emit()">Annuleren</app-button>
+      <app-button variant="primary" [loading]="saving()" (click)="onSave()">Opslaan</app-button>
+    </div>
+
+  </div>
+
+</app-side-panel>

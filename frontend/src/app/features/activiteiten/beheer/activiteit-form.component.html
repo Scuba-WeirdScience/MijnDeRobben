@@ -1,0 +1,370 @@
+<app-side-panel
+  [title]="activiteit() ? 'Activiteit bewerken' : 'Activiteit toevoegen'"
+  [subtitle]="activiteit()?.titel"
+  [class.max-w-2xl]="true"
+  (closed)="cancelled.emit()">
+
+  <div class="space-y-6">
+
+    <!-- Basisgegevens -->
+    <section class="space-y-4">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Basisgegevens</h3>
+
+      <app-form-field label="Titel *" [error]="firstError(formState.titel())">
+        <app-input
+          [value]="formModel().titel"
+          (input)="formModel.update(m => ({ ...m, titel: $any($event.target).value }))"
+          [maxLength]="200"
+          placeholder="Naam van de activiteit"
+        />
+      </app-form-field>
+
+      <div class="grid grid-cols-2 gap-3">
+        <app-form-field label="Startdatum en -uur *" [error]="firstError(formState.startDatumTijd())">
+          <input type="datetime-local"
+            [value]="formModel().startDatumTijd"
+            (input)="formModel.update(m => ({ ...m, startDatumTijd: $any($event.target).value }))"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500 focus:border-transparent" />
+        </app-form-field>
+        <app-form-field label="Einddatum en -uur *" [error]="firstError(formState.eindDatumTijd())">
+          <input type="datetime-local"
+            [value]="formModel().eindDatumTijd"
+            (input)="formModel.update(m => ({ ...m, eindDatumTijd: $any($event.target).value }))"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500 focus:border-transparent" />
+        </app-form-field>
+      </div>
+
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox"
+          [checked]="formModel().isPubliek"
+          (change)="formModel.update(m => ({ ...m, isPubliek: $any($event.target).checked }))"
+          class="rounded text-scuba-600" />
+        <span class="text-sm text-gray-700 dark:text-gray-300">
+          Publiek zichtbaar
+          <span class="text-xs text-gray-400 dark:text-gray-500 ml-1">(verschijnt in de agenda-feed voor de website)</span>
+        </span>
+      </label>
+    </section>
+
+    <!-- Beschrijving -->
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Beschrijving</h3>      <app-rich-text-editor
+        [value]="formModel().beschrijving ?? ''"
+        (valueChange)="onBeschrijvingChange($event)"
+        placeholder="Beschrijf de activiteit…"
+      />
+    </section>
+
+    <!-- Locatie -->
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Locatie</h3>
+
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="locatieType" value="selecteer"
+            [checked]="locatieType() === 'selecteer'"
+            (change)="locatieType.set('selecteer')"
+            class="text-scuba-600" />
+          <span class="text-sm text-gray-700 dark:text-gray-300">Bestaande locatie</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="locatieType" value="vrij"
+            [checked]="locatieType() === 'vrij'"
+            (change)="locatieType.set('vrij')"
+            class="text-scuba-600" />
+          <span class="text-sm text-gray-700 dark:text-gray-300">Vrije locatie</span>
+        </label>
+      </div>
+
+      @if (locatieType() === 'selecteer') {
+        <app-form-field label="Locatie">
+          <app-select
+            [value]="formModel().locatieId ?? ''"
+            (valueChange)="formModel.update(m => ({ ...m, locatieId: $event || null }))">
+            <option value="">Geen locatie</option>
+            @for (loc of locaties(); track loc.id) {
+              <option [value]="loc.id">{{ loc.naam }}</option>
+            }
+          </app-select>
+        </app-form-field>
+      } @else {
+        <app-form-field label="Locatienaam" hint="Bijv. Sporthal Gent, Parking Den Haan, …">
+          <app-input
+            [value]="formModel().locatieVrij ?? ''"
+            (input)="formModel.update(m => ({ ...m, locatieVrij: $any($event.target).value || null }))"
+            placeholder="Vrije locatienaam"
+          />
+        </app-form-field>
+      }
+    </section>
+
+    <!-- Banner -->
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Banner</h3>
+      <app-form-field label="Banner URL" hint="Link naar een afbeelding">
+        <app-input
+          [value]="formModel().bannerUrl ?? ''"
+          (input)="formModel.update(m => ({ ...m, bannerUrl: $any($event.target).value || null }))"
+          placeholder="https://..."
+        />
+      </app-form-field>
+    </section>
+
+    <!-- Organisator -->
+    <section class="space-y-4">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Organisator</h3>
+
+      <!-- Groep -->
+      <app-form-field label="Organiserende groep" hint="Optioneel — kies een berichten-groep als organisator">
+        <app-select
+          [value]="formModel().organisatorGroepId ?? ''"
+          (valueChange)="formModel.update(m => ({ ...m, organisatorGroepId: $event || null }))">
+          <option value="">Geen groep</option>
+          @for (groep of alleGroepen(); track groep.id) {
+            <option [value]="groep.id">{{ groep.name }}</option>
+          }
+        </app-select>
+      </app-form-field>
+
+      <!-- Leden multiselect -->
+      <app-form-field label="Organiserende leden" hint="Zoek en voeg leden toe">
+        <!-- Geselecteerde leden -->
+        @if (geselecteerdeOrganisatorLeden().length > 0) {
+          <div class="flex flex-wrap gap-2 mb-2">
+            @for (lid of geselecteerdeOrganisatorLeden(); track lid.id) {
+              <span class="inline-flex items-center gap-1 rounded-full bg-scuba-100 dark:bg-scuba-900 text-scuba-800 dark:text-scuba-200 text-xs px-3 py-1">
+                {{ lidNaam(lid) }}
+                <button type="button" (click)="verwijderLid(lid)" class="ml-1 hover:text-red-500 font-bold leading-none">×</button>
+              </span>
+            }
+          </div>
+        }
+        <!-- Zoekveldje -->
+        <app-input
+          [value]="ledenZoekterm()"
+          (input)="onLedenZoek($any($event.target).value)"
+          placeholder="Zoek op naam…"
+        />
+        <!-- Zoekresultaten -->
+        @if (ledenZoekResultaten().length > 0) {
+          <ul class="mt-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm divide-y divide-gray-100 dark:divide-gray-700 text-sm max-h-48 overflow-y-auto">
+            @for (lid of ledenZoekResultaten(); track lid.id) {
+              <li>
+                <button type="button"
+                  (click)="voegLidToe(lid)"
+                  class="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white">
+                  {{ lidNaam(lid) }}
+                  <span class="text-gray-400 text-xs ml-1">{{ lid.email }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+        @if (ledenZoekenBezig()) {
+          <p class="text-xs text-gray-400 mt-1">Zoeken…</p>
+        }
+      </app-form-field>
+    </section>
+
+    <!-- Inschrijvingen -->
+    <section class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Inschrijvingen</h3>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Actief</span>
+          <button
+            type="button"
+            (click)="toggleInschrijvingen()"
+            [ngClass]="showInschrijvingen() ? 'bg-scuba-600' : 'bg-gray-200 dark:bg-gray-700'"
+            class="relative inline-flex h-5 w-9 rounded-full transition-colors focus:outline-none">
+            <span
+              [ngClass]="showInschrijvingen() ? 'translate-x-4' : 'translate-x-0.5'"
+              class="inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform">
+            </span>
+          </button>
+        </label>
+      </div>
+
+      @if (showInschrijvingen()) {
+        <div class="space-y-3 pl-1">
+          <div class="grid grid-cols-2 gap-3">
+            <app-form-field label="Max. deelnemers" hint="Leeg = onbeperkt">
+              <app-input
+                type="number"
+                [value]="numToStr(formModel().maxDeelnemers)"
+                (input)="formModel.update(m => ({ ...m, maxDeelnemers: $any($event.target).value ? +$any($event.target).value : null }))"
+                [min]="1"
+                placeholder="Onbeperkt"
+              />
+            </app-form-field>
+            <app-form-field label="Registraties zichtbaar voor">
+              <app-select
+                [value]="formModel().registratiesZichtbaar"
+                (valueChange)="formModel.update(m => ({ ...m, registratiesZichtbaar: $any($event) }))">
+                <option value="iedereen">Iedereen</option>
+                <option value="aangemeld">Aangemelde leden</option>
+                <option value="beheer">Alleen beheerders</option>
+              </app-select>
+            </app-form-field>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <app-form-field label="Lidkosten (€)" hint="Leeg = gratis">
+              <app-input
+                type="number"
+                [value]="numToStr(formModel().lidKosten)"
+                (input)="formModel.update(m => ({ ...m, lidKosten: $any($event.target).value ? +$any($event.target).value : null }))"
+                [min]="0"
+                placeholder="0,00"
+              />
+            </app-form-field>
+          </div>
+
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox"
+              [checked]="formModel().gasten"
+              (change)="formModel.update(m => ({ ...m, gasten: $any($event.target).checked }))"
+              class="rounded text-scuba-600" />
+            <span class="text-sm text-gray-700 dark:text-gray-300">Gasten toelaten</span>
+          </label>
+
+          @if (formModel().gasten) {
+            <div class="grid grid-cols-2 gap-3 pl-6">
+              <app-form-field label="Max. gasten per inschrijving">
+                <app-input
+                  type="number"
+                  [value]="numToStr(formModel().maxGastenPerInschrijving)"
+                  (input)="formModel.update(m => ({ ...m, maxGastenPerInschrijving: $any($event.target).value ? +$any($event.target).value : null }))"
+                  [min]="0"
+                />
+              </app-form-field>
+              <app-form-field label="Gastkosten (€)" hint="Leeg = gratis">
+                <app-input
+                  type="number"
+                  [value]="numToStr(formModel().gastKosten)"
+                  (input)="formModel.update(m => ({ ...m, gastKosten: $any($event.target).value ? +$any($event.target).value : null }))"
+                  [min]="0"
+                  placeholder="0,00"
+                />
+              </app-form-field>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Herhaling -->
+    <section class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Herhaling</h3>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Herhalend</span>
+          <button
+            type="button"
+            (click)="toggleHerhaling()"
+            [ngClass]="showHerhaling() ? 'bg-scuba-600' : 'bg-gray-200 dark:bg-gray-700'"
+            class="relative inline-flex h-5 w-9 rounded-full transition-colors focus:outline-none">
+            <span
+              [ngClass]="showHerhaling() ? 'translate-x-4' : 'translate-x-0.5'"
+              class="inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform">
+            </span>
+          </button>
+        </label>
+      </div>
+
+      @if (showHerhaling()) {
+        <app-activiteit-recurrence-form
+          [rule]="recurrenceRule()"
+          (ruleGewijzigd)="onRuleGewijzigd($event)"
+        />
+      }
+    </section>
+
+    <!-- Gesprek -->
+    <section class="space-y-3">
+      <div class="flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Gesprek</h3>
+        <span class="text-xs text-gray-400 dark:text-gray-500 normal-case font-normal">(optioneel)</span>
+      </div>
+      <p class="text-xs text-gray-500 dark:text-gray-400">Optioneel: koppel deze activiteit aan een bestaand gesprek, of start een nieuw gesprek.</p>
+
+      @if (gesprekLaden()) {
+        <p class="text-sm text-gray-400">Gesprekken laden…</p>
+      } @else {
+
+        @if (!nieuweThreadModus()) {
+          <!-- Gesprek select -->
+          @if (groepenMetThreads().length === 0) {
+            <p class="text-sm text-gray-400 italic">Geen gesprekken gevonden.</p>
+          } @else {
+            <app-form-field label="Gesprek">
+              <app-select
+                [value]="geselecteerdeThreadId() ?? ''"
+                (valueChange)="selecteerThreadById($event)">
+                <option value="">— Geen gesprek —</option>
+                @for (item of groepenMetThreads(); track item.groep.id) {
+                  <optgroup [label]="item.groep.name">
+                    @for (thread of item.threads; track thread.id) {
+                      <option [value]="thread.id">{{ thread.title }}</option>
+                    }
+                  </optgroup>
+                }
+              </app-select>
+            </app-form-field>
+          }
+
+          <button type="button"
+            (click)="toggleNieuweThread()"
+            class="text-sm text-scuba-600 dark:text-scuba-400 hover:underline">
+            + Nieuw gesprek starten
+          </button>
+        } @else {
+          <!-- Nieuw gesprek formulier -->
+          <div class="space-y-3 rounded-lg border border-scuba-200 dark:border-scuba-800 bg-scuba-50 dark:bg-scuba-950 p-4">
+            <p class="text-xs font-semibold text-scuba-700 dark:text-scuba-300 uppercase tracking-wide">Nieuw gesprek</p>
+
+            <app-form-field label="Groep *">
+              <app-select
+                [value]="nieuweThreadGroepId()"
+                (valueChange)="nieuweThreadGroepId.set($event)">
+                <option value="">Kies een groep</option>
+                @for (groep of alleGroepen(); track groep.id) {
+                  <option [value]="groep.id">{{ groep.name }}</option>
+                }
+              </app-select>
+            </app-form-field>
+
+            <app-form-field label="Titel *">
+              <app-input
+                [value]="formModel().nieuweThreadTitel ?? ''"
+                (input)="formModel.update(m => ({ ...m, nieuweThreadTitel: $any($event.target).value || null }))"
+                placeholder="Titel van het gesprek"
+              />
+            </app-form-field>
+
+            <app-form-field label="Openingsbericht" hint="Optioneel">
+              <app-input
+                [value]="formModel().nieuweThreadBericht ?? ''"
+                (input)="formModel.update(m => ({ ...m, nieuweThreadBericht: $any($event.target).value || null }))"
+                placeholder="Optioneel openingsbericht…"
+              />
+            </app-form-field>
+
+            <button type="button"
+              (click)="toggleNieuweThread()"
+              class="text-sm text-gray-500 dark:text-gray-400 hover:underline">
+              ← Bestaand gesprek koppelen
+            </button>
+          </div>
+        }
+      }
+    </section>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+      <app-button variant="secondary" (click)="cancelled.emit()">Annuleren</app-button>
+      <app-button variant="primary" [loading]="saving()" (click)="onSave()">Opslaan</app-button>
+    </div>
+
+  </div>
+
+</app-side-panel>

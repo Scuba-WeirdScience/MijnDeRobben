@@ -1,0 +1,77 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+
+  @if (loading()) {
+    <div class="flex justify-center py-12">
+      <app-spinner />
+    </div>
+  } @else if (!occurrence()) {
+    <div class="text-center py-12">
+      <p class="text-gray-500 dark:text-gray-400">Activiteit niet gevonden.</p>
+      <a routerLink="/activiteiten" class="text-sm text-scuba-600 hover:text-scuba-800 mt-2 inline-block">
+        ← Terug naar overzicht
+      </a>
+    </div>
+  } @else {
+    <div class="space-y-6">
+
+      <a routerLink="/activiteiten"
+         class="text-sm text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium">
+        ← Terug naar overzicht
+      </a>
+
+      @if (occurrence()!.bannerUrl) {
+        <img [src]="occurrence()!.bannerUrl!" [alt]="occurrence()!.titel"
+             class="w-full h-48 object-cover rounded-xl" />
+      }
+
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ occurrence()!.titel }}</h1>
+        <p class="text-sm text-scuba-600 dark:text-scuba-400 font-medium mt-1">
+          {{ formatDatum(occurrence()!.startDatumTijd) }}
+        </p>
+        @if (occurrence()!.locatieNaam) {
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            📍 {{ occurrence()!.locatieNaam }}
+          </p>
+        }
+        @if (occurrence()!.organisatorNaam) {
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            👤 Georganiseerd door {{ occurrence()!.organisatorNaam }}
+          </p>
+        }
+      </div>
+
+      @if (occurrence()!.beschrijving) {
+        <div class="prose prose-sm dark:prose-invert max-w-none"
+             [innerHTML]="occurrence()!.beschrijving">
+        </div>
+      }
+
+      @if (occurrence()!.threadId) {
+        <div class="rounded-lg bg-scuba-50 dark:bg-scuba-900/20 border border-scuba-200 dark:border-scuba-700 p-4">
+          <p class="text-sm text-scuba-700 dark:text-scuba-300">
+            💬 Er is een discussithread voor deze activiteit.
+            @if (occurrence()!.groepId) {
+              <a [routerLink]="['/berichten']"
+                 [queryParams]="{ groepId: occurrence()!.groepId, threadId: occurrence()!.threadId }"
+                 class="font-medium underline ml-1">
+                Naar de thread →
+              </a>
+            }
+          </p>
+        </div>
+      }
+
+      @if (auth.isAuthenticated() && occurrence()!.inschrijvingenActief) {
+        <app-activiteit-inschrijving
+          [occurrence]="occurrence()!"
+          [mijnRegistratie]="mijnRegistratie()"
+          (geregistreerd)="onGeregistreerd()"
+          (geannuleerd)="onGeannuleerd()"
+        />
+      }
+
+    </div>
+  }
+
+</div>

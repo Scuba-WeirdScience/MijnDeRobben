@@ -31,6 +31,12 @@
               Leden
             </a>
 
+            <a routerLink="/activiteiten" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
+               [routerLinkActiveOptions]="{ exact: false }"
+               class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
+              Activiteiten
+            </a>
+
             @if (auth.isAuthenticated()) {
               <a routerLink="/berichten" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
                  class="relative flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
@@ -43,8 +49,8 @@
               </a>
             }
 
-            <!-- Beheer dropdown (only for admin users) -->
-            <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur', 'InstructieKader', 'MateriaalCommissie'])">
+            <!-- Beheer dropdown (for admin users OR all authenticated users) -->
+            <ng-container *ngIf="auth.isAuthenticated()">
               <div class="relative" data-admin-menu>
                 <!-- Trigger -->
                 <button (click)="toggleAdminMenu()"
@@ -60,6 +66,11 @@
                 @if (adminMenuOpen()) {
                   <div class="absolute left-0 mt-2 w-52 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-50 overflow-hidden">
                     <div class="py-1">
+                      <a routerLink="/activiteiten/beheer" (click)="closeAdminMenu()"
+                        class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <svg lucideCalendar class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
+                        Activiteiten
+                      </a>
                       <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
                         <a routerLink="/admin/members" (click)="closeAdminMenu()"
                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -79,20 +90,6 @@
                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                           <svg lucideShieldCheck class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                           Gebruikersbeheer
-                        </a>
-                      </ng-container>
-                      <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
-                        <a routerLink="/admin/brevetten" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                          <svg lucideAward class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
-                          Brevetten &amp; Specialiteiten
-                        </a>
-                      </ng-container>
-                      <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
-                        <a routerLink="/admin/specialiteiten" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                          <svg lucideTag class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
-                          Specialiteiten
                         </a>
                       </ng-container>
                       <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
@@ -240,6 +237,11 @@
               Leden
             </a>
 
+            <a routerLink="/activiteiten" (click)="mobileOpen=false"
+               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              Activiteiten
+            </a>
+
             @if (auth.isAuthenticated()) {
               <a routerLink="/berichten" (click)="mobileOpen=false"
                  class="flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -252,8 +254,8 @@
               </a>
             }
 
-            <!-- Beheer section header (only for admin users) -->
-            @if (auth.hasAnyRole(['Beheer', 'Bestuur', 'InstructieKader', 'MateriaalCommissie'])) {
+            <!-- Beheer section header (all authenticated users) -->
+            @if (auth.isAuthenticated()) {
               <div data-admin-menu>
                 <!-- Toggle button -->
                 <button (click)="toggleAdminMenu()"
@@ -265,6 +267,10 @@
                 <!-- Sub-items -->
                 @if (adminMenuOpen()) {
                   <div class="pl-4 space-y-1">
+                    <a routerLink="/activiteiten/beheer" (click)="closeAdminMenu()"
+                      class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                      Activiteiten
+                    </a>
                     <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
                       <a routerLink="/admin/members" (click)="closeAdminMenu()"
                         class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -281,18 +287,6 @@
                       <a routerLink="/admin/roles" (click)="closeAdminMenu()"
                         class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
                          Gebruikersbeheer
-                      </a>
-                    </ng-container>
-                    <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
-                      <a routerLink="/admin/brevetten" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        Brevetten &amp; Specialiteiten
-                      </a>
-                    </ng-container>
-                    <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
-                      <a routerLink="/admin/specialiteiten" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        Specialiteiten
                       </a>
                     </ng-container>
                     <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">

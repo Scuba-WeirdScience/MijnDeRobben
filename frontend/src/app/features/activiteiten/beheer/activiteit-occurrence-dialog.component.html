@@ -1,0 +1,61 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-40 bg-black/50" (click)="geannuleerd.emit()"></div>
+
+<!-- Dialog -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 shadow-2xl p-6 space-y-5">
+
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+      Herhalende activiteit {{ action() }}
+    </h2>
+
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      "{{ activiteitTitel() }}" is een herhalende activiteit. Wat wil je {{ action() }}?
+    </p>
+
+    <div class="space-y-3">
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="radio" name="scope" value="single"
+          [checked]="selectedScope === 'single'"
+          (change)="selectedScope = 'single'"
+          class="text-scuba-600" />
+        <div>
+          <p class="text-sm font-medium text-gray-900 dark:text-white">Alleen deze activiteit</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Enkel dit specifieke exemplaar aanpassen</p>
+        </div>
+      </label>
+
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="radio" name="scope" value="future"
+          [checked]="selectedScope === 'future'"
+          (change)="selectedScope = 'future'"
+          class="text-scuba-600" />
+        <div>
+          <p class="text-sm font-medium text-gray-900 dark:text-white">Deze en alle volgende activiteiten</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Vanaf dit exemplaar alle toekomstige aanpassen</p>
+        </div>
+      </label>
+
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="radio" name="scope" value="all"
+          [checked]="selectedScope === 'all'"
+          (change)="selectedScope = 'all'"
+          class="text-scuba-600" />
+        <div>
+          <p class="text-sm font-medium text-gray-900 dark:text-white">Alle activiteiten</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Alle exemplaren van deze reeks aanpassen</p>
+        </div>
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <app-button variant="secondary" (click)="geannuleerd.emit()">Annuleren</app-button>
+      <app-button
+        [variant]="action() === 'verwijderen' ? 'danger' : 'primary'"
+        (click)="onBevestigen()">
+        Bevestigen
+      </app-button>
+    </div>
+
+  </div>
+</div>

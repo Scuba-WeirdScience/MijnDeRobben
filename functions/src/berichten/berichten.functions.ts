@@ -615,6 +615,8 @@ async function _createThreadInternal(
     lastMessageBody: body?.trim() ? body.trim().substring(0, 100) : '',
     messageCount: body?.trim() ? 1 : 0,
     unreadPerUser: {},
+    threadSeenCount: 0,
+    threadSeenByUids: [],
   };
 
   await threadRef.set(threadDoc);
@@ -874,15 +876,38 @@ export const markMessageRead = onCall({ region: REGION }, async (request) => {
 
   await lezingRef.set({ readAt: admin.firestore.Timestamp.now() });
 
+  const threadRef = db.collection('groepen').doc(groepId).collection('threads').doc(threadId);
+
+  // ── Guardian rule: collect all UIDs to mark as "seen" on the thread ────────
+  const uidsToMark: string[] = [uid];
+  const childSnap = await db.collection('members')
+    .where('verzorgerIds', 'array-contains', uid)
+    .get();
+  childSnap.docs.forEach(d => uidsToMark.push(d.id));
+
+  // Only add UIDs not already tracked (avoid over-incrementing the counter)
+  const threadSnap = await threadRef.get();
+  const threadData = threadSnap.data() as ThreadDoc;
+  const currentSeenUids: string[] = threadData?.threadSeenByUids ?? [];
+  const newUids = uidsToMark.filter(u => !currentSeenUids.includes(u));
+
   const batch = db.batch();
-  batch.update(db.collection('groepen').doc(groepId).collection('threads').doc(threadId), {
+  batch.update(threadRef, {
     [`unreadPerUser.${uid}`]: admin.firestore.FieldValue.increment(-1),
   });
   batch.update(db.collection('users').doc(uid), {
     [`unreadPerGroep.${groepId}`]: admin.firestore.FieldValue.increment(-1),
   });
-  await batch.commit();
 
+  // Update thread-level seen tracking
+  if (newUids.length > 0) {
+    batch.update(threadRef, {
+      threadSeenByUids: admin.firestore.FieldValue.arrayUnion(...newUids),
+      threadSeenCount: admin.firestore.FieldValue.increment(newUids.length),
+    });
+  }
+
+  await batch.commit();
   return { success: true };
 });
 
@@ -907,6 +932,52 @@ export const markMessageUnread = onCall({ region: REGION }, async (request) => {
   await batch.commit();
 
   return { success: true };
+});
+
+// ── getThreadLezingen ─────────────────────────────────────────────────────────
+export const getThreadLezingen = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const { threadId, groepId } = request.data as { threadId: string; groepId: string };
+  const uid = request.auth.uid;
+
+  const [threadSnap, groepSnap] = await Promise.all([
+    db.collection('groepen').doc(groepId).collection('threads').doc(threadId).get(),
+    db.collection('groepen').doc(groepId).get(),
+  ]);
+
+  if (!threadSnap.exists) throw new HttpsError('not-found', 'Thread niet gevonden.');
+  const thread = threadSnap.data() as ThreadDoc;
+
+  if (thread.authorUid !== uid) throw new HttpsError('permission-denied', 'Geen toegang.');
+
+  const groep = groepSnap.data() as GroepDoc;
+  const memberUids: string[] = groep.memberUids ?? [];
+  const seenSet = new Set<string>(thread.threadSeenByUids ?? []);
+
+  const memberDocs = await Promise.all(
+    memberUids.map(mUid => db.collection('members').doc(mUid).get())
+  );
+
+  const lezingen = memberDocs.map(d => {
+    const data = d.exists ? (d.data() as MemberDoc) : null;
+    return {
+      uid: d.id,
+      displayName: data ? `${data.firstName} ${data.lastName}`.trim() : d.id,
+      avatarUrl: data?.avatarUrl ?? null,
+      gezien: seenSet.has(d.id),
+    };
+  });
+
+  lezingen.sort((a, b) => {
+    if (a.gezien !== b.gezien) return a.gezien ? -1 : 1;
+    return a.displayName.localeCompare(b.displayName, 'nl');
+  });
+
+  return {
+    lezingen,
+    gezienCount: thread.threadSeenCount ?? 0,
+    totalCount: memberUids.length,
+  };
 });
 
 export const deleteThread = onCall({ region: REGION }, async (request) => {

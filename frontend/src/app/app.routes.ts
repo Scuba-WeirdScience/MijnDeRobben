@@ -46,6 +46,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'activiteiten',
+    loadChildren: () =>
+      import('./features/activiteiten/activiteiten.routes').then(m => m.activiteitenRoutes)
+  },
+
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['Beheer', 'Bestuur'] },

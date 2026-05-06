@@ -1,0 +1,70 @@
+<div class="space-y-4">
+
+  <!-- Header: maand navigatie -->
+  <div class="flex items-center justify-between">
+    <app-button variant="secondary" (click)="vorigeMaand()">‹ Vorige</app-button>
+    <h2 class="text-base font-semibold text-gray-900 dark:text-white capitalize">{{ maandLabel() }}</h2>
+    <app-button variant="secondary" (click)="volgendeMaand()">Volgende ›</app-button>
+  </div>
+
+  <!-- Kalendergrid -->
+  <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+    <!-- Dag-headers -->
+    <div class="grid grid-cols-7 bg-gray-50 dark:bg-gray-800">
+      @for (dag of dagNamen; track dag) {
+        <div class="py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">{{ dag }}</div>
+      }
+    </div>
+
+    <!-- Dag-cellen -->
+    <div class="grid grid-cols-7 divide-x divide-y divide-gray-100 dark:divide-gray-700">
+      @for (dag of kalenderDagen(); track $index) {
+        @if (dag === null) {
+          <div class="h-14 bg-gray-50 dark:bg-gray-800/50"></div>
+        } @else {
+          <button
+            type="button"
+            (click)="selecteerDag(dag)"
+            [disabled]="!dagHeeftOccurrences(dag)"
+            class="h-14 p-1 flex flex-col items-center justify-start transition-colors relative"
+            [ngClass]="{
+              'bg-scuba-600 text-white': isGeselecteerd(dag),
+              'bg-white dark:bg-gray-900 hover:bg-scuba-50 dark:hover:bg-scuba-900/20': !isGeselecteerd(dag) && dagHeeftOccurrences(dag),
+              'bg-white dark:bg-gray-900 opacity-50 cursor-default': !dagHeeftOccurrences(dag)
+            }">
+            <span
+              class="text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full"
+              [ngClass]="{
+                'bg-scuba-100 text-scuba-700 dark:bg-scuba-900/40 dark:text-scuba-300': isDagVandaag(dag) && !isGeselecteerd(dag),
+                'text-white': isGeselecteerd(dag),
+                'text-gray-700 dark:text-gray-300': !isDagVandaag(dag) && !isGeselecteerd(dag)
+              }">
+              {{ dag.getDate() }}
+            </span>
+            @if (dagHeeftOccurrences(dag)) {
+              <span class="w-1.5 h-1.5 rounded-full mt-0.5"
+                [ngClass]="isGeselecteerd(dag) ? 'bg-white' : 'bg-scuba-500'">
+              </span>
+            }
+          </button>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Geselecteerde dag: occurrences -->
+  @if (geselecteerdeDagOccurrences().length > 0) {
+    <div class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        Activiteiten op deze dag
+      </h3>
+      <div class="grid gap-3 sm:grid-cols-2">
+        @for (occ of geselecteerdeDagOccurrences(); track occ.activiteitId + occ.occurrenceDatum) {
+          <app-activiteit-kaart [occurrence]="occ" />
+        }
+      </div>
+    </div>
+  }
+
+</div>

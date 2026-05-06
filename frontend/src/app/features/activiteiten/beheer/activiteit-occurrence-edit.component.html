@@ -1,0 +1,129 @@
+<app-side-panel
+  title="Exemplaar bewerken"
+  [subtitle]="occurrence().titel + ' — ' + occurrence().occurrenceDatum"
+  [class.max-w-xl]="true"
+  (closed)="cancelled.emit()">
+
+  <div class="space-y-6">
+
+    <!-- Basisgegevens -->
+    <section class="space-y-4">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Basisgegevens</h3>
+
+      <app-form-field label="Titel *" [error]="firstError(formState.titel())">
+        <app-input
+          [value]="formModel().titel"
+          (input)="formModel.update(m => ({ ...m, titel: $any($event.target).value }))"
+          [maxLength]="200"
+          placeholder="Naam van het exemplaar"
+        />
+      </app-form-field>
+
+      <div class="grid grid-cols-2 gap-3">
+        <app-form-field label="Startdatum en -uur *" [error]="firstError(formState.startDatumTijd())">
+          <input type="datetime-local"
+            [value]="formModel().startDatumTijd"
+            (input)="formModel.update(m => ({ ...m, startDatumTijd: $any($event.target).value }))"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500 focus:border-transparent" />
+        </app-form-field>
+        <app-form-field label="Einddatum en -uur *" [error]="firstError(formState.eindDatumTijd())">
+          <input type="datetime-local"
+            [value]="formModel().eindDatumTijd"
+            (input)="formModel.update(m => ({ ...m, eindDatumTijd: $any($event.target).value }))"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500 focus:border-transparent" />
+        </app-form-field>
+      </div>
+    </section>
+
+    <!-- Locatie -->
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Locatie</h3>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="locatieType" value="selecteer"
+            [checked]="locatieType() === 'selecteer'"
+            (change)="locatieType.set('selecteer')"
+            class="text-scuba-600" />
+          <span class="text-sm text-gray-700 dark:text-gray-300">Bestaande locatie</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="locatieType" value="vrij"
+            [checked]="locatieType() === 'vrij'"
+            (change)="locatieType.set('vrij')"
+            class="text-scuba-600" />
+          <span class="text-sm text-gray-700 dark:text-gray-300">Vrije locatie</span>
+        </label>
+      </div>
+
+      @if (locatieType() === 'selecteer') {
+        <app-form-field label="Locatie">
+          <app-select
+            [value]="formModel().locatieId ?? ''"
+            (valueChange)="formModel.update(m => ({ ...m, locatieId: $event || null }))">
+            <option value="">— Geen locatie —</option>
+            @for (loc of locaties(); track loc.id) {
+              <option [value]="loc.id">{{ loc.naam }}</option>
+            }
+          </app-select>
+        </app-form-field>
+      } @else {
+        <app-form-field label="Locatienaam">
+          <app-input
+            [value]="formModel().locatieVrij ?? ''"
+            (input)="formModel.update(m => ({ ...m, locatieVrij: $any($event.target).value || null }))"
+            placeholder="Vrije locatienaam"
+          />
+        </app-form-field>
+      }
+    </section>
+
+    <!-- Beschrijving -->
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Beschrijving</h3>
+      <app-rich-text-editor
+        [value]="formModel().beschrijving ?? ''"
+        (valueChange)="onBeschrijvingChange($event)"
+        placeholder="Beschrijf dit exemplaar…"
+      />
+    </section>
+
+    <!-- Overige -->
+    <section class="space-y-4">
+      <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Overige</h3>
+
+      <app-form-field label="Banner URL" hint="Link naar een afbeelding voor dit exemplaar">
+        <app-input
+          [value]="formModel().bannerUrl ?? ''"
+          (input)="formModel.update(m => ({ ...m, bannerUrl: $any($event.target).value || null }))"
+          placeholder="https://…"
+        />
+      </app-form-field>
+
+      <app-form-field label="Max. deelnemers" hint="Leeg = zelfde als de activiteit">
+        <app-input
+          type="number"
+          [value]="numToStr(formModel().maxDeelnemers)"
+          (input)="formModel.update(m => ({ ...m, maxDeelnemers: $any($event.target).value ? +$any($event.target).value : null }))"
+          [min]="1"
+          placeholder="Onbeperkt / overgenomen"
+        />
+      </app-form-field>
+
+      <app-form-field label="Interne notitie" hint="Enkel zichtbaar voor beheer">
+        <app-textarea
+          [value]="formModel().notitie ?? ''"
+          (input)="formModel.update(m => ({ ...m, notitie: $any($event.target).value || null }))"
+          placeholder="Bijv. afwijkende instructies voor dit exemplaar…"
+        />
+      </app-form-field>
+    </section>
+
+    <!-- Acties -->
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+      <app-button variant="secondary" (click)="cancelled.emit()">Annuleren</app-button>
+      <app-button variant="primary" [loading]="saving()" (click)="onSave()">Opslaan</app-button>
+    </div>
+
+  </div>
+
+</app-side-panel>

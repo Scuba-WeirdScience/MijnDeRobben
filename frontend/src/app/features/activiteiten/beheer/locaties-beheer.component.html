@@ -1,0 +1,71 @@
+<app-side-panel title="Locaties beheren" (closed)="closed.emit()">
+
+  @if (showForm()) {
+    <app-locatie-form
+      [locatie]="editingLocatie()"
+      (saved)="onSaved()"
+      (cancelled)="onFormCancelled()"
+    />
+  } @else {
+
+    <div class="space-y-4">
+
+      <div class="flex justify-end">
+        <app-button variant="primary" (click)="openForm(null)">+ Locatie toevoegen</app-button>
+      </div>
+
+      @if (loading()) {
+        <div class="flex justify-center py-8">
+          <app-spinner />
+        </div>
+      } @else if (locaties().length === 0) {
+        <app-empty-state message="Nog geen locaties aangemaakt." icon="folder" />
+      } @else {
+        <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800 text-left">
+              <tr>
+                <th class="px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Naam</th>
+                <th class="px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Adres</th>
+                <th class="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+              @for (locatie of locaties(); track locatie.id) {
+                <tr class="bg-white dark:bg-gray-900">
+                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ locatie.naam }}</td>
+                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ locatie.adres ?? '—' }}</td>
+                  <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <button type="button" (click)="openForm(locatie)"
+                      class="text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium mr-4">
+                      Bewerken
+                    </button>
+                    <button type="button" (click)="confirmDelete(locatie)"
+                      class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium">
+                      Verwijderen
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </div>
+
+  }
+
+</app-side-panel>
+
+@if (locatieToDelete()) {
+  <app-confirm-dialog
+    title="Locatie verwijderen"
+    [message]="'Weet je zeker dat je ' + locatieToDelete()!.naam + ' wilt verwijderen?'"
+    confirmLabel="Verwijderen"
+    confirmVariant="danger"
+    [loading]="deleting()"
+    (confirmed)="deleteConfirmed()"
+    (cancelled)="locatieToDelete.set(null)"
+  />
+}

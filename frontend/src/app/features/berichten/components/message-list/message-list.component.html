@@ -18,6 +18,9 @@
           <svg lucidePin class="w-3.5 h-3.5 text-amber-500 flex-shrink-0"></svg>
         }
       </div>
+      @if (service.activeThread()) {
+        <app-thread-lezingen [thread]="service.activeThread()!" />
+      }
     </div>
 
     <!-- Pinned messages banner -->
@@ -124,6 +127,32 @@
                   </button>
                 }
               </div>
+
+              <!-- WhatsApp-style read receipt (own messages only) -->
+              @if (isOwnMessage(message)) {
+                <div class="flex items-center gap-1 mt-0.5 px-1"
+                     [ngClass]="isOwnMessage(message) ? 'justify-end' : 'justify-start'">
+                  @if (getReaderCount(message) > 0) {
+                    <!-- Blue double-checkmark when someone has read it -->
+                    <svg class="w-3.5 h-3.5 text-scuba-400 dark:text-scuba-300" fill="none"
+                      stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+                      stroke-linecap="round" stroke-linejoin="round"
+                      [title]="getReaderCount(message) + ' gelezen'">
+                      <path d="M2 12l5 5L17 4"/>
+                      <path d="M8 12l5 5L23 4" opacity="0.6"/>
+                    </svg>
+                    <span class="text-xs text-scuba-400 dark:text-scuba-300">{{ getReaderCount(message) }}</span>
+                  } @else {
+                    <!-- Grey single-checkmark when not yet read by anyone -->
+                    <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" fill="none"
+                      stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
+                      stroke-linecap="round" stroke-linejoin="round"
+                      title="Nog niet gelezen">
+                      <path d="M5 13l4 4L19 7"/>
+                    </svg>
+                  }
+                </div>
+              }
             }
 
             <!-- Inline reply form -->

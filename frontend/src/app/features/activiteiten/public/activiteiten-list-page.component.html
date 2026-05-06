@@ -1,0 +1,42 @@
+<div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Activiteiten</h1>
+
+    <div class="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <button type="button"
+        (click)="setViewMode('agenda')"
+        class="px-4 py-2 text-sm font-medium transition-colors"
+        [ngClass]="{
+          'bg-scuba-600 text-white': viewMode() === 'agenda',
+          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700': viewMode() !== 'agenda'
+        }">
+        Agenda
+      </button>
+      <button type="button"
+        (click)="setViewMode('kalender')"
+        class="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-200 dark:border-gray-700"
+        [ngClass]="{
+          'bg-scuba-600 text-white': viewMode() === 'kalender',
+          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700': viewMode() !== 'kalender'
+        }">
+        Kalender
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-12">
+      <app-spinner />
+    </div>
+  } @else if (viewMode() === 'agenda') {
+    <app-activiteiten-agenda [occurrences]="occurrences()" />
+  } @else {
+    <app-activiteiten-kalender
+      [occurrences]="occurrences()"
+      [maand]="kalenderMaand()"
+      (maandGewijzigd)="onMaandGewijzigd($event)"
+    />
+  }
+
+</div>

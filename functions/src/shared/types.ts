@@ -193,6 +193,8 @@ export interface ThreadDoc {
   lastMessageBody: string;
   messageCount: number;
   unreadPerUser: { [uid: string]: number };
+  threadSeenCount: number;
+  threadSeenByUids: string[];
 }
 
 export interface MessageDoc {
@@ -225,4 +227,110 @@ export interface ThreadConceptDoc {
   body: string;
   createdAt: FirebaseFirestore.Timestamp;
   updatedAt: FirebaseFirestore.Timestamp;
+}
+
+// ── Activiteiten ──────────────────────────────────────────────────────────────
+
+export interface LocatieDoc {
+  id: string;
+  naam: string;
+  adres: string | null;
+  kaartLink: string | null;         // Google Maps URL
+  notities: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly-date' | 'monthly-day' | 'yearly';
+
+export interface RecurrenceRule {
+  frequency: RecurrenceFrequency;
+  interval: number;                 // herhaal elke N dagen/weken/maanden/jaren
+  daysOfWeek?: number[];            // weekly: weekdagen (0=Ma … 6=Zo)
+  monthlyDayOccurrence?: number;    // monthly-day: 1..5 (5 = laatste)
+  monthlyDayOfWeek?: number;        // monthly-day: 0..6
+  endsOn?: string | null;           // ISO date yyyy-MM-dd (exclusief)
+  endsAfter?: number | null;        // aantal occurrences waarna stopt
+}
+
+export type RegistratiesZichtbaar = 'iedereen' | 'aangemeld' | 'beheer';
+
+export interface ActiviteitDoc {
+  id: string;
+  titel: string;
+  beschrijving: string | null;      // HTML (Quill output)
+  startDatumTijd: string;           // ISO datetime string (lokale tijd, geen Z)
+  eindDatumTijd: string;
+  locatieId: string | null;
+  locatieNaam: string | null;       // gedenormaliseerd voor weergave
+  locatieVrij: string | null;       // vrije tekst locatie (alternatief voor locatieId)
+  bannerUrl: string | null;         // Firebase Storage URL
+  organisatorId: string | null;     // Firestore member doc ID (legacy, backwards compat)
+  organisatorNaam: string | null;   // gedenormaliseerd (legacy)
+  organisatorLeden: string[];       // member UIDs (multiselect)
+  organisatorGroepId: string | null; // berichten-groep als organisator
+
+  // Inschrijvingen
+  inschrijvingenActief: boolean;
+  maxDeelnemers: number | null;
+  registratiesZichtbaar: RegistratiesZichtbaar;
+  gasten: boolean;
+  maxGastenPerInschrijving: number | null;
+  gastKosten: number | null;        // euro, null = gratis
+  lidKosten: number | null;         // euro, null = gratis
+
+  // Herhaling
+  isHerhalend: boolean;
+  recurrenceRule: RecurrenceRule | null;
+
+  // Publiek (zichtbaar in ICS-feed)
+  isPubliek: boolean;
+
+  // Thread-koppeling
+  threadId: string | null;
+  groepId: string | null;
+
+  createdAt: string;
+  updatedAt: string | null;
+  createdByUid: string;
+}
+
+// Document ID = `${activiteitId}_${occurrenceDatum}` (occurrenceDatum = yyyy-MM-dd originele datum)
+export type OccurrenceStatus = 'modified' | 'cancelled';
+
+export interface ActiviteitOccurrenceDoc {
+  id: string;
+  activiteitId: string;
+  occurrenceDatum: string;          // yyyy-MM-dd — originele geplande datum
+  status: OccurrenceStatus;
+
+  // Overschreven velden (enkel aanwezig bij status='modified')
+  titel?: string;
+  beschrijving?: string | null;
+  startDatumTijd?: string;
+  eindDatumTijd?: string;
+  locatieId?: string | null;
+  locatieNaam?: string | null;
+  locatieVrij?: string | null;
+  bannerUrl?: string | null;
+  maxDeelnemers?: number | null;
+  notitie?: string | null;
+
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+// Document ID = `${activiteitId}_${occurrenceDatum}_${memberId}`
+export interface ActiviteitRegistratieDoc {
+  id: string;
+  activiteitId: string;
+  occurrenceDatum: string;          // yyyy-MM-dd
+  memberId: string;
+  memberUid: string;
+  memberNaam: string;
+  aantalGasten: number;
+  opmerking: string | null;
+  status: 'aangemeld' | 'afgemeld' | 'aanwezig';
+  createdAt: string;
+  updatedAt: string | null;
 }

@@ -1,0 +1,119 @@
+<div class="space-y-4 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+
+  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Herhalingsregel</h4>
+
+  <div class="grid grid-cols-2 gap-3">
+    <app-form-field label="Frequentie">
+      <app-select
+        [value]="frequency()"
+        (valueChange)="onFrequencyChange($event)">
+        <option value="daily">Dagelijks</option>
+        <option value="weekly">Wekelijks</option>
+        <option value="monthly-date">Maandelijks (zelfde datum)</option>
+        <option value="monthly-day">Maandelijks (zelfde dag)</option>
+        <option value="yearly">Jaarlijks</option>
+      </app-select>
+    </app-form-field>
+
+    <app-form-field label="Interval" hint="bijv. elke 2 weken">
+      <app-input
+        type="number"
+        [value]="numToStr(interval())"
+        (input)="onIntervalChange($any($event.target).value)"
+        [min]="1"
+      />
+    </app-form-field>
+  </div>
+
+  @if (isWeekly()) {
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Dagen van de week
+      </label>
+      <div class="flex gap-2 flex-wrap">
+        @for (dag of dagWaarden; track dag; let i = $index) {
+          <button
+            type="button"
+            (click)="toggleDayOfWeek(dag)"
+            [ngClass]="isDagGeselecteerd(dag)
+              ? 'bg-scuba-600 text-white border-scuba-600'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'"
+            class="w-10 h-10 rounded-lg border text-xs font-medium transition-colors">
+            {{ dagNamen[i] }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (isMonthlyDay()) {
+    <div class="grid grid-cols-2 gap-3">
+      <app-form-field label="Voorkomen">
+        <app-select
+          [value]="numToStr(monthlyDayOccurrence())"
+          (valueChange)="onMonthlyOccurrenceChange($event)">
+          <option value="1">Eerste</option>
+          <option value="2">Tweede</option>
+          <option value="3">Derde</option>
+          <option value="4">Vierde</option>
+          <option value="5">Laatste</option>
+        </app-select>
+      </app-form-field>
+      <app-form-field label="Dag van de week">
+        <app-select
+          [value]="numToStr(monthlyDayOfWeek())"
+          (valueChange)="onMonthlyDayOfWeekChange($event)">
+          <option value="0">Zondag</option>
+          <option value="1">Maandag</option>
+          <option value="2">Dinsdag</option>
+          <option value="3">Woensdag</option>
+          <option value="4">Donderdag</option>
+          <option value="5">Vrijdag</option>
+          <option value="6">Zaterdag</option>
+        </app-select>
+      </app-form-field>
+    </div>
+  }
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Eindigt</label>
+    <div class="space-y-2">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="endsType" value="nooit"
+          [checked]="endsType() === 'nooit'"
+          (change)="onEndsTypeChange('nooit')"
+          class="text-scuba-600" />
+        <span class="text-sm text-gray-700 dark:text-gray-300">Nooit</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="endsType" value="op"
+          [checked]="endsType() === 'op'"
+          (change)="onEndsTypeChange('op')"
+          class="text-scuba-600" />
+        <span class="text-sm text-gray-700 dark:text-gray-300">Op datum</span>
+        @if (endsType() === 'op') {
+          <input type="date"
+            [value]="endsOn()"
+            (input)="onEndsOnChange($any($event.target).value)"
+            class="ml-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+        }
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="endsType" value="na"
+          [checked]="endsType() === 'na'"
+          (change)="onEndsTypeChange('na')"
+          class="text-scuba-600" />
+        <span class="text-sm text-gray-700 dark:text-gray-300">Na</span>
+        @if (endsType() === 'na') {
+          <input type="number"
+            [value]="endsAfter()"
+            (input)="onEndsAfterChange($any($event.target).value)"
+            min="1"
+            class="ml-2 w-20 text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+          <span class="text-sm text-gray-700 dark:text-gray-300">keer</span>
+        }
+      </label>
+    </div>
+  </div>
+
+</div>

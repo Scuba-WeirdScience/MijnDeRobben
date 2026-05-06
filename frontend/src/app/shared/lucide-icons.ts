@@ -16,6 +16,7 @@
 import {
   LucideChevronDown,
   LucideChevronLeft,
+  LucideChevronRight,
   LucideUsers,
   LucideShieldCheck,
   LucideAward,
@@ -50,11 +51,14 @@ import {
   LucideFileText,
   LucideSearch,
   LucideSmile,
+  LucideCalendar,
+  LucideMapPin,
 } from '@lucide/angular';
 
 export {
   LucideChevronDown,
   LucideChevronLeft,
+  LucideChevronRight,
   LucideUsers,
   LucideShieldCheck,
   LucideAward,
@@ -89,11 +93,14 @@ export {
   LucideFileText,
   LucideSearch,
   LucideSmile,
+  LucideCalendar,
+  LucideMapPin,
 };
 
 export const LUCIDE_ICONS = [
   LucideChevronDown,
   LucideChevronLeft,
+  LucideChevronRight,
   LucideUsers,
   LucideShieldCheck,
   LucideAward,
@@ -128,5 +135,6 @@ export const LUCIDE_ICONS = [
   LucideFileText,
   LucideSearch,
   LucideSmile,
+  LucideCalendar,
+  LucideMapPin,
 ] as const;
-
