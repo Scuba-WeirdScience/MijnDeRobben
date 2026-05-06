@@ -148,6 +148,21 @@ you must update ALL of these locations in the same change:**
 
 ---
 
+## PWA deployment — CRITICAL
+
+**Every time you deploy the frontend, you must bump the `version` in `frontend/ngsw-config.json`**
+before running `ng build`. Use semantic versioning (`2.1.0` → `2.2.0`, etc.).
+
+Without this bump, users whose service worker is already active will not receive the update
+notification and will keep running the old cached version indefinitely.
+
+Steps (always in this order):
+1. Bump `appData.version` in `frontend/ngsw-config.json`
+2. `ng build` (workdir: `frontend/`)
+3. `firebase deploy --only hosting` (or `hosting,functions` if functions also changed)
+
+---
+
 ## Detailed instructions
 
 `frontend/copilot-instructions.md` contains extended UI patterns, component APIs, and common fixes.  
