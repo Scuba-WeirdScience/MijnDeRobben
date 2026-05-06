@@ -101,6 +101,14 @@ export class MessageComposeComponent implements OnDestroy {
                     this.zone.run(() => this.confirmEmojiSuggestion());
                     return false;
                   }
+                  // Default behaviour: insert a new line
+                  return true;
+                },
+              },
+              sendMessage: {
+                key: 'Enter',
+                ctrlKey: true,
+                handler: () => {
                   this.zone.run(() => this.send());
                   return false;
                 },
@@ -146,7 +154,7 @@ export class MessageComposeComponent implements OnDestroy {
             },
           },
         },
-        placeholder: 'Schrijf een bericht… (Enter om te versturen, : voor emoji)',
+        placeholder: 'Schrijf een bericht… (Ctrl+Enter om te versturen, : voor emoji)',
       });
 
       this.quill.on('text-change', () => {

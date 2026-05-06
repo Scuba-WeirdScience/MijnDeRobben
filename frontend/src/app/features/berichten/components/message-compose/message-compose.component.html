@@ -42,7 +42,7 @@
         <button
           (click)="send()"
           [disabled]="!body().trim() || sending() || savingConcept()"
-          [title]="saveAsDraft() ? 'Opslaan als concept' : 'Verstuur'"
+          [title]="saveAsDraft() ? 'Opslaan als concept (Ctrl+Enter)' : 'Verstuur (Ctrl+Enter)'"
           class="w-8 h-8 flex items-center justify-center rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
           <svg lucideSend class="w-4 h-4"></svg>
         </button>
