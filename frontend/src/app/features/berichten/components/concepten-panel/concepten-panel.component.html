@@ -1,0 +1,68 @@
+<div class="flex flex-col h-full">
+
+  <!-- Header -->
+  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Concepten</h2>
+    <span class="text-xs text-gray-400 dark:text-gray-500">{{ allConcepts().length }} concept{{ allConcepts().length === 1 ? '' : 'en' }}</span>
+  </div>
+
+  <!-- List -->
+  <div class="flex-1 overflow-y-auto py-2 px-2 space-y-1">
+
+    @if (allConcepts().length === 0) {
+      <app-empty-state
+        icon="document"
+        message="Je hebt nog geen opgeslagen concepten.">
+      </app-empty-state>
+    }
+
+    @for (item of allConcepts(); track item.concept.id) {
+
+      @if (item.kind === 'thread') {
+        <!-- Thread concept -->
+        <button
+          (click)="openThreadConcept(item.concept)"
+          class="w-full text-left rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2.5 hover:border-scuba-400 dark:hover:border-scuba-500 hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors group">
+          <div class="flex items-start gap-2">
+            <svg lucideFileText class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-0.5">Thread concept</p>
+              <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{{ item.concept.title }}</p>
+              @if (item.concept.body) {
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ item.concept.body | slice:0:80 }}</p>
+              }
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ groepName(item.concept.groepId) }}</p>
+            </div>
+          </div>
+          <!-- Actions -->
+          <div class="flex gap-3 mt-2 justify-end" (click)="$event.stopPropagation()">
+            <button (click)="publishThreadConcept(item.concept.id, $event)" class="text-xs text-scuba-600 dark:text-scuba-400 hover:underline">Publiceer</button>
+            <button (click)="deleteThreadConcept(item.concept.id, $event)" class="text-xs text-red-500 hover:underline">Verwijder</button>
+          </div>
+        </button>
+      }
+
+      @if (item.kind === 'message') {
+        <!-- Message concept -->
+        <button
+          (click)="openMessageConcept(item.concept)"
+          class="w-full text-left rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2.5 hover:border-scuba-400 dark:hover:border-scuba-500 hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors group">
+          <div class="flex items-start gap-2">
+            <svg lucideMessageSquare class="w-4 h-4 text-scuba-500 flex-shrink-0 mt-0.5"></svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-scuba-600 dark:text-scuba-400 uppercase tracking-wide mb-0.5">Bericht concept</p>
+              <p class="text-sm text-gray-700 dark:text-gray-200 truncate" [innerHTML]="item.concept.body | slice:0:100"></p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ groepName(item.concept.groepId) }} · {{ threadTitle(item.concept.threadId) }}</p>
+            </div>
+          </div>
+          <!-- Actions -->
+          <div class="flex gap-3 mt-2 justify-end" (click)="$event.stopPropagation()">
+            <button (click)="publishMessageConcept(item.concept.id, $event)" class="text-xs text-scuba-600 dark:text-scuba-400 hover:underline">Publiceer</button>
+            <button (click)="deleteMessageConcept(item.concept.id, $event)" class="text-xs text-red-500 hover:underline">Verwijder</button>
+          </div>
+        </button>
+      }
+
+    }
+  </div>
+</div>

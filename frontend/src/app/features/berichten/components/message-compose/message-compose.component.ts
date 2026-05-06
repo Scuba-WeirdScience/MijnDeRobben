@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import Quill from 'quill';
 import { BerichtenService } from '../../berichten.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { LucideSend, LucideFileText } from '../../../../shared/lucide-icons';
+import { LucideSend } from '../../../../shared/lucide-icons';
 
 // Fixed overhead: toolbar (~34px) + editor row padding top+bottom (~16px) + border (2px)
 const EDITOR_OVERHEAD_PX = 52;
@@ -29,7 +29,7 @@ interface EmojiSuggestion {
   styleUrl: './message-compose.component.css',
   host: { class: 'flex flex-col overflow-hidden' },
   standalone: true,
-  imports: [CommonModule, LucideSend, LucideFileText],
+  imports: [CommonModule, LucideSend],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class MessageComposeComponent implements OnDestroy {
@@ -44,23 +44,7 @@ export class MessageComposeComponent implements OnDestroy {
     }
   }
 
-  @ViewChild('conceptList') set conceptList(el: ElementRef<HTMLDivElement> | undefined) {
-    this.conceptListObs?.disconnect();
-    this.conceptListObs = undefined;
-    if (el) {
-      this.conceptListHeight.set(el.nativeElement.offsetHeight);
-      this.conceptListObs = new ResizeObserver(entries => {
-        this.zone.run(() => this.conceptListHeight.set(entries[0].borderBoxSize[0]?.blockSize ?? el.nativeElement.offsetHeight));
-      });
-      this.conceptListObs.observe(el.nativeElement);
-    } else {
-      this.conceptListHeight.set(0);
-    }
-  }
-
-  private conceptListObs?: ResizeObserver;
   private hostObs?: ResizeObserver;
-  private conceptListHeight = signal(0);
   private hostHeight = signal(0);
 
   private quill: Quill | null = null;
@@ -87,11 +71,10 @@ export class MessageComposeComponent implements OnDestroy {
       if (!threadId) this.destroyQuill();
     });
 
-    // Update --editor-height whenever host or concept list changes size
+    // Update --editor-height whenever host changes size
     effect(() => {
       const hostH = this.hostHeight();
-      const conceptH = this.conceptListHeight();
-      const editorH = Math.max(40, hostH - conceptH - EDITOR_OVERHEAD_PX);
+      const editorH = Math.max(40, hostH - EDITOR_OVERHEAD_PX);
       this.hostEl.nativeElement.style.setProperty('--editor-height', `${editorH}px`);
     });
 
@@ -252,7 +235,6 @@ export class MessageComposeComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyQuill();
-    this.conceptListObs?.disconnect();
     this.hostObs?.disconnect();
   }
 

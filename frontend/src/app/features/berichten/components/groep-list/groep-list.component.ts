@@ -39,6 +39,10 @@ export class GroepListComponent {
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
+  readonly totalConcepts = computed(() =>
+    this.service.allThreadConcepten().length + this.service.allMessageConcepten().length
+  );
+
   selectGroep(groep: Groep): void {
     this.service.selectGroep(groep.id);
     this.groepSelected.emit();

@@ -6,11 +6,12 @@
     [style.display]="mobilePanel() === 'groepen' ? 'flex' : isMobile() ? 'none' : 'flex'">
     <app-groep-list
       (groepSelected)="onGroepSelected()"
-      (openBeheer)="showBeheer.set(true)">
+      (openBeheer)="showBeheer.set(true)"
+      (selectConcepten)="onShowConcepten()">
     </app-groep-list>
   </aside>
 
-  <!-- ── THREADS panel ──────────────────────────────────────── -->
+  <!-- ── THREADS / CONCEPTEN panel ──────────────────────────────────────── -->
   <div
     class="w-72 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col"
     [style.display]="mobilePanel() === 'threads' ? 'flex' : isMobile() ? 'none' : 'flex'">
@@ -23,7 +24,12 @@
       </button>
     </div>
 
-    @if (service.activeGroepId()) {
+    @if (showConcepten()) {
+      <app-concepten-panel
+        (conceptSelected)="onConceptSelected($event)"
+        class="flex-1 overflow-hidden flex flex-col">
+      </app-concepten-panel>
+    } @else if (service.activeGroepId()) {
       <app-thread-list
         (newThread)="onNewThread()"
         (threadSelected)="onThreadSelected()"
@@ -76,12 +82,16 @@
   </app-side-panel>
 }
 
-<!-- ── Side panel: Nieuwe thread ─────────────────────────── -->
+<!-- ── Side panel: Nieuwe thread / Thread concept bewerken ─── -->
 @if (showNewThread()) {
-  <app-side-panel title="Nieuwe thread" size="md" (closed)="showNewThread.set(false)">
+  <app-side-panel
+    [title]="editingThreadConcept() ? 'Thread concept bewerken' : 'Nieuwe thread'"
+    size="md"
+    (closed)="showNewThread.set(false); editingThreadConcept.set(null)">
     <app-thread-compose
+      [initialConcept]="editingThreadConcept()"
       (created)="onThreadCreated($event)"
-      (cancelled)="showNewThread.set(false)">
+      (cancelled)="showNewThread.set(false); editingThreadConcept.set(null)">
     </app-thread-compose>
   </app-side-panel>
 }

@@ -48,27 +48,6 @@
         </button>
       </div>
     </div>
-
-    <!-- Concepts -->
-    @if (service.conceptMessages().length > 0) {
-      <div #conceptList class="flex-shrink-0 px-3 pb-2 border-t border-gray-100 dark:border-gray-800 pt-2">
-        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Concepten:</p>
-        @for (concept of service.conceptMessages(); track concept.id) {
-          <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 py-1"
-               [class.bg-amber-50]="currentConceptId() === concept.id"
-               [class.dark:bg-amber-900\/10]="currentConceptId() === concept.id"
-               [class.-mx-3]="currentConceptId() === concept.id"
-               [class.px-3]="currentConceptId() === concept.id"
-               [class.rounded]="currentConceptId() === concept.id">
-            <svg lucideFileText class="w-3 h-3 text-gray-400 flex-shrink-0"></svg>
-            <span class="truncate flex-1" [innerHTML]="concept.body | slice:0:60"></span>
-            <button (click)="loadConcept(concept)" class="text-scuba-600 dark:text-scuba-400 hover:underline flex-shrink-0">Bewerken</button>
-            <button (click)="publishConcept(concept.id)" class="text-scuba-600 dark:text-scuba-400 hover:underline flex-shrink-0">Publiceer</button>
-            <button (click)="deleteConcept(concept.id)" class="text-red-500 hover:underline flex-shrink-0">Verwijder</button>
-          </div>
-        }
-      </div>
-    }
-
   </div>
 }
+

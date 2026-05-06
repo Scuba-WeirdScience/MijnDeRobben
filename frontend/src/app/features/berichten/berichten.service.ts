@@ -140,6 +140,13 @@ export class BerichtenService {
 
   readonly threadConcepten = signal<ThreadConcept[]>([]);
 
+  /** All thread-concepts for the current user across ALL groups */
+  readonly allThreadConcepten = signal<ThreadConcept[]>([]);
+  /** All message-concepts for the current user across ALL groups */
+  readonly allMessageConcepten = signal<Message[]>([]);
+  /** A message-concept that should be loaded into the editor once its thread becomes active */
+  readonly pendingConceptEdit = signal<Message | null>(null);
+
   // ── Messages ───────────────────────────────────────────────────────────────
   readonly messages = signal<Message[]>([]);
   readonly loadingMessages = signal<boolean>(false);
@@ -164,6 +171,8 @@ export class BerichtenService {
   private unsubUserDoc: (() => void) | null = null;
   private unsubGroepen: (() => void) | null = null;
   private unsubAllGroepen: (() => void) | null = null;
+  private unsubAllThreadConcepten: (() => void) | null = null;
+  private unsubAllMessageConcepten: (() => void) | null = null;
   private unsubThreads: (() => void) | null = null;
   private unsubThreadConcepten: (() => void) | null = null;
   private unsubMessages: (() => void) | null = null;
@@ -179,9 +188,13 @@ export class BerichtenService {
       this.unsubUserDoc?.();
       this.unsubGroepen?.();
       this.unsubAllGroepen?.();
+      this.unsubAllThreadConcepten?.();
+      this.unsubAllMessageConcepten?.();
       this.unsubUserDoc = null;
       this.unsubGroepen = null;
       this.unsubAllGroepen = null;
+      this.unsubAllThreadConcepten = null;
+      this.unsubAllMessageConcepten = null;
 
       if (!user) {
         this.currentUid = null;
@@ -191,6 +204,8 @@ export class BerichtenService {
         this.activeGroepId.set(null);
         this.threads.set([]);
         this.threadConcepten.set([]);
+        this.allThreadConcepten.set([]);
+        this.allMessageConcepten.set([]);
         this.messages.set([]);
         this.conceptMessages.set([]);
         this.readMessageIds.set(new Set());
@@ -246,6 +261,27 @@ export class BerichtenService {
           };
         });
         this.allGroepen.set(all);
+      });
+
+      // All thread-concepts for this user (cross-group)
+      const allThreadConceptenQ = query(
+        collection(firestore, 'threadConcepten'),
+        where('authorUid', '==', uid),
+        orderBy('updatedAt', 'desc')
+      );
+      this.unsubAllThreadConcepten = onSnapshot(allThreadConceptenQ, (snap) => {
+        this.allThreadConcepten.set(snap.docs.map(d => this.mapThreadConcept(d)));
+      });
+
+      // All message-concepts for this user (cross-group)
+      const allMessageConceptenQ = query(
+        collection(firestore, 'messages'),
+        where('authorUid', '==', uid),
+        where('status', '==', 'concept'),
+        orderBy('updatedAt', 'desc')
+      );
+      this.unsubAllMessageConcepten = onSnapshot(allMessageConceptenQ, (snap) => {
+        this.allMessageConcepten.set(snap.docs.map(d => this.mapMessage(d)));
       });
     });
 

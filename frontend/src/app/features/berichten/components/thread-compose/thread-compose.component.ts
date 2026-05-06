@@ -1,4 +1,4 @@
-import { Component, inject, model, signal, output } from '@angular/core';
+import { Component, inject, model, signal, output, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BerichtenService, ThreadConcept } from '../../berichten.service';
@@ -18,18 +18,26 @@ const _TW_SAFELIST = [
   standalone: true,
   imports: [CommonModule, FormsModule, InputComponent, TextareaComponent, ButtonComponent, LucideFileText],
 })
-export class ThreadComposeComponent {
+export class ThreadComposeComponent implements OnInit {
   protected readonly service = inject(BerichtenService);
   private readonly toast = inject(ToastService);
 
   readonly created = output<string>();
   readonly cancelled = output<void>();
 
+  /** Optional: pre-load a thread concept when the panel opens */
+  readonly initialConcept = input<ThreadConcept | null>(null);
+
   title = model('');
   body = model('');
   saving = signal(false);
   savingConcept = signal(false);
   editingConceptId = signal<string | null>(null);
+
+  ngOnInit(): void {
+    const concept = this.initialConcept();
+    if (concept) this.loadConcept(concept);
+  }
 
   get canSubmit(): boolean {
     return this.title().trim().length > 0;

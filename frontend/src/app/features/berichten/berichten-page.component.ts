@@ -1,9 +1,9 @@
-import { Component, computed, inject, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, computed, inject, signal, HostListener, ElementRef, ViewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { map } from 'rxjs';
-import { BerichtenService } from './berichten.service';
+import { BerichtenService, Message, ThreadConcept } from './berichten.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroepListComponent } from './components/groep-list/groep-list.component';
 import { ThreadListComponent } from './components/thread-list/thread-list.component';
@@ -11,6 +11,7 @@ import { ThreadComposeComponent } from './components/thread-compose/thread-compo
 import { MessageListComponent } from './components/message-list/message-list.component';
 import { MessageComposeComponent } from './components/message-compose/message-compose.component';
 import { GroepBeheerComponent } from './components/groep-beheer/groep-beheer.component';
+import { ConceptenPanelComponent, ConceptSelected } from './components/concepten-panel/concepten-panel.component';
 import { SidePanelComponent } from '../../shared/components/design-system';
 import { LucideChevronLeft } from '../../shared/lucide-icons';
 
@@ -34,6 +35,7 @@ const STORAGE_KEY = 'berichten-compose-height';
     MessageListComponent,
     MessageComposeComponent,
     GroepBeheerComponent,
+    ConceptenPanelComponent,
     SidePanelComponent,
     LucideChevronLeft,
   ],
@@ -55,6 +57,12 @@ export class BerichtenPageComponent {
   mobilePanel = signal<MobilePanel>('groepen');
   showBeheer = signal(false);
   showNewThread = signal(false);
+  showConcepten = signal(false);
+
+  /** Thread concept being edited (pre-fills thread-compose side panel) */
+  editingThreadConcept = signal<ThreadConcept | null>(null);
+
+  @ViewChild(MessageComposeComponent) private messageCompose?: MessageComposeComponent;
 
   // ── Resizable compose bar ─────────────────────────────────────────────────
   composeHeight = signal<number>(
@@ -92,15 +100,56 @@ export class BerichtenPageComponent {
 
   constructor() {
     this.auth.refreshUser();
+
+    // When a pending message concept edit is set AND the thread becomes active,
+    // load it into the editor and clear the pending state.
+    effect(() => {
+      const pending = this.service.pendingConceptEdit();
+      const activeThreadId = this.service.activeThreadId();
+      if (pending && activeThreadId === pending.threadId) {
+        // Defer until after render so the compose component is visible
+        Promise.resolve().then(() => {
+          this.messageCompose?.loadConcept(pending);
+          this.service.pendingConceptEdit.set(null);
+        });
+      }
+    });
   }
 
-  onGroepSelected(): void { this.mobilePanel.set('threads'); }
+  onGroepSelected(): void {
+    this.showConcepten.set(false);
+    this.mobilePanel.set('threads');
+  }
+
   onThreadSelected(): void { this.mobilePanel.set('messages'); }
   onNewThread(): void { this.showNewThread.set(true); }
 
+  onShowConcepten(): void {
+    this.showConcepten.set(true);
+    this.mobilePanel.set('threads');
+  }
+
   onThreadCreated(threadId: string): void {
     this.showNewThread.set(false);
+    this.editingThreadConcept.set(null);
     this.service.selectThread(threadId);
     this.mobilePanel.set('messages');
+  }
+
+  onConceptSelected(event: ConceptSelected): void {
+    this.showConcepten.set(false);
+
+    if (event.type === 'thread') {
+      // Open thread-compose pre-filled with this concept
+      this.editingThreadConcept.set(event.concept);
+      this.showNewThread.set(true);
+    } else {
+      // Navigate to groep+thread, then load concept into editor
+      const concept = event.concept;
+      this.service.pendingConceptEdit.set(concept);
+      this.service.selectGroep(concept.groepId);
+      this.service.selectThread(concept.threadId);
+      this.mobilePanel.set('messages');
+    }
   }
 }
