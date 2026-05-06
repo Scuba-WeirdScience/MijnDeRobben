@@ -81,3 +81,15 @@
   box-shadow: none !important;
   padding: 0 !important;
 }
+
+/* ── Message highlight animation (scroll-to-parent reply) ───────────────── */
+@keyframes msg-flash {
+  0%   { background-color: transparent; }
+  25%  { background-color: color-mix(in srgb, var(--color-scuba-400) 25%, transparent); }
+  75%  { background-color: color-mix(in srgb, var(--color-scuba-400) 25%, transparent); }
+  100% { background-color: transparent; }
+}
+
+.msg-highlight {
+  animation: msg-flash 1.5s ease-in-out;
+}

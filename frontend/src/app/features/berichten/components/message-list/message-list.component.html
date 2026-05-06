@@ -50,7 +50,10 @@
       }
 
       @for (message of service.messages(); track message.id) {
-        <div class="flex gap-2" [ngClass]="isOwnMessage(message) ? 'flex-row-reverse' : 'flex-row'">
+        <div [id]="'msg-' + message.id"
+             class="flex gap-2 rounded-xl transition-colors duration-300"
+             [class.msg-highlight]="highlightedId() === message.id"
+             [ngClass]="isOwnMessage(message) ? 'flex-row-reverse' : 'flex-row'">
 
           <!-- Avatar -->
           @if (!isOwnMessage(message)) {
@@ -75,7 +78,41 @@
             } @else {
               <div class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed text-white"
                    [ngClass]="isOwnMessage(message) ? 'bg-scuba-600 dark:bg-scuba-700 rounded-tr-none' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none'">
-                 <div [innerHTML]="message.body | emoticon"></div>
+
+                <!-- Quoted reply block -->
+                @if (message.replyToId) {
+                  @if (getReplyParent(message); as parent) {
+                    <button type="button"
+                      (click)="scrollToMessage(parent.id)"
+                      class="block w-full text-left mb-2 rounded-lg overflow-hidden border-l-4 cursor-pointer"
+                      [ngClass]="isOwnMessage(message)
+                        ? 'bg-scuba-700/60 dark:bg-scuba-800/60 border-scuba-300'
+                        : 'bg-gray-200/70 dark:bg-gray-700/60 border-scuba-500'">
+                      <div class="px-2 py-1">
+                        <p class="text-xs font-semibold mb-0.5 truncate"
+                           [ngClass]="isOwnMessage(message) ? 'text-scuba-200' : 'text-scuba-600 dark:text-scuba-400'">
+                          {{ parent.authorName }}
+                        </p>
+                        @if (parent.deletedAt) {
+                          <p class="text-xs italic opacity-60 truncate">Dit bericht is verwijderd.</p>
+                        } @else {
+                          <p class="text-xs opacity-75 truncate" [innerHTML]="parent.body | emoticon"></p>
+                        }
+                      </div>
+                    </button>
+                  } @else {
+                    <div class="mb-2 rounded-lg overflow-hidden border-l-4"
+                         [ngClass]="isOwnMessage(message)
+                           ? 'bg-scuba-700/60 dark:bg-scuba-800/60 border-scuba-300'
+                           : 'bg-gray-200/70 dark:bg-gray-700/60 border-scuba-500'">
+                      <div class="px-2 py-1">
+                        <p class="text-xs italic opacity-60">↩ Antwoord op een ouder bericht.</p>
+                      </div>
+                    </div>
+                  }
+                }
+
+                <div [innerHTML]="message.body | emoticon"></div>
               </div>
 
               <!-- Action row -->

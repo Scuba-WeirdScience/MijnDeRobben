@@ -13,6 +13,7 @@ const _TW_SAFELIST = [
   'text-scuba-500', 'hover:text-scuba-700', 'dark:hover:text-scuba-300',
   'text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-200',
   'text-scuba-400', 'dark:text-scuba-300',
+  'msg-highlight',
 ];
 
 @Component({
@@ -46,6 +47,7 @@ export class MessageListComponent {
   replyBody = signal('');
   sendingReply = signal(false);
   deletingId = signal<string | null>(null);
+  highlightedId = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -143,5 +145,18 @@ export class MessageListComponent {
     } finally {
       this.sendingReply.set(false);
     }
+  }
+
+  getReplyParent(message: any): any | null {
+    if (!message.replyToId) return null;
+    return this.service.messages().find(m => m.id === message.replyToId) ?? null;
+  }
+
+  scrollToMessage(messageId: string): void {
+    const el = document.getElementById('msg-' + messageId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    this.highlightedId.set(messageId);
+    setTimeout(() => this.highlightedId.set(null), 1500);
   }
 }
