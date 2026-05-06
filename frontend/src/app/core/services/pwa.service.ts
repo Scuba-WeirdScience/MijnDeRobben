@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { SwUpdate, VersionReadyEvent, UnrecoverableStateEvent } from '@angular/service-worker';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, interval } from 'rxjs';
 
@@ -36,6 +36,7 @@ export class PwaService {
   private initUpdateDetection(): void {
     if (!this.swUpdate.isEnabled) return;
 
+    // Show banner when a new version is ready
     this.swUpdate.versionUpdates
       .pipe(
         filter((e): e is VersionReadyEvent => e.type === 'VERSION_READY'),
@@ -45,11 +46,21 @@ export class PwaService {
         this.updateAvailable.set(true);
       });
 
-    // Periodically poll for updates so long-running sessions (e.g. the chat
-    // page) get notified without requiring a navigation event.
+    // If the SW enters an unrecoverable state, force a hard reload
+    this.swUpdate.unrecoverable
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        document.location.reload();
+      });
+
+    // Check immediately on startup (catches a deploy that happened while the
+    // app was closed, before the 5-minute interval fires)
+    this.swUpdate.checkForUpdate().catch(() => {});
+
+    // Then keep polling every 5 minutes for long-running sessions
     interval(UPDATE_POLL_INTERVAL_MS)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.swUpdate.checkForUpdate());
+      .subscribe(() => this.swUpdate.checkForUpdate().catch(() => {}));
   }
 
   /** Activate the waiting service worker and reload the page */
