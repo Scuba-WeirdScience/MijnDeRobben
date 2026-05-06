@@ -30,7 +30,7 @@
         <app-input
           [(value)]="newTitle"
           placeholder="Geef de thread een titel…"
-          [disabled]="saving()">
+          [disabled]="isBusy">
         </app-input>
       </div>
       <div>
@@ -41,17 +41,60 @@
           [(value)]="newBody"
           placeholder="Schrijf een eerste bericht…"
           [rows]="3"
-          [disabled]="saving()">
+          [disabled]="isBusy">
         </app-textarea>
       </div>
-      <div class="flex gap-2 justify-end">
-        <app-button variant="secondary" (click)="cancelForm()" [disabled]="saving()">
-          Annuleer
-        </app-button>
-        <app-button variant="primary" (click)="submitForm()" [disabled]="!newTitle().trim() || saving()" [loading]="saving()">
-          Aanmaken
-        </app-button>
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-gray-600 dark:text-gray-300">
+          <input
+            type="checkbox"
+            [checked]="saveAsDraft()"
+            (change)="saveAsDraft.set($any($event.target).checked)"
+            [disabled]="isBusy"
+            class="rounded border-gray-300 dark:border-gray-600 text-scuba-600 focus:ring-scuba-500">
+          Opslaan als concept
+        </label>
+        <div class="flex gap-2">
+          <app-button variant="secondary" (click)="cancelForm()" [disabled]="isBusy">
+            Annuleer
+          </app-button>
+          <app-button
+            variant="primary"
+            (click)="submitForm()"
+            [disabled]="!newTitle().trim() || isBusy"
+            [loading]="saving() || savingConcept()">
+            {{ saveAsDraft() ? 'Opslaan' : 'Aanmaken' }}
+          </app-button>
+        </div>
       </div>
+    </div>
+  }
+
+  <!-- Concept list (shown when form is closed and concepts exist) -->
+  @if (!showForm() && service.threadConcepten().length > 0) {
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-amber-900/10 flex-shrink-0">
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Concepten:</p>
+      @for (concept of service.threadConcepten(); track concept.id) {
+        <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 py-1">
+          <svg lucideFileText class="w-3 h-3 text-gray-400 flex-shrink-0"></svg>
+          <span class="truncate flex-1 font-medium">{{ concept.title }}</span>
+          <button
+            (click)="loadConcept(concept)"
+            class="text-scuba-600 dark:text-scuba-400 hover:underline flex-shrink-0">
+            Bewerken
+          </button>
+          <button
+            (click)="publishConcept(concept.id)"
+            class="text-scuba-600 dark:text-scuba-400 hover:underline flex-shrink-0">
+            Publiceer
+          </button>
+          <button
+            (click)="deleteConcept(concept.id)"
+            class="text-red-500 hover:underline flex-shrink-0">
+            Verwijder
+          </button>
+        </div>
+      }
     </div>
   }
 

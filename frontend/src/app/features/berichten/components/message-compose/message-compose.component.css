@@ -15,14 +15,12 @@
 }
 
 /*
- * Drive the editor height directly from the CSS custom property set by the
- * parent (berichten-page) via [style.--editor-height]. This bypasses Quill's
- * own height/min-height rules which prevent the flex approach from working.
- * Fallback to clamp() so the component still looks reasonable when used
- * without an explicit height (e.g. in isolation / tests).
+ * Drive the editor height from --editor-height, set imperatively by the
+ * component via ResizeObserver (hostHeight - conceptListHeight - overhead).
+ * Fallback to 80px so the editor remains usable if the var is not yet set.
  */
 :host ::ng-deep .ql-editor {
-  height: var(--editor-height, clamp(4rem, 12vh, 10rem));
+  height: var(--editor-height, 80px);
   min-height: 0 !important;
   max-height: none !important;
   overflow-y: auto;

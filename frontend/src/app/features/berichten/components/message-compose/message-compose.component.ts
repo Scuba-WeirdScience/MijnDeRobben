@@ -1,13 +1,21 @@
 import {
   Component, inject, signal, ViewChild, ElementRef,
-  OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA,
-  effect,
+  OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA, effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Quill from 'quill';
 import { BerichtenService } from '../../berichten.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideSend, LucideFileText } from '../../../../shared/lucide-icons';
+
+// Fixed overhead: toolbar (~34px) + editor row padding top+bottom (~16px) + border (2px)
+const EDITOR_OVERHEAD_PX = 52;
+
+// Safelist for dynamically computed classes (Tailwind scans .ts files as plain text)
+const _TW_SAFELIST = [
+  'bg-amber-50', 'dark:bg-amber-900/10', '-mx-3', 'px-3', 'rounded',
+  'text-scuba-600', 'dark:text-scuba-400', 'hover:underline', 'text-red-500',
+];
 
 interface EmojiSuggestion {
   id: string;
@@ -28,6 +36,7 @@ export class MessageComposeComponent implements OnDestroy {
   protected readonly service = inject(BerichtenService);
   private readonly toast = inject(ToastService);
   private readonly zone = inject(NgZone);
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
 
   @ViewChild('editorMount') set editorMount(el: ElementRef<HTMLDivElement> | undefined) {
     if (el && !this.quill) {
@@ -35,15 +44,36 @@ export class MessageComposeComponent implements OnDestroy {
     }
   }
 
+  @ViewChild('conceptList') set conceptList(el: ElementRef<HTMLDivElement> | undefined) {
+    this.conceptListObs?.disconnect();
+    this.conceptListObs = undefined;
+    if (el) {
+      this.conceptListHeight.set(el.nativeElement.offsetHeight);
+      this.conceptListObs = new ResizeObserver(entries => {
+        this.zone.run(() => this.conceptListHeight.set(entries[0].borderBoxSize[0]?.blockSize ?? el.nativeElement.offsetHeight));
+      });
+      this.conceptListObs.observe(el.nativeElement);
+    } else {
+      this.conceptListHeight.set(0);
+    }
+  }
+
+  private conceptListObs?: ResizeObserver;
+  private hostObs?: ResizeObserver;
+  private conceptListHeight = signal(0);
+  private hostHeight = signal(0);
+
   private quill: Quill | null = null;
   body = signal('');
   sending = signal(false);
   savingConcept = signal(false);
+  saveAsDraft = signal(false);
+  currentConceptId = signal<string | null>(null);
 
-  // ── Emoji shortcode autocomplete state ─────────────────────────────────────
+  // ── Emoji shortcode autocomplete state ───────────────────────────────────────
   emojiSuggestions = signal<EmojiSuggestion[]>([]);
   emojiSelectedIndex = signal(0);
-  private emojiSearchStart: number | null = null; // cursor index where ':' was typed
+  private emojiSearchStart: number | null = null;
 
   private readonly toolbarOptions = [
     ['bold', 'italic', 'underline', 'strike'],
@@ -54,10 +84,22 @@ export class MessageComposeComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const threadId = this.service.activeThreadId();
-      if (!threadId) {
-        this.destroyQuill();
-      }
+      if (!threadId) this.destroyQuill();
     });
+
+    // Update --editor-height whenever host or concept list changes size
+    effect(() => {
+      const hostH = this.hostHeight();
+      const conceptH = this.conceptListHeight();
+      const editorH = Math.max(40, hostH - conceptH - EDITOR_OVERHEAD_PX);
+      this.hostEl.nativeElement.style.setProperty('--editor-height', `${editorH}px`);
+    });
+
+    // Observe host resize (driven by drag handle)
+    this.hostObs = new ResizeObserver(entries => {
+      this.zone.run(() => this.hostHeight.set(entries[0].contentRect.height));
+    });
+    this.hostObs.observe(this.hostEl.nativeElement);
   }
 
   private initQuill(container: HTMLDivElement): void {
@@ -72,7 +114,6 @@ export class MessageComposeComponent implements OnDestroy {
                 key: 'Enter',
                 shiftKey: false,
                 handler: () => {
-                  // If emoji picker is open, confirm selection instead of sending
                   if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
                     this.zone.run(() => this.confirmEmojiSuggestion());
                     return false;
@@ -151,13 +192,11 @@ export class MessageComposeComponent implements OnDestroy {
     const cursorIndex = range.index;
     const text = this.quill.getText(0, cursorIndex);
 
-    // Find the last ':' before the cursor that starts a potential shortcode
     const colonIndex = text.lastIndexOf(':');
     if (colonIndex === -1) { this.clearEmojiSuggestions(); return; }
 
     const query = text.slice(colonIndex + 1);
 
-    // Only search when query is 2-20 chars, no spaces, no second colon
     if (query.length < 2 || query.includes(' ') || query.includes(':') || query.length > 20) {
       this.clearEmojiSuggestions();
       return;
@@ -206,11 +245,15 @@ export class MessageComposeComponent implements OnDestroy {
   private destroyQuill(): void {
     this.quill = null;
     this.body.set('');
+    this.saveAsDraft.set(false);
+    this.currentConceptId.set(null);
     this.clearEmojiSuggestions();
   }
 
   ngOnDestroy(): void {
     this.destroyQuill();
+    this.conceptListObs?.disconnect();
+    this.hostObs?.disconnect();
   }
 
   clearEditor(): void {
@@ -220,6 +263,14 @@ export class MessageComposeComponent implements OnDestroy {
   }
 
   async send(): Promise<void> {
+    if (this.saveAsDraft()) {
+      await this.saveAsConcept();
+    } else {
+      await this._sendMessage();
+    }
+  }
+
+  private async _sendMessage(): Promise<void> {
     const threadId = this.service.activeThreadId();
     const groepId = this.service.activeGroepId();
     if (!threadId || !groepId || !this.body().trim() || this.sending()) return;
@@ -240,13 +291,56 @@ export class MessageComposeComponent implements OnDestroy {
     if (!threadId || !groepId || !this.body().trim() || this.savingConcept()) return;
     this.savingConcept.set(true);
     try {
-      await this.service.saveMessageConcept(threadId, groepId, this.body());
+      const result = await this.service.saveMessageConcept(threadId, groepId, this.body(), this.currentConceptId() ?? undefined);
+      this.currentConceptId.set(result.messageId);
       this.clearEditor();
+      this.currentConceptId.set(null);
       this.toast.success('Concept opgeslagen.');
     } catch {
       this.toast.error('Opslaan mislukt.');
     } finally {
       this.savingConcept.set(false);
+    }
+  }
+
+  loadConcept(concept: { id: string; body: string }): void {
+    if (!this.quill) return;
+    this.currentConceptId.set(concept.id);
+    this.saveAsDraft.set(true);
+    // Set Quill content from HTML
+    const delta = this.quill.clipboard.convert({ html: concept.body });
+    this.quill.setContents(delta, 'silent');
+    const editor = this.quill.root;
+    this.body.set(editor.innerHTML === '<p><br></p>' ? '' : editor.innerHTML);
+    this.quill.focus();
+    this.quill.setSelection(this.quill.getLength(), 0);
+  }
+
+  async publishConcept(conceptId: string): Promise<void> {
+    try {
+      await this.service.publishMessageConcept(conceptId);
+      if (this.currentConceptId() === conceptId) {
+        this.clearEditor();
+        this.currentConceptId.set(null);
+        this.saveAsDraft.set(false);
+      }
+      this.toast.success('Concept gepubliceerd.');
+    } catch {
+      this.toast.error('Publiceren mislukt.');
+    }
+  }
+
+  async deleteConcept(conceptId: string): Promise<void> {
+    try {
+      await this.service.deleteMessageConcept(conceptId);
+      if (this.currentConceptId() === conceptId) {
+        this.clearEditor();
+        this.currentConceptId.set(null);
+        this.saveAsDraft.set(false);
+      }
+      this.toast.success('Concept verwijderd.');
+    } catch {
+      this.toast.error('Verwijderen mislukt.');
     }
   }
 }
