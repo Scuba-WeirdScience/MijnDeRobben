@@ -13,5 +13,9 @@
 
 <app-toast />
 
+@if (isNavigating()) {
+  <app-spinner [fullPage]="true" />
+}
+
 <!-- Update notification — fixed bottom banner when new SW version is ready -->
 <app-update-notification />
