@@ -107,11 +107,15 @@ export class BerichtenPageComponent {
       const pending = this.service.pendingConceptEdit();
       const activeThreadId = this.service.activeThreadId();
       if (pending && activeThreadId === pending.threadId) {
-        // Defer until after render so the compose component is visible
-        Promise.resolve().then(() => {
-          this.messageCompose?.loadConcept(pending);
-          this.service.pendingConceptEdit.set(null);
-        });
+        // Defer a full macrotask so Angular has time to render the compose component
+        setTimeout(() => {
+          if (this.messageCompose) {
+            this.messageCompose.loadConcept(pending);
+            this.service.pendingConceptEdit.set(null);
+          }
+          // If messageCompose is still not ready, leave pendingConceptEdit set
+          // so the effect retries on the next render cycle
+        }, 0);
       }
     });
   }
