@@ -9,7 +9,8 @@ const ROLES = ['Beheer', 'Lid', 'Bestuur', 'MateriaalCommissie', 'InstructieKade
 // ── onUserCreated: bootstrap user + member docs ────────────────────────────
 // Uses v1 auth trigger — v2 auth triggers require Identity Platform (paid).
 // Uses merge:true so createMember's full write is never overwritten.
-export const onUserCreated = v1.region(REGION).auth.user().onCreate(async (user) => {
+// v1 auth triggers do not support europe-west4; use europe-west1 (nearest supported v1 region).
+export const onUserCreated = v1.region('europe-west1').auth.user().onCreate(async (user) => {
   const now = new Date().toISOString();
 
   await auth.setCustomUserClaims(user.uid, { Lid: true });
