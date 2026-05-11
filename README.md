@@ -1,19 +1,18 @@
 # De Robben — Scuba Club Membership Management System
 
-A full-stack membership management system for the De Robben scuba diving club.
+A full-stack membership management system for the De Robben scuba diving club, built on Firebase + Angular.
 
 ## Architecture
 
 ```
-frontend/       Angular 20 SPA (port 4200)
-api-gateway/    ASP.NET Core 9 + YARP + JWT + ASP.NET Identity (port 5000)
-member-api/     ASP.NET Core 9 Web API + EF Core + SQL Server (port 5001)
+frontend/       Angular 21 SPA (standalone, signals) → :4300
+functions/      Firebase Cloud Functions (TypeScript) + Firestore
 ```
 
 ### Auth Flow
-- All auth (login, token refresh) goes through the **gateway** at `:5000`
-- The gateway proxies `/api/members/**` to the **member-api** at `:5001`
-- The gateway injects `X-Gateway-Secret` + `X-User-*` headers so the member-api can trust requests without re-validating JWTs
+- Firebase Authentication (email/password) — no custom gateway or JWT
+- Cloud Functions validate auth via `requireAuth` / `requireRole` guards
+- The Angular frontend uses `@angular/fire` for auth state + callable functions
 
 ### Roles
 `Beheer` | `Lid` | `Bestuur` | `MateriaalCommissie` | `InstructieKader`
@@ -22,85 +21,76 @@ member-api/     ASP.NET Core 9 Web API + EF Core + SQL Server (port 5001)
 
 ## Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9)
-- [Node.js 20+](https://nodejs.org/) + Angular CLI 20 (`npm install -g @angular/cli`)
-- SQL Server (2019+) running on `localhost` with Windows Authentication
+- [Node.js 20+](https://nodejs.org/) + Angular CLI 21 (`npm install -g @angular/cli`)
+- [Firebase CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`)
+- Java 17+ (required by Firestore emulator)
 
 ---
 
 ## Running the stack
 
-Open **three terminals** and run one command in each:
+Open a terminal and run:
 
-### Terminal 1 — Member API
+### Terminal 1 — Firebase Emulators + Functions
 ```powershell
-cd member-api
-dotnet run
-# Starts on http://localhost:5107
-# Auto-creates ScubaMemberDb, runs migrations, seeds sample members
+cd functions
+npm install
+npm run build
+cd ..
+firebase emulators:start --project demo-derobben --import=./emulator-data
+# Emulator UI :4000 | Functions :5001 | Firestore :8080 | Auth :9099 | Storage :9199
 ```
 
-### Terminal 2 — API Gateway
-```powershell
-cd api-gateway
-dotnet run
-# Starts on http://localhost:5238
-# Auto-creates ScubaGatewayDb, runs migrations, seeds roles + admin user
-```
-
-### Terminal 3 — Frontend
+### Terminal 2 — Frontend
 ```powershell
 cd frontend
 npm install      # first time only
 ng serve
-# Starts on http://localhost:4200
+# Starts on http://localhost:4300
 ```
 
-Then open **http://localhost:4200** in your browser.
+### Terminal 3 — Seed (after emulators are ready, ~40s)
+```powershell
+npx ts-node --esm scripts/seed-emulator.ts
+```
 
----
+Or use the all-in-one script:
+```powershell
+.\start-dev.ps1      # launches Firebase + Frontend + Seed in Windows Terminal tabs
+```
 
-## Default credentials
-
-| Email | Password | Role |
-|---|---|---|
-| `admin@scubaclub.be` | `Admin@12345` | Beheer |
-
----
-
-## API Documentation (Swagger)
-
-- Member API: http://localhost:5107/swagger
-- API Gateway: http://localhost:5238/swagger
+Then open **http://localhost:4300** in your browser.
 
 ---
 
 ## Project Structure
 
 ```
-member-api/
-  Controllers/         MembersController
-  Data/                MemberDbContext, migrations, seeder
-  DTOs/                MemberDto, CreateMemberDto, UpdateMemberDto, PagedResult<T>
-  Middleware/          TrustedGatewayMiddleware, GatewayHeaderAuthHandler
-  Models/              Member
-  Services/            MemberService
+functions/src/
+  index.ts                 Function exports
+  shared/                  types.ts, auth-guards.ts
+  auth/                    Auth triggers (onUserCreated)
+  members/                 Member CRUD functions
+  activiteiten/            Activity + occurrence + registration functions
+  berichten/               Threaded messaging functions
+  brevetten/               Brevet + member-organisatie functions
+  leningen/                Material loan functions
+  rollen/                  Role management functions
 
-api-gateway/
-  Controllers/         AuthController, RolesController
-  Configuration/       JwtOptions
-  Data/                GatewayDbContext (ASP.NET Identity), migrations
-  DTOs/                AuthDtos (LoginRequest, RegisterRequest, TokenResponse…)
-  Middleware/          GatewaySecretInjectionMiddleware
-  Models/              ApplicationUser
-  Services/            JwtService, UserService
+frontend/src/app/
+  core/                    AuthService, firebase config, callable.ts, guards
+  features/
+    activiteiten/          Activity calendar, detail, admin
+    admin/                 Member, role, brevet, materiaal management
+    auth/                  Login page
+    berichten/             Threaded messaging (groepen, threads, messages)
+    leden/                 Member list + profile
+    lening/                Material loan overview
+    profile/               User profile + brevetten
+  shared/                  Navbar, design system components, pipes, form schemas
 
-frontend/
-  src/app/
-    core/              AuthService, ThemeService, guards, interceptors, models
-    features/          auth, members, admin (lazy-loaded)
-    shared/            NavbarComponent, SpinnerComponent, ToastComponent,
-                       HasRoleDirective, FullNamePipe, MemberStatusPipe
+migrations/                Hand-written SQL scripts (legacy — no longer applied)
+scripts/                   seed-emulator.ts, fix-duplicate-groepen.ts
 ```
 
 ---
@@ -109,7 +99,16 @@ frontend/
 
 | Layer | Technology |
 |---|---|
-| Frontend | Angular 20, Tailwind CSS v3, standalone components |
-| Gateway | ASP.NET Core 9, YARP 2.3.0, ASP.NET Identity 9, JWT |
-| Member API | ASP.NET Core 9, EF Core 9, SQL Server |
-| Database | SQL Server 2019 (Windows Auth) |
+| Frontend | Angular 21.2.7, Tailwind CSS v4, Firebase SDK, Quill editor |
+| Backend | Firebase Cloud Functions (Node.js + TypeScript) |
+| Database | Firestore (NoSQL) |
+| Auth | Firebase Authentication (email/password) + custom claims for roles |
+
+## Default credentials
+
+The seed script creates these test accounts (emulator only):
+
+| Email | Password | Role |
+|---|---|---|
+| `admin@scubaclub.be` | `Admin@12345` | Beheer |
+| `lid@scubaclub.be` | `Lid@12345` | Lid |
