@@ -248,7 +248,7 @@ export const updateGroep = onCall({ region: REGION }, async (request) => {
 
 // ── deleteGroep ────────────────────────────────────────────────────────────
 export const deleteGroep = onCall({ region: REGION }, async (request) => {
-  const auth = requireAuth(request);
+  requireAuth(request);
   if (!isAdminUser(request)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const { groepId } = request.data as { groepId: string };
