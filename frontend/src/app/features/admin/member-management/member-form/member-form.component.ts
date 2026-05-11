@@ -1,8 +1,8 @@
 import { Component, input, output, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { z } from 'zod';
-import { AdminMemberService } from '../../services/admin-member.service';
-import { Member } from '../../../members/models/member.model';
+import { MemberService } from '../../../members/services/member.service';
+import { Member } from '../../../members/services/member.service';
 import { createSignalForm } from '../../../../shared/forms/signal-form';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LocaleDateInputComponent } from '../../../../shared/components/locale-date-input/locale-date-input.component';
@@ -71,7 +71,7 @@ export class MemberFormComponent implements OnInit {
   readonly saved = output<void>();
   readonly cancelled = output<void>();
 
-  private readonly adminMemberService = inject(AdminMemberService);
+  private readonly adminMemberService = inject(MemberService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
   private readonly leningService = inject(LeningService);
@@ -152,7 +152,7 @@ export class MemberFormComponent implements OnInit {
     const m = this.member();
     const obs = m
       ? this.adminMemberService.update(m.id, payload)
-      : this.adminMemberService.create({
+      : this.adminMemberService.adminCreate({
           ...payload,
           email: val!.email!,
           joinDate: payload.joinDate ?? new Date().toISOString().split('T')[0],

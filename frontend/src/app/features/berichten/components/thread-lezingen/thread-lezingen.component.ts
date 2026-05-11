@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { BerichtenService, Thread, ThreadLezingInfo } from '../../berichten.service';
+import { MessagesService, ThreadLezingInfo } from '../../services/messages.service';
+import { Thread } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { SpinnerComponent } from '../../../../shared/components/design-system';
 
@@ -19,7 +20,7 @@ const _TW_SAFELIST = [
   templateUrl: './thread-lezingen.component.html',
 })
 export class ThreadLezingenComponent {
-  private readonly service = inject(BerichtenService);
+  private readonly messagesService = inject(MessagesService);
   private readonly auth = inject(AuthService);
 
   readonly thread = input.required<Thread>();
@@ -45,7 +46,7 @@ export class ThreadLezingenComponent {
     this.isExpanded.set(true);
     this.loading.set(true);
     try {
-      const result = await this.service.getThreadLezingen(
+      const result = await this.messagesService.getThreadLezingen(
         this.thread().id,
         this.thread().groepId,
       );

@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminMemberService } from '../services/admin-member.service';
+import { MemberService } from '../../members/services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MemberBrevetPanelComponent } from './member-brevet-panel/member-brevet-panel.component';
@@ -15,7 +15,7 @@ import { PageContainerComponent } from '../../../shared/components/design-system
   templateUrl: './brevet-management.component.html',
 })
 export class BrevetManagementComponent {
-  private readonly adminMemberService = inject(AdminMemberService);
+  private readonly adminMemberService = inject(MemberService);
   private readonly auth = inject(AuthService);
 
   memberSearch = '';

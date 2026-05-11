@@ -17,6 +17,7 @@ import {
   LocatieDoc,
   ResolvedOccurrence,
   EditScope,
+  generateOccurrences,
 } from '../activiteiten.service';
 import { ActiviteitFormComponent } from './activiteit-form.component';
 import { ActiviteitOccurrenceEditComponent } from './activiteit-occurrence-edit.component';
@@ -81,7 +82,7 @@ export class ActiviteitenBeheerComponent implements OnInit {
     if (!a) return [];
     const van = new Date();
     const tot = addMonths(van, this.previewMaanden());
-    return this.service.generateOccurrences([a], van, tot, this.overrides());
+    return generateOccurrences([a], van, tot, this.overrides());
   });
 
   ngOnInit(): void {

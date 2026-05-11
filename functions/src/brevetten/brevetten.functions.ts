@@ -1,20 +1,13 @@
-import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, REGION } from '../shared/admin';
 import { BrevetDoc, BrevetTypeDoc, SpecialtyTypeDoc } from '../shared/types';
-
-function requireInstructieKader(request: CallableRequest) {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  const t = request.auth.token;
-  if (!t['InstructieKader'] && !t['Bestuur'] && !t['Beheer']) {
-    throw new HttpsError('permission-denied', 'Geen toegang.');
-  }
-}
+import { requireAuth, requireAnyRole } from '../shared/auth-guards';
 
 // ── getMyBrevetten ─────────────────────────────────────────────────────────
 export const getMyBrevetten = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
   const snap = await db.collection('brevetten')
-    .where('memberId', '==', request.auth.uid)
+    .where('memberId', '==', auth.uid)
     .orderBy('behaaldDatum', 'desc')
     .get();
   return snap.docs.map(d => d.data());
@@ -22,7 +15,7 @@ export const getMyBrevetten = onCall({ region: REGION }, async (request) => {
 
 // ── getMemberBrevetten ─────────────────────────────────────────────────────
 export const getMemberBrevetten = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { memberId } = request.data as { memberId: string };
   const snap = await db.collection('brevetten')
     .where('memberId', '==', memberId)
@@ -33,7 +26,7 @@ export const getMemberBrevetten = onCall({ region: REGION }, async (request) => 
 
 // ── createBrevet ───────────────────────────────────────────────────────────
 export const createBrevet = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { memberId, brevetType, organisatie, organisatieNaam, niveau, behaaldDatum, notities } = request.data as {
     memberId: string;
     brevetType: string;
@@ -60,7 +53,7 @@ export const createBrevet = onCall({ region: REGION }, async (request) => {
 
 // ── updateBrevet ───────────────────────────────────────────────────────────
 export const updateBrevet = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id, memberId, ...fields } = request.data as {
     id: string; memberId: string;
     brevetType?: string; organisatie?: string; organisatieNaam?: string | null;
@@ -80,7 +73,7 @@ export const updateBrevet = onCall({ region: REGION }, async (request) => {
 
 // ── deleteBrevet ───────────────────────────────────────────────────────────
 export const deleteBrevet = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id } = request.data as { id: string };
   const snap = await db.collection('brevetten').doc(id).get();
   if (!snap.exists) throw new HttpsError('not-found', 'Brevet niet gevonden.');
@@ -90,7 +83,7 @@ export const deleteBrevet = onCall({ region: REGION }, async (request) => {
 
 // ── getBrevetTypes ─────────────────────────────────────────────────────────
 export const getBrevetTypes = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  requireAuth(request);
   const { organisatie } = (request.data as { organisatie?: string }) ?? {};
 
   let query: FirebaseFirestore.Query = db.collection('brevet-types').orderBy('volgorde');
@@ -102,7 +95,7 @@ export const getBrevetTypes = onCall({ region: REGION }, async (request) => {
 
 // ── createBrevetType ───────────────────────────────────────────────────────
 export const createBrevetType = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { organisatie, naam, volgorde } = request.data as { organisatie: string; naam: string; volgorde: number };
   const ref = db.collection('brevet-types').doc();
   const doc: BrevetTypeDoc = { id: ref.id, organisatie, naam, volgorde };
@@ -112,7 +105,7 @@ export const createBrevetType = onCall({ region: REGION }, async (request) => {
 
 // ── updateBrevetType ───────────────────────────────────────────────────────
 export const updateBrevetType = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id, ...fields } = request.data as { id: string; organisatie?: string; naam?: string; volgorde?: number };
   const ref = db.collection('brevet-types').doc(id);
   const snap = await ref.get();
@@ -123,7 +116,7 @@ export const updateBrevetType = onCall({ region: REGION }, async (request) => {
 
 // ── deleteBrevetType ───────────────────────────────────────────────────────
 export const deleteBrevetType = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id } = request.data as { id: string };
   const snap = await db.collection('brevet-types').doc(id).get();
   if (!snap.exists) throw new HttpsError('not-found', 'BrevetType niet gevonden.');
@@ -133,7 +126,7 @@ export const deleteBrevetType = onCall({ region: REGION }, async (request) => {
 
 // ── getSpecialtyTypes ──────────────────────────────────────────────────────
 export const getSpecialtyTypes = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  requireAuth(request);
   const { organisatie } = (request.data as { organisatie?: string }) ?? {};
 
   let query: FirebaseFirestore.Query = db.collection('specialty-types').orderBy('volgorde');
@@ -145,7 +138,7 @@ export const getSpecialtyTypes = onCall({ region: REGION }, async (request) => {
 
 // ── createSpecialtyType ────────────────────────────────────────────────────
 export const createSpecialtyType = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { organisatie, naam, volgorde } = request.data as { organisatie: string; naam: string; volgorde: number };
   const ref = db.collection('specialty-types').doc();
   const doc: SpecialtyTypeDoc = { id: ref.id, organisatie, naam, volgorde };
@@ -155,7 +148,7 @@ export const createSpecialtyType = onCall({ region: REGION }, async (request) =>
 
 // ── updateSpecialtyType ────────────────────────────────────────────────────
 export const updateSpecialtyType = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id, ...fields } = request.data as { id: string; organisatie?: string; naam?: string; volgorde?: number };
   const ref = db.collection('specialty-types').doc(id);
   const snap = await ref.get();
@@ -166,7 +159,7 @@ export const updateSpecialtyType = onCall({ region: REGION }, async (request) =>
 
 // ── deleteSpecialtyType ────────────────────────────────────────────────────
 export const deleteSpecialtyType = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id } = request.data as { id: string };
   const snap = await db.collection('specialty-types').doc(id).get();
   if (!snap.exists) throw new HttpsError('not-found', 'SpecialtyType niet gevonden.');

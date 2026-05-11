@@ -2,13 +2,9 @@ import { Injectable } from '@angular/core';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@fire';
 import { from, Observable } from 'rxjs';
+import { BrevetTypeDoc } from '../../../core/models/firestore-types';
 
-export interface BrevetTypeDef {
-  id: string;
-  organisatie: string;
-  naam: string;
-  volgorde: number;
-}
+export type BrevetTypeDef = BrevetTypeDoc;
 
 export type CreateBrevetTypeDefRequest = Omit<BrevetTypeDef, 'id'>;
 export type UpdateBrevetTypeDefRequest = Partial<CreateBrevetTypeDefRequest>;

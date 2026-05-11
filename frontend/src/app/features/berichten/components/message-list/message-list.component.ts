@@ -1,6 +1,8 @@
 import { Component, computed, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BerichtenService } from '../../berichten.service';
+import { MessagesService } from '../../services/messages.service';
+import { GroepenService } from '../../services/groepen.service';
+import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePin, LucidePinOff, LucideTrash2, LucideMail, LucideMailOpen, LucideReply, LucideHash } from '../../../../shared/lucide-icons';
@@ -34,14 +36,16 @@ const _TW_SAFELIST = [
   ],
 })
 export class MessageListComponent {
-  protected readonly service = inject(BerichtenService);
+  protected readonly messagesService = inject(MessagesService);
+  protected readonly groepenService = inject(GroepenService);
+  protected readonly threadsService = inject(ThreadsService);
   protected readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
 
   readonly messagesEnd = viewChild<ElementRef>('messagesEnd');
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
-  readonly pinnedMessages = computed(() => this.service.messages().filter(m => m.pinnedAt && !m.deletedAt));
+  readonly pinnedMessages = computed(() => this.messagesService.messages().filter(m => m.pinnedAt && !m.deletedAt));
 
   replyOpenId = signal<string | null>(null);
   replyBody = signal('');
@@ -51,7 +55,7 @@ export class MessageListComponent {
 
   constructor() {
     effect(() => {
-      const msgs = this.service.messages();
+      const msgs = this.messagesService.messages();
       if (msgs.length > 0) {
         setTimeout(() => {
           this.messagesEnd()?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
@@ -65,7 +69,7 @@ export class MessageListComponent {
   }
 
   getReaderCount(message: any): number {
-    return this.service.messageReaderCounts()[message.id] ?? 0;
+    return this.messagesService.messageReaderCounts()[message.id] ?? 0;
   }
 
   canDelete(message: any): boolean {
@@ -73,7 +77,7 @@ export class MessageListComponent {
   }
 
   isRead(message: any): boolean {
-    return this.service.readMessageIds().has(message.id);
+    return this.messagesService.readMessageIds().has(message.id);
   }
 
   getInitial(name: string): string {
@@ -83,7 +87,7 @@ export class MessageListComponent {
   async togglePin(message: any): Promise<void> {
     try {
       await this.auth.refreshUser();
-      await this.service.pinMessage(message.id);
+      await this.messagesService.pinMessage(message.id);
     } catch {
       this.toast.error('Vastpinnen mislukt.');
     }
@@ -92,7 +96,7 @@ export class MessageListComponent {
   async deleteMessage(message: any): Promise<void> {
     this.deletingId.set(message.id);
     try {
-      await this.service.deleteMessage(message.id);
+      await this.messagesService.deleteMessage(message.id);
       this.toast.success('Bericht verwijderd.');
     } catch {
       this.toast.error('Verwijderen mislukt.');
@@ -102,20 +106,20 @@ export class MessageListComponent {
   }
 
   async toggleRead(message: any): Promise<void> {
-    const thread = this.service.activeThread();
-    const groepId = this.service.activeGroepId();
+    const thread = this.threadsService.activeThread();
+    const groepId = this.groepenService.activeGroepId();
     if (!thread || !groepId) return;
     try {
       if (this.isRead(message)) {
-        await this.service.markMessageUnread(message.id, thread.id, groepId);
-        const s = new Set(this.service.readMessageIds());
+        await this.messagesService.markMessageUnread(message.id, thread.id, groepId);
+        const s = new Set(this.messagesService.readMessageIds());
         s.delete(message.id);
-        this.service.readMessageIds.set(s);
+        this.messagesService.readMessageIds.set(s);
       } else {
-        await this.service.markMessageRead(message.id, thread.id, groepId);
-        const s = new Set(this.service.readMessageIds());
+        await this.messagesService.markMessageRead(message.id, thread.id, groepId);
+        const s = new Set(this.messagesService.readMessageIds());
         s.add(message.id);
-        this.service.readMessageIds.set(s);
+        this.messagesService.readMessageIds.set(s);
       }
     } catch {
       this.toast.error('Status kon niet worden gewijzigd.');
@@ -133,12 +137,12 @@ export class MessageListComponent {
   }
 
   async submitReply(): Promise<void> {
-    const threadId = this.service.activeThreadId();
-    const groepId = this.service.activeGroepId();
+    const threadId = this.threadsService.activeThreadId();
+    const groepId = this.groepenService.activeGroepId();
     if (!threadId || !groepId || !this.replyBody().trim()) return;
     this.sendingReply.set(true);
     try {
-      await this.service.sendMessage(threadId, groepId, this.replyBody(), this.replyOpenId());
+      await this.messagesService.sendMessage(threadId, groepId, this.replyBody(), this.replyOpenId());
       this.closeReply();
     } catch {
       this.toast.error('Versturen mislukt.');
@@ -149,7 +153,7 @@ export class MessageListComponent {
 
   getReplyParent(message: any): any | null {
     if (!message.replyToId) return null;
-    return this.service.messages().find(m => m.id === message.replyToId) ?? null;
+    return this.messagesService.messages().find(m => m.id === message.replyToId) ?? null;
   }
 
   scrollToMessage(messageId: string): void {

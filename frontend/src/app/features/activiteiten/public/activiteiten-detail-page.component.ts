@@ -10,6 +10,7 @@ import {
   ActiviteitOccurrenceDoc,
   ActiviteitRegistratieDoc,
   ResolvedOccurrence,
+  generateOccurrences,
 } from '../activiteiten.service';
 import { ActiviteitInschrijvingComponent } from './components/activiteit-inschrijving.component';
 
@@ -36,7 +37,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const a = this.activiteit();
     if (!a) return null;
     const datum = this.occurrenceDatum() ?? a.startDatumTijd.substring(0, 10);
-    const results = this.service.generateOccurrences([a], new Date(datum + 'T00:00:00'), new Date(datum + 'T23:59:59'), this.overrides());
+    const results = generateOccurrences([a], new Date(datum + 'T00:00:00'), new Date(datum + 'T23:59:59'), this.overrides());
     return results[0] ?? null;
   });
 

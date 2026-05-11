@@ -1,22 +1,15 @@
-import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, REGION } from '../shared/admin';
 import { MemberOrganisatieDoc } from '../shared/types';
-
-function requireInstructieKader(request: CallableRequest): void {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  const t = request.auth.token;
-  if (!t['InstructieKader'] && !t['Bestuur'] && !t['Beheer']) {
-    throw new HttpsError('permission-denied', 'Geen toegang.');
-  }
-}
+import { requireAuth, requireAnyRole } from '../shared/auth-guards';
 
 // ── getMyOrganisaties ───────────────────────────────────────────────────────
 export const getMyOrganisaties = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   // Resolve the member doc by Firebase Auth UID
   const memberSnap = await db.collection('members')
-    .where('userId', '==', request.auth.uid)
+    .where('userId', '==', auth.uid)
     .limit(1)
     .get();
 
@@ -33,7 +26,7 @@ export const getMyOrganisaties = onCall({ region: REGION }, async (request) => {
 
 // ── getMemberOrganisaties ───────────────────────────────────────────────────
 export const getMemberOrganisaties = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { memberId } = request.data as { memberId: string };
 
   const snap = await db.collection('member-organisaties')
@@ -46,7 +39,7 @@ export const getMemberOrganisaties = onCall({ region: REGION }, async (request) 
 
 // ── createMemberOrganisatie ─────────────────────────────────────────────────
 export const createMemberOrganisatie = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { memberId, organisatie, logboeknummer, beginDatum } = request.data as {
     memberId: string;
     organisatie: string;
@@ -82,7 +75,7 @@ export const createMemberOrganisatie = onCall({ region: REGION }, async (request
 
 // ── updateMemberOrganisatie ─────────────────────────────────────────────────
 export const updateMemberOrganisatie = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id, memberId, logboeknummer, beginDatum } = request.data as {
     id: string;
     memberId: string;
@@ -107,7 +100,7 @@ export const updateMemberOrganisatie = onCall({ region: REGION }, async (request
 
 // ── deleteMemberOrganisatie ─────────────────────────────────────────────────
 export const deleteMemberOrganisatie = onCall({ region: REGION }, async (request) => {
-  requireInstructieKader(request);
+  requireAnyRole(request, ['InstructieKader', 'Bestuur', 'Beheer']);
   const { id } = request.data as { id: string };
 
   const snap = await db.collection('member-organisaties').doc(id).get();

@@ -1,6 +1,5 @@
 import { Injectable, signal, effect, inject } from '@angular/core';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '@fire';
+import { call } from '../firebase/callable';
 
 export type ThemeOption = 'light' | 'dark' | 'system';
 
@@ -48,9 +47,8 @@ export class ThemeService {
   /** Called after login — loads the persisted setting from Firestore. */
   async loadFromFirestore(): Promise<void> {
     try {
-      const fn = httpsCallable<void, UserSettings>(functions, 'getUserSettings');
-      const result = await fn();
-      const remote = result.data?.theme;
+      const result = await call<void, UserSettings>('getUserSettings');
+      const remote = result?.theme;
       if (remote && remote !== this.theme()) {
         this.theme.set(remote);
       }
@@ -74,7 +72,6 @@ export class ThemeService {
   }
 
   private _saveToFirestore(t: ThemeOption): void {
-    const fn = httpsCallable<UserSettings, UserSettings>(functions, 'saveUserSettings');
-    fn({ theme: t }).catch(() => { /* silently ignore — offline or not logged in */ });
+    call<UserSettings, UserSettings>('saveUserSettings', { theme: t }).catch(() => { /* silently ignore */ });
   }
 }

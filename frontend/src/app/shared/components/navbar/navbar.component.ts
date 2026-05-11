@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ThemeService, ThemeOption } from '../../../core/services/theme.service';
 import { AvatarStateService } from '../../../core/services/avatar-state.service';
 import { PwaService } from '../../../core/services/pwa.service';
-import { BerichtenService } from '../../../features/berichten/berichten.service';
+import { UnreadCountService } from '../../../core/services/unread-count.service';
 import { VerzorgerContextService } from '../../../core/services/verzorger-context.service';
 import { LUCIDE_ICONS } from '../../lucide-icons';
 
@@ -32,7 +32,7 @@ export class NavbarComponent {
   readonly router = inject(Router);
   readonly avatarState = inject(AvatarStateService);
   readonly pwa = inject(PwaService);
-  readonly berichten = inject(BerichtenService);
+  readonly berichten = inject(UnreadCountService);
   readonly verzorgerCtx = inject(VerzorgerContextService);
 
   readonly themeOptions: { value: ThemeOption; label: string; icon: string }[] = [

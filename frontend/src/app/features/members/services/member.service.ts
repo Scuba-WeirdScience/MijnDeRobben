@@ -1,31 +1,17 @@
 import { Injectable } from '@angular/core';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '@fire';
 import { from, Observable } from 'rxjs';
+import { call } from '../../../core/firebase/callable';
+import { MemberDoc } from '../../../core/models/firestore-types';
 
-export interface Member {
-  id: string;
-  userId: string;
+export type Member = MemberDoc;
+
+export interface AdminCreateMemberRequest {
   email: string;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
   joinDate: string;
-  endOfMembership: string | null;
-  isActive: boolean;
-  isValidated: boolean;
-  avatarUrl: string | null;
-  verzorgerIds: string[];
-  createdAt: string;
-  updatedAt: string | null;
-}
-
-export interface CreateMemberRequest {
-  userId: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  joinDate: string;
+  isActive?: boolean;
 }
 
 export interface UpdateMemberRequest {
@@ -47,36 +33,37 @@ export interface PagedResult<T> {
 @Injectable({ providedIn: 'root' })
 export class MemberService {
   getAll(page = 1, pageSize = 20, search = ''): Observable<PagedResult<Member>> {
-    const fn = httpsCallable<{ page: number; pageSize: number; search: string }, PagedResult<Member>>(
-      functions, 'getMembers'
-    );
-    return from(fn({ page, pageSize, search }).then(r => r.data));
+    return from(call<{ page: number; pageSize: number; search: string }, PagedResult<Member>>(
+      'getMembers', { page, pageSize, search }
+    ));
   }
 
   getById(id: string): Observable<Member> {
-    const fn = httpsCallable<{ memberId: string }, Member>(functions, 'getMember');
-    return from(fn({ memberId: id }).then(r => r.data));
-  }
-
-  create(member: CreateMemberRequest): Observable<Member> {
-    const fn = httpsCallable<CreateMemberRequest, Member>(functions, 'createMember');
-    return from(fn(member).then(r => r.data));
+    return from(call<{ memberId: string }, Member>('getMember', { memberId: id }));
   }
 
   update(id: string, member: UpdateMemberRequest): Observable<Member> {
-    const fn = httpsCallable<{ memberId: string } & UpdateMemberRequest, Member>(functions, 'updateMember');
-    return from(fn({ memberId: id, ...member }).then(r => r.data));
+    return from(call<{ memberId: string } & UpdateMemberRequest, Member>(
+      'updateMember', { memberId: id, ...member }
+    ));
   }
 
   delete(id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ memberId: string }, { success: boolean }>(functions, 'deleteMember');
-    return from(fn({ memberId: id }).then(r => r.data));
+    return from(call<{ memberId: string }, { success: boolean }>('deleteMember', { memberId: id }));
   }
 
   getMijnKinderen(): Observable<Member[]> {
-    const fn = httpsCallable<void, Member[]>(functions, 'getMijnKinderen');
-    return from(fn().then(r => r.data));
+    return from(call<void, Member[]>('getMijnKinderen'));
+  }
+
+  // ── Admin-only operations ──────────────────────────────────────────────────
+
+  /** Create a member by e-mail address (admin creates the Auth account). */
+  adminCreate(member: AdminCreateMemberRequest): Observable<Member> {
+    return from(call<AdminCreateMemberRequest, Member>('createMember', member));
+  }
+
+  resendUitnodiging(id: string): Observable<{ success: boolean }> {
+    return from(call<{ memberId: string }, { success: boolean }>('resendUitnodiging', { memberId: id }));
   }
 }
-
-

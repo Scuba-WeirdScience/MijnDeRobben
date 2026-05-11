@@ -5,14 +5,11 @@ import { db, REGION } from '../shared/admin';
 import { MemberDoc } from '../shared/types';
 import { sendPasswordResetEmail } from '../shared/mail';
 import { expireMember } from './expire-member';
-
-function isBeheer(request: { auth?: { token: Record<string, unknown> } | null }): boolean {
-  return request.auth?.token?.['Beheer'] === true;
-}
+import { requireAuth, requireRole } from '../shared/auth-guards';
 
 // ── getMembers ─────────────────────────────────────────────────────────────
 export const getMembers = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  requireAuth(request);
 
   const { page = 1, pageSize = 20, search = '', isActive } = request.data as {
     page?: number; pageSize?: number; search?: string; isActive?: boolean;
@@ -39,7 +36,7 @@ export const getMembers = onCall({ region: REGION }, async (request) => {
 
 // ── getMember ──────────────────────────────────────────────────────────────
 export const getMember = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  requireAuth(request);
   const { memberId } = request.data as { memberId: string };
   const doc = await db.collection('members').doc(memberId).get();
   if (!doc.exists) throw new HttpsError('not-found', 'Member not found.');
@@ -48,16 +45,15 @@ export const getMember = onCall({ region: REGION }, async (request) => {
 
 // ── getMe ──────────────────────────────────────────────────────────────────
 export const getMe = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  const doc = await db.collection('members').doc(request.auth.uid).get();
+  const auth = requireAuth(request);
+  const doc = await db.collection('members').doc(auth.uid).get();
   if (!doc.exists) throw new HttpsError('not-found', 'Member not found.');
   return doc.data();
 });
 
 // ── createMember ───────────────────────────────────────────────────────────
 export const createMember = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { email, firstName, lastName, dateOfBirth, joinDate, isActive } = request.data as {
     email: string; firstName: string; lastName: string;
@@ -118,8 +114,7 @@ export const createMember = onCall({ region: REGION }, async (request) => {
 
 // ── resendUitnodiging ──────────────────────────────────────────────────────
 export const resendUitnodiging = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { memberId } = request.data as { memberId: string };
   const doc = await db.collection('members').doc(memberId).get();
@@ -144,8 +139,7 @@ export const resendUitnodiging = onCall({ region: REGION }, async (request) => {
 
 // ── updateMember ───────────────────────────────────────────────────────────
 export const updateMember = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { memberId, ...updates } = request.data as { memberId: string } & Partial<MemberDoc>;
   const doc = await db.collection('members').doc(memberId).get();
@@ -174,10 +168,10 @@ export const updateMember = onCall({ region: REGION }, async (request) => {
 
 // ── getMijnKinderen ────────────────────────────────────────────────────────
 export const getMijnKinderen = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const snap = await db.collection('members')
-    .where('verzorgerIds', 'array-contains', request.auth.uid)
+    .where('verzorgerIds', 'array-contains', auth.uid)
     .get();
 
   return snap.docs.map(d => d.data());
@@ -185,8 +179,7 @@ export const getMijnKinderen = onCall({ region: REGION }, async (request) => {
 
 // ── deleteMember ───────────────────────────────────────────────────────────
 export const deleteMember = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { memberId } = request.data as { memberId: string };
   await db.collection('members').doc(memberId).delete();

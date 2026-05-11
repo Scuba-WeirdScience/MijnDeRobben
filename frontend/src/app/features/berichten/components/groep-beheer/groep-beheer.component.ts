@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { BerichtenService, Groep } from '../../berichten.service';
+import { BerichtenService } from '../../berichten.service';
+import { GroepenService, Groep } from '../../services/groepen.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { MemberService, Member } from '../../../../features/members/services/member.service';
 import {
@@ -39,6 +40,7 @@ const _TW_SAFELIST = [
   templateUrl: './groep-beheer.component.html',
 })
 export class GroepBeheerComponent {
+  readonly groepenService = inject(GroepenService);
   readonly service = inject(BerichtenService);
   private readonly toast = inject(ToastService);
   private readonly memberService = inject(MemberService);
@@ -64,8 +66,8 @@ export class GroepBeheerComponent {
   readonly search = signal('');
   readonly filteredGroepen = computed(() => {
     const q = this.search().toLowerCase().trim();
-    if (!q) return this.service.allGroepen();
-    return this.service.allGroepen().filter(g =>
+    if (!q) return this.groepenService.allGroepen();
+    return this.groepenService.allGroepen().filter(g =>
       g.name.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q)
     );
   });
@@ -155,10 +157,10 @@ export class GroepBeheerComponent {
     try {
       const editing = this.editingGroep();
       if (editing) {
-        await this.service.updateGroep({ groepId: editing.id, name, description, memberUids });
+        await this.groepenService.updateGroep({ groepId: editing.id, name, description, memberUids });
         this.toast.success('Groep bijgewerkt.');
       } else {
-        await this.service.createGroep({ name, description, memberUids });
+        await this.groepenService.createGroep({ name, description, memberUids });
         this.toast.success('Groep aangemaakt.');
       }
       this.formOpen.set(false);
@@ -178,7 +180,7 @@ export class GroepBeheerComponent {
     if (!target) return;
     this.deleting.set(true);
     try {
-      await this.service.deleteGroep(target.id);
+      await this.groepenService.deleteGroep(target.id);
       this.deleteTarget.set(null);
       this.toast.success('Groep verwijderd.');
     } catch {

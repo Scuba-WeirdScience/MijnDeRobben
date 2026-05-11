@@ -42,10 +42,10 @@
   </div>
 
   <!-- Thread concept list -->
-  @if (service.threadConcepten().length > 0) {
+  @if (threadsService.threadConcepten().length > 0) {
     <div class="border-t border-gray-100 dark:border-gray-800 pt-3">
       <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Concepten:</p>
-      @for (concept of service.threadConcepten(); track concept.id) {
+      @for (concept of threadsService.threadConcepten(); track concept.id) {
         <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 py-1">
           <svg lucideFileText class="w-3 h-3 text-gray-400 flex-shrink-0"></svg>
           <span class="truncate flex-1 font-medium">{{ concept.title }}</span>

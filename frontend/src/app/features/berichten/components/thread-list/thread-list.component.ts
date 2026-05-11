@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BerichtenService, ThreadConcept } from '../../berichten.service';
+import { GroepenService } from '../../services/groepen.service';
+import { ThreadsService, ThreadConcept } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePlus, LucideHash, LucidePin, LucideTrash2, LucideFileText } from '../../../../shared/lucide-icons';
@@ -23,7 +24,8 @@ const _TW_SAFELIST = [
   imports: [CommonModule, LucidePlus, LucideHash, LucidePin, LucideTrash2, LucideFileText, InputComponent, TextareaComponent, ButtonComponent, EmoticonPipe],
 })
 export class ThreadListComponent {
-  protected readonly service = inject(BerichtenService);
+  protected readonly groepenService = inject(GroepenService);
+  protected readonly threadsService = inject(ThreadsService);
   protected readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
 
@@ -57,7 +59,7 @@ export class ThreadListComponent {
   constructor() {
     // Reset form when active groep changes
     effect(() => {
-      this.service.activeGroepId();
+      this.groepenService.activeGroepId();
       this.showForm.set(false);
       this.newTitle.set('');
       this.newBody.set('');
@@ -67,7 +69,7 @@ export class ThreadListComponent {
   }
 
   selectThread(threadId: string): void {
-    this.service.selectThread(threadId);
+    this.threadsService.selectThread(threadId);
     this.threadSelected.emit();
   }
 
@@ -100,16 +102,16 @@ export class ThreadListComponent {
   }
 
   private async _createThread(): Promise<void> {
-    const groepId = this.service.activeGroepId();
+    const groepId = this.groepenService.activeGroepId();
     if (!groepId || !this.newTitle().trim() || this.isBusy) return;
     this.saving.set(true);
     try {
-      const result = await this.service.createThread(groepId, this.newTitle(), this.newBody());
+      const result = await this.threadsService.createThread(groepId, this.newTitle(), this.newBody());
       this.toast.success('Thread aangemaakt.');
       this.showForm.set(false);
       this.saveAsDraft.set(false);
       this.editingConceptId.set(null);
-      this.service.selectThread(result.threadId);
+      this.threadsService.selectThread(result.threadId);
       this.threadSelected.emit();
     } catch {
       this.toast.error('Aanmaken mislukt. Probeer opnieuw.');
@@ -119,12 +121,12 @@ export class ThreadListComponent {
   }
 
   async saveAsConcept(): Promise<void> {
-    const groepId = this.service.activeGroepId();
+    const groepId = this.groepenService.activeGroepId();
     if (!groepId || !this.newTitle().trim() || this.isBusy) return;
     this.savingConcept.set(true);
     try {
       const conceptId = this.editingConceptId() ?? undefined;
-      await this.service.saveThreadConcept(groepId, this.newTitle(), this.newBody(), conceptId);
+      await this.threadsService.saveThreadConcept(groepId, this.newTitle(), this.newBody(), conceptId);
       this.toast.success('Concept opgeslagen.');
       this.showForm.set(false);
       this.saveAsDraft.set(false);
@@ -148,13 +150,13 @@ export class ThreadListComponent {
 
   async publishConcept(conceptId: string): Promise<void> {
     try {
-      const result = await this.service.publishThreadConcept(conceptId);
+      const result = await this.threadsService.publishThreadConcept(conceptId);
       this.toast.success('Thread gepubliceerd.');
       if (this.editingConceptId() === conceptId) {
         this.showForm.set(false);
         this.editingConceptId.set(null);
       }
-      this.service.selectThread(result.threadId);
+      this.threadsService.selectThread(result.threadId);
       this.threadSelected.emit();
     } catch {
       this.toast.error('Publiceren mislukt.');
@@ -163,7 +165,7 @@ export class ThreadListComponent {
 
   async deleteConcept(conceptId: string): Promise<void> {
     try {
-      await this.service.deleteThreadConcept(conceptId);
+      await this.threadsService.deleteThreadConcept(conceptId);
       this.toast.success('Concept verwijderd.');
       if (this.editingConceptId() === conceptId) {
         this.showForm.set(false);
@@ -178,14 +180,14 @@ export class ThreadListComponent {
 
   async deleteThread(thread: any): Promise<void> {
     if (!confirm(`Thread "${thread.title}" en alle berichten verwijderen?`)) return;
-    const groepId = this.service.activeGroepId();
+    const groepId = this.groepenService.activeGroepId();
     if (!groepId) return;
     this.deletingThreadId.set(thread.id);
     try {
-      await this.service.deleteThread(thread.id, groepId);
+      await this.threadsService.deleteThread(thread.id, groepId);
       this.toast.success('Thread verwijderd.');
-      if (this.service.activeThreadId() === thread.id) {
-        this.service.selectThread('');
+      if (this.threadsService.activeThreadId() === thread.id) {
+        this.threadsService.selectThread('');
       }
     } catch {
       this.toast.error('Verwijderen mislukt. Probeer opnieuw.');

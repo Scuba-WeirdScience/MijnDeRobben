@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminMemberService } from '../services/admin-member.service';
-import { Member, PagedResult } from '../../members/models/member.model';
+import { MemberService } from '../../members/services/member.service';
+import { Member, PagedResult } from '../../members/services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { FullNamePipe } from '../../../shared/pipes/full-name.pipe';
@@ -27,7 +27,7 @@ import { PageContainerComponent } from '../../../shared/components/design-system
   templateUrl: './member-management.component.html',
 })
 export class MemberManagementComponent {
-  private readonly adminMemberService = inject(AdminMemberService);
+  private readonly adminMemberService = inject(MemberService);
   private readonly toast = inject(ToastService);
 
   readonly result = signal<PagedResult<Member> | null>(null);

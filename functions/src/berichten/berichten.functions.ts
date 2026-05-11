@@ -3,13 +3,14 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { db, REGION } from '../shared/admin';
 import { BerichtDoc, BerichtLeesDoc, MemberDoc, GroepDoc, NieuwBerichtDoc, ReplyDoc, LezingDoc, ThreadDoc, MessageDoc, ThreadConceptDoc } from '../shared/types';
+import { requireAuth } from '../shared/auth-guards';
 
 // ── Legacy functions (kept for backwards compatibility) ────────────────────
 
 // ── getBerichten ───────────────────────────────────────────────────────────
 export const getBerichten = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  const uid = request.auth.uid;
+  const auth = requireAuth(request);
+  const uid = auth.uid;
 
   const snap = await db.collection('berichten').orderBy('aangemaaktOp', 'desc').get();
 
@@ -25,9 +26,9 @@ export const getBerichten = onCall({ region: REGION }, async (request) => {
 
 // ── getBericht ─────────────────────────────────────────────────────────────
 export const getBericht = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
   const { id } = request.data as { id: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const doc = await db.collection('berichten').doc(id).get();
   if (!doc.exists) throw new HttpsError('not-found', 'Bericht niet gevonden.');
@@ -41,12 +42,12 @@ export const getBericht = onCall({ region: REGION }, async (request) => {
 
 // ── createBericht ──────────────────────────────────────────────────────────
 export const createBericht = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { onderwerp, inhoud, isPinned } = request.data as {
     onderwerp: string; inhoud: string; isPinned?: boolean;
   };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const memberSnap = await db.collection('members').doc(uid).get();
   if (!memberSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
@@ -72,11 +73,11 @@ export const createBericht = onCall({ region: REGION }, async (request) => {
 
 // ── deleteBericht ──────────────────────────────────────────────────────────
 export const deleteBericht = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { id } = request.data as { id: string };
-  const uid = request.auth.uid;
-  const isAdmin = request.auth.token?.['Beheer'] || request.auth.token?.['Bestuur'];
+  const uid = auth.uid;
+  const isAdmin = auth.token?.['Beheer'] || auth.token?.['Bestuur'];
 
   const doc = await db.collection('berichten').doc(id).get();
   if (!doc.exists) throw new HttpsError('not-found', 'Bericht niet gevonden.');
@@ -97,10 +98,10 @@ export const deleteBericht = onCall({ region: REGION }, async (request) => {
 
 // ── markeerGelezen ─────────────────────────────────────────────────────────
 export const markeerGelezen = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { id } = request.data as { id: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const berichtRef = db.collection('berichten').doc(id);
   const berichtSnap = await berichtRef.get();
@@ -120,10 +121,10 @@ export const markeerGelezen = onCall({ region: REGION }, async (request) => {
 
 // ── markeerOngelezen ───────────────────────────────────────────────────────
 export const markeerOngelezen = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { id } = request.data as { id: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   await db.collection('berichten').doc(id).collection('lezingen').doc(uid).delete();
   return { success: true };
@@ -172,10 +173,10 @@ export const onBerichtCreated = onDocumentCreated(
 
 // ── getBerichtenVoorLid ────────────────────────────────────────────────────
 export const getBerichtenVoorLid = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { memberId } = request.data as { memberId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const memberSnap = await db.collection('members').doc(memberId).get();
   if (!memberSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
@@ -207,7 +208,7 @@ function isAdminUser(request: { auth?: { token?: Record<string, unknown> } }): b
 
 // ── createGroep ────────────────────────────────────────────────────────────
 export const createGroep = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
   if (!isAdminUser(request)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const { name, description, memberUids } = request.data as {
@@ -220,7 +221,7 @@ export const createGroep = onCall({ region: REGION }, async (request) => {
     name,
     description,
     memberUids,
-    createdBy: request.auth.uid,
+    createdBy: auth.uid,
     createdAt: admin.firestore.Timestamp.now(),
   };
 
@@ -230,7 +231,7 @@ export const createGroep = onCall({ region: REGION }, async (request) => {
 
 // ── updateGroep ────────────────────────────────────────────────────────────
 export const updateGroep = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  requireAuth(request);
   if (!isAdminUser(request)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const { groepId, name, description, memberUids } = request.data as {
@@ -247,7 +248,7 @@ export const updateGroep = onCall({ region: REGION }, async (request) => {
 
 // ── deleteGroep ────────────────────────────────────────────────────────────
 export const deleteGroep = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
   if (!isAdminUser(request)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const { groepId } = request.data as { groepId: string };
@@ -273,10 +274,10 @@ export const deleteGroep = onCall({ region: REGION }, async (request) => {
 
 // ── sendBericht ────────────────────────────────────────────────────────────
 export const sendBericht = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { groepId, body } = request.data as { groepId: string; body: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const groepSnap = await db.collection('groepen').doc(groepId).get();
   if (!groepSnap.exists) throw new HttpsError('not-found', 'Groep niet gevonden.');
@@ -322,12 +323,12 @@ export const sendBericht = onCall({ region: REGION }, async (request) => {
 
 // ── saveConcept ────────────────────────────────────────────────────────────
 export const saveConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId, groepId, body } = request.data as {
     berichtId?: string; groepId?: string; body: string;
   };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const memberSnap = await db.collection('members').doc(uid).get();
   const member = memberSnap.exists ? (memberSnap.data() as MemberDoc) : null;
@@ -367,10 +368,10 @@ export const saveConcept = onCall({ region: REGION }, async (request) => {
 
 // ── publishConcept ─────────────────────────────────────────────────────────
 export const publishConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId, groepId } = request.data as { berichtId: string; groepId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const ref = db.collection('nieuwBerichten').doc(berichtId);
   const snap = await ref.get();
@@ -407,10 +408,10 @@ export const publishConcept = onCall({ region: REGION }, async (request) => {
 
 // ── deleteConcept ──────────────────────────────────────────────────────────
 export const deleteConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId } = request.data as { berichtId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const ref = db.collection('nieuwBerichten').doc(berichtId);
   const snap = await ref.get();
@@ -426,10 +427,10 @@ export const deleteConcept = onCall({ region: REGION }, async (request) => {
 
 // ── addReply ───────────────────────────────────────────────────────────────
 export const addReply = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId, body } = request.data as { berichtId: string; body: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const berichtSnap = await db.collection('nieuwBerichten').doc(berichtId).get();
   if (!berichtSnap.exists) throw new HttpsError('not-found', 'Bericht niet gevonden.');
@@ -466,7 +467,7 @@ export const addReply = onCall({ region: REGION }, async (request) => {
 
 // ── pinBericht ─────────────────────────────────────────────────────────────
 export const pinBericht = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  requireAuth(request);
   if (!isAdminUser(request)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const { berichtId, pin } = request.data as { berichtId: string; pin: boolean };
@@ -484,10 +485,10 @@ export const pinBericht = onCall({ region: REGION }, async (request) => {
 
 // ── markRead ───────────────────────────────────────────────────────────────
 export const markRead = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId, groepId } = request.data as { berichtId: string; groepId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const lezingRef = db.collection('nieuwBerichten').doc(berichtId).collection('lezingen').doc(uid);
   const lezingSnap = await lezingRef.get();
@@ -509,10 +510,10 @@ export const markRead = onCall({ region: REGION }, async (request) => {
 
 // ── deleteNieuwBericht ─────────────────────────────────────────────────────
 export const deleteNieuwBericht = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId } = request.data as { berichtId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const ref = db.collection('nieuwBerichten').doc(berichtId);
   const snap = await ref.get();
@@ -521,7 +522,7 @@ export const deleteNieuwBericht = onCall({ region: REGION }, async (request) => 
   const data = snap.data() as NieuwBerichtDoc;
 
   const isAuthor = data.authorUid === uid;
-  const isAdmin = !!(request.auth.token?.['Beheer'] || request.auth.token?.['Bestuur']);
+  const isAdmin = !!(auth.token?.['Beheer'] || auth.token?.['Bestuur']);
   if (!isAuthor && !isAdmin) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   await ref.update({
@@ -535,10 +536,10 @@ export const deleteNieuwBericht = onCall({ region: REGION }, async (request) => 
 
 // ── markUnread ─────────────────────────────────────────────────────────────
 export const markUnread = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const auth = requireAuth(request);
 
   const { berichtId, groepId } = request.data as { berichtId: string; groepId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const lezingRef = db.collection('nieuwBerichten').doc(berichtId).collection('lezingen').doc(uid);
   const lezingSnap = await lezingRef.get();
@@ -576,10 +577,10 @@ function isAdminClaim(claims: Record<string, unknown>): boolean {
 }
 
 export const createThread = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { groepId, title, body } = request.data as { groepId: string; title: string; body: string };
-  const uid = request.auth.uid;
-  const claims = request.auth.token as Record<string, unknown>;
+  const uid = auth.uid;
+  const claims = auth.token as Record<string, unknown>;
 
   if (!isNonLid(claims)) throw new HttpsError('permission-denied', 'Leden kunnen geen threads aanmaken.');
   if (!(await isGroepMember(groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
@@ -662,9 +663,9 @@ async function _createThreadInternal(
 }
 
 export const sendMessage = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { threadId, groepId, body, replyToId } = request.data as { threadId: string; groepId: string; body: string; replyToId?: string | null };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   if (!(await isGroepMember(groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
   if (!body?.trim()) throw new HttpsError('invalid-argument', 'Bericht mag niet leeg zijn.');
@@ -718,9 +719,9 @@ export const sendMessage = onCall({ region: REGION }, async (request) => {
 });
 
 export const saveMessageConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId, threadId, groepId, body } = request.data as { messageId?: string; threadId: string; groepId: string; body: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   if (!(await isGroepMember(groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
 
@@ -759,9 +760,9 @@ export const saveMessageConcept = onCall({ region: REGION }, async (request) => 
 });
 
 export const publishMessageConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId } = request.data as { messageId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const ref = db.collection('messages').doc(messageId);
   const snap = await ref.get();
@@ -800,9 +801,9 @@ export const publishMessageConcept = onCall({ region: REGION }, async (request) 
 });
 
 export const deleteMessageConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId } = request.data as { messageId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const ref = db.collection('messages').doc(messageId);
   const snap = await ref.get();
@@ -816,9 +817,9 @@ export const deleteMessageConcept = onCall({ region: REGION }, async (request) =
 });
 
 export const pinThread = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { threadId, groepId } = request.data as { threadId: string; groepId: string };
-  const claims = request.auth.token as Record<string, unknown>;
+  const claims = auth.token as Record<string, unknown>;
   if (!isAdminClaim(claims)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const ref = db.collection('groepen').doc(groepId).collection('threads').doc(threadId);
@@ -831,9 +832,9 @@ export const pinThread = onCall({ region: REGION }, async (request) => {
 });
 
 export const pinMessage = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId } = request.data as { messageId: string };
-  const claims = request.auth.token as Record<string, unknown>;
+  const claims = auth.token as Record<string, unknown>;
   if (!isAdminClaim(claims)) throw new HttpsError('permission-denied', 'Geen toegang.');
 
   const ref = db.collection('messages').doc(messageId);
@@ -846,10 +847,10 @@ export const pinMessage = onCall({ region: REGION }, async (request) => {
 });
 
 export const deleteMessage = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId } = request.data as { messageId: string };
-  const uid = request.auth.uid;
-  const claims = request.auth.token as Record<string, unknown>;
+  const uid = auth.uid;
+  const claims = auth.token as Record<string, unknown>;
 
   const ref = db.collection('messages').doc(messageId);
   const snap = await ref.get();
@@ -866,9 +867,9 @@ export const deleteMessage = onCall({ region: REGION }, async (request) => {
 });
 
 export const markMessageRead = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId, threadId, groepId } = request.data as { messageId: string; threadId: string; groepId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const lezingRef = db.collection('messages').doc(messageId).collection('lezingen').doc(uid);
   const lezingSnap = await lezingRef.get();
@@ -912,9 +913,9 @@ export const markMessageRead = onCall({ region: REGION }, async (request) => {
 });
 
 export const markMessageUnread = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { messageId, threadId, groepId } = request.data as { messageId: string; threadId: string; groepId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const lezingRef = db.collection('messages').doc(messageId).collection('lezingen').doc(uid);
   const lezingSnap = await lezingRef.get();
@@ -936,9 +937,9 @@ export const markMessageUnread = onCall({ region: REGION }, async (request) => {
 
 // ── getThreadLezingen ─────────────────────────────────────────────────────────
 export const getThreadLezingen = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { threadId, groepId } = request.data as { threadId: string; groepId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const [threadSnap, groepSnap] = await Promise.all([
     db.collection('groepen').doc(groepId).collection('threads').doc(threadId).get(),
@@ -981,10 +982,10 @@ export const getThreadLezingen = onCall({ region: REGION }, async (request) => {
 });
 
 export const deleteThread = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { threadId, groepId } = request.data as { threadId: string; groepId: string };
-  const uid = request.auth.uid;
-  const claims = request.auth.token as Record<string, unknown>;
+  const uid = auth.uid;
+  const claims = auth.token as Record<string, unknown>;
 
   const threadRef = db.collection('groepen').doc(groepId).collection('threads').doc(threadId);
   const threadSnap = await threadRef.get();
@@ -1021,12 +1022,12 @@ export const deleteThread = onCall({ region: REGION }, async (request) => {
 
 // ── saveThreadConcept ─────────────────────────────────────────────────────────
 export const saveThreadConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { groepId, title, body, conceptId } = request.data as {
     groepId: string; title: string; body: string; conceptId?: string;
   };
-  const uid = request.auth.uid;
-  const claims = request.auth.token as Record<string, unknown>;
+  const uid = auth.uid;
+  const claims = auth.token as Record<string, unknown>;
 
   if (!isNonLid(claims)) throw new HttpsError('permission-denied', 'Leden kunnen geen thread-concepten aanmaken.');
   if (!(await isGroepMember(groepId, uid))) throw new HttpsError('permission-denied', 'Geen lid van deze groep.');
@@ -1066,10 +1067,10 @@ export const saveThreadConcept = onCall({ region: REGION }, async (request) => {
 
 // ── publishThreadConcept ──────────────────────────────────────────────────────
 export const publishThreadConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { conceptId } = request.data as { conceptId: string };
-  const uid = request.auth.uid;
-  const claims = request.auth.token as Record<string, unknown>;
+  const uid = auth.uid;
+  const claims = auth.token as Record<string, unknown>;
 
   const ref = db.collection('threadConcepten').doc(conceptId);
   const snap = await ref.get();
@@ -1088,9 +1089,9 @@ export const publishThreadConcept = onCall({ region: REGION }, async (request) =
 
 // ── deleteThreadConcept ───────────────────────────────────────────────────────
 export const deleteThreadConcept = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
+  const auth = requireAuth(request);
   const { conceptId } = request.data as { conceptId: string };
-  const uid = request.auth.uid;
+  const uid = auth.uid;
 
   const ref = db.collection('threadConcepten').doc(conceptId);
   const snap = await ref.get();

@@ -1,5 +1,4 @@
 /**
- * Re-exports member types from the MemberService.
- * The source of truth has moved from generated/api-schemas to the service itself.
+ * Re-exports member types from MemberService — the single source of truth.
  */
-export type { Member, CreateMemberRequest, UpdateMemberRequest, PagedResult } from '../services/member.service';
+export type { Member, AdminCreateMemberRequest, UpdateMemberRequest, PagedResult } from '../services/member.service';

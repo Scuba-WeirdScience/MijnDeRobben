@@ -110,6 +110,19 @@ The `as any` cast is required because `z.coerce.number()` produces `ZodCoercedNu
 
 ---
 
+## Firestore document types — single source of truth
+
+`frontend/src/app/core/models/firestore-types.ts` is the **canonical frontend mirror** of `functions/src/shared/types.ts`.
+Every Firestore document shape is defined once and imported by all service files.
+
+**When adding/removing fields on a Firestore document, update BOTH files:**
+1. `functions/src/shared/types.ts` (backend — ground truth)
+2. `frontend/src/app/core/models/firestore-types.ts` (frontend mirror, synced by the comment above each type)
+
+Service files that previously defined their own types (`activiteiten.service.ts`, `member.service.ts`, `threads.service.ts`, `messages.service.ts`, `brevet.service.ts`, `brevet-type.service.ts`, `specialty-type.service.ts`, `materiaal.service.ts`, `lening.service.ts`) now import from `firestore-types.ts` and use type aliases where the local name differs from the canonical doc name.
+
+---
+
 ## Generated files
 
 `frontend/src/generated/` is fully auto-generated from the gateway's OpenAPI spec.  
@@ -167,3 +180,19 @@ Steps (always in this order):
 
 `frontend/copilot-instructions.md` contains extended UI patterns, component APIs, and common fixes.  
 Read it before making broad frontend changes. Note: some sections are outdated (Tailwind v3 references, lazy getter `formState` pattern) — trust this `AGENTS.md` and the source files over that doc when they conflict.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on `Scuba-WeirdScience/MijnDeRobben`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — `CONTEXT.md` + `docs/adr/` at the repo root (neither exists yet; skills will proceed silently until created). See `docs/agents/domain.md`.

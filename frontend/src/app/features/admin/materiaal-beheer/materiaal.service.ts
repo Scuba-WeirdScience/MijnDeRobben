@@ -2,36 +2,10 @@ import { Injectable } from '@angular/core';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@fire';
 import { from, Observable } from 'rxjs';
+import { CustomFieldDef, MateriaalTypeDoc, MateriaalDoc } from '../../../core/models/firestore-types';
 
-export interface CustomFieldDef {
-  key: string;
-  label: string;
-}
-
-export interface MateriaalType {
-  id: string;
-  naam: string;
-  beschrijving: string | null;
-  volgorde: number;
-  maxLeningenPerLid: number | null;
-  huurprijs: number | null;
-  customProperties: CustomFieldDef[] | null;
-  createdAt: string;
-  updatedAt: string | null;
-}
-
-export interface MateriaalDoc {
-  id: string;
-  materiaalTypeId: string;
-  naam: string;
-  serienummer: string | null;
-  notities: string | null;
-  aankoopDatum: string | null;
-  actief: boolean;
-  customProperties: Record<string, string> | null;
-  createdAt: string;
-  updatedAt: string | null;
-}
+export type MateriaalType = MateriaalTypeDoc;
+export type { CustomFieldDef, MateriaalDoc };
 
 export interface MateriaalTypeWithMaterialen extends MateriaalType {
   materialen: MateriaalDoc[];

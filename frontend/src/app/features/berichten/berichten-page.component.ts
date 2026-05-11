@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { map } from 'rxjs';
-import { BerichtenService, Message, ThreadConcept } from './berichten.service';
+import { MessagesService, Message } from './services/messages.service';
+import { ThreadsService, ThreadConcept } from './services/threads.service';
+import { GroepenService } from './services/groepen.service';
+import { BerichtenNavigationService } from './services/navigation.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroepListComponent } from './components/groep-list/groep-list.component';
 import { ThreadListComponent } from './components/thread-list/thread-list.component';
@@ -41,7 +44,10 @@ const STORAGE_KEY = 'berichten-compose-height';
   ],
 })
 export class BerichtenPageComponent {
-  protected readonly service = inject(BerichtenService);
+  protected readonly messagesService = inject(MessagesService);
+  protected readonly threadsService = inject(ThreadsService);
+  protected readonly groepenService = inject(GroepenService);
+  private readonly navigation = inject(BerichtenNavigationService);
   protected readonly auth = inject(AuthService);
   private readonly host = inject(ElementRef<HTMLElement>);
 
@@ -104,14 +110,14 @@ export class BerichtenPageComponent {
     // When a pending message concept edit is set AND the thread becomes active,
     // load it into the editor and clear the pending state.
     effect(() => {
-      const pending = this.service.pendingConceptEdit();
-      const activeThreadId = this.service.activeThreadId();
+      const pending = this.messagesService.pendingConceptEdit();
+      const activeThreadId = this.threadsService.activeThreadId();
       if (pending && activeThreadId === pending.threadId) {
         // Defer a full macrotask so Angular has time to render the compose component
         setTimeout(() => {
           if (this.messageCompose) {
             this.messageCompose.loadConcept(pending);
-            this.service.pendingConceptEdit.set(null);
+            this.messagesService.setPendingConceptEdit(null);
           }
           // If messageCompose is still not ready, leave pendingConceptEdit set
           // so the effect retries on the next render cycle
@@ -136,7 +142,7 @@ export class BerichtenPageComponent {
   onThreadCreated(threadId: string): void {
     this.showNewThread.set(false);
     this.editingThreadConcept.set(null);
-    this.service.selectThread(threadId);
+    this.navigation.selectThread(threadId);
     this.mobilePanel.set('messages');
   }
 
@@ -150,8 +156,8 @@ export class BerichtenPageComponent {
     } else {
       // Navigate to groep+thread, then load concept into editor
       const concept = event.concept;
-      this.service.pendingConceptEdit.set(concept);
-      this.service.selectGroepAndThread(concept.groepId, concept.threadId);
+      this.messagesService.setPendingConceptEdit(concept);
+      this.navigation.selectGroepAndThread(concept.groepId, concept.threadId);
       this.mobilePanel.set('messages');
     }
   }

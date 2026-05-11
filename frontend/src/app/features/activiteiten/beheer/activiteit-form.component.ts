@@ -13,7 +13,8 @@ import {
 } from '../../../shared/components/design-system';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { ActiviteitenService, ActiviteitDoc, LocatieDoc, RecurrenceRule } from '../activiteiten.service';
-import { BerichtenService, Groep, Thread } from '../../berichten/berichten.service';
+import { GroepenService, Groep } from '../../berichten/services/groepen.service';
+import { ThreadsService, Thread } from '../../berichten/services/threads.service';
 import { MemberService, Member } from '../../members/services/member.service';
 import { activiteitFormSchema, type ActiviteitForm } from '../../../shared/form-schemas';
 import { ActiviteitRecurrenceFormComponent } from './activiteit-recurrence-form.component';
@@ -50,7 +51,8 @@ export interface GroepMetThreads {
 })
 export class ActiviteitFormComponent {
   private readonly service = inject(ActiviteitenService);
-  private readonly berichten = inject(BerichtenService);
+  private readonly groepenService = inject(GroepenService);
+  private readonly threadsService = inject(ThreadsService);
   private readonly members = inject(MemberService);
   private readonly toast = inject(ToastService);
 
@@ -71,7 +73,7 @@ export class ActiviteitFormComponent {
   readonly geselecteerdeOrganisatorLeden = signal<Member[]>([]);
   private ledenZoekTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  readonly alleGroepen = computed(() => this.berichten.allGroepen());
+  readonly alleGroepen = computed(() => this.groepenService.allGroepen());
 
   // ── Gesprek (discussie) ──────────────────────────────────────────────────────
   readonly groepenMetThreads = signal<GroepMetThreads[]>([]);
@@ -203,12 +205,10 @@ export class ActiviteitFormComponent {
 
   private laadAlleThreads(): void {
     this.gesprekLaden.set(true);
-    const groepen = this.berichten.allGroepen();
-
+    const groepen = this.groepenService.allGroepen();
     if (groepen.length === 0) {
-      // Wacht tot groepen geladen zijn en probeer opnieuw
       const interval = setInterval(() => {
-        const g = this.berichten.allGroepen();
+        const g = this.groepenService.allGroepen();
         if (g.length > 0) {
           clearInterval(interval);
           this.laadThreadsVoorGroepen(g);
@@ -426,7 +426,7 @@ export class ActiviteitFormComponent {
 
     if (this.nieuweThreadModus() && model.nieuweThreadTitel?.trim()) {
       const groepId = this.nieuweThreadGroepId();
-      this.berichten.createThread(
+      this.threadsService.createThread(
         groepId,
         model.nieuweThreadTitel.trim(),
         model.nieuweThreadBericht?.trim() || ''

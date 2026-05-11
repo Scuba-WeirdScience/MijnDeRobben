@@ -2,13 +2,9 @@ import { Injectable } from '@angular/core';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@fire';
 import { from, Observable } from 'rxjs';
+import { SpecialtyTypeDoc } from '../../../core/models/firestore-types';
 
-export interface SpecialtyType {
-  id: string;
-  organisatie: string;
-  naam: string;
-  volgorde: number;
-}
+export type SpecialtyType = SpecialtyTypeDoc;
 
 export type CreateSpecialtyTypeRequest = Omit<SpecialtyType, 'id'>;
 export type UpdateSpecialtyTypeRequest = Partial<CreateSpecialtyTypeRequest>;

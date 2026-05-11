@@ -1,6 +1,8 @@
 import { Component, computed, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BerichtenService, Groep } from '../../berichten.service';
+import { GroepenService, Groep } from '../../services/groepen.service';
+import { ThreadsService } from '../../services/threads.service';
+import { MessagesService } from '../../services/messages.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { BadgeComponent } from '../../../../shared/components/design-system';
 import {
@@ -30,7 +32,9 @@ const _TW_SAFELIST = [
   templateUrl: './groep-list.component.html',
 })
 export class GroepListComponent {
-  readonly service = inject(BerichtenService);
+  readonly groepenService = inject(GroepenService);
+  readonly threadsService = inject(ThreadsService);
+  readonly messagesService = inject(MessagesService);
   readonly auth = inject(AuthService);
 
   readonly openBeheer = output<void>();
@@ -40,15 +44,15 @@ export class GroepListComponent {
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
   readonly totalConcepts = computed(() =>
-    this.service.allThreadConcepten().length + this.service.allMessageConcepten().length
+    this.threadsService.allThreadConcepten().length + this.messagesService.allMessageConcepten().length
   );
 
   selectGroep(groep: Groep): void {
-    this.service.selectGroep(groep.id);
+    this.groepenService.selectGroep(groep.id);
     this.groepSelected.emit();
   }
 
   totalUnread(): number {
-    return this.service.groepen().reduce((sum, g) => sum + g.unreadCount, 0);
+    return this.groepenService.groepen().reduce((sum, g) => sum + g.unreadCount, 0);
   }
 }

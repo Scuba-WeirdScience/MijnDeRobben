@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '@fire';
 import { from, Observable } from 'rxjs';
+import { call } from '../../../core/firebase/callable';
 
 export interface MemberOrganisatie {
   id: string;
@@ -26,27 +25,22 @@ export interface UpdateMemberOrganisatieRequest extends Partial<CreateMemberOrga
 @Injectable({ providedIn: 'root' })
 export class MemberOrganisatieService {
   getByMember(memberId: string): Observable<MemberOrganisatie[]> {
-    const fn = httpsCallable<{ memberId: string }, MemberOrganisatie[]>(functions, 'getMemberOrganisaties');
-    return from(fn({ memberId }).then(r => r.data));
+    return from(call<{ memberId: string }, MemberOrganisatie[]>('getMemberOrganisaties', { memberId }));
   }
 
   getMyOrganisaties(): Observable<MemberOrganisatie[]> {
-    const fn = httpsCallable<void, MemberOrganisatie[]>(functions, 'getMyOrganisaties');
-    return from(fn().then(r => r.data));
+    return from(call<void, MemberOrganisatie[]>('getMyOrganisaties'));
   }
 
   create(memberId: string, dto: CreateMemberOrganisatieRequest): Observable<MemberOrganisatie> {
-    const fn = httpsCallable<{ memberId: string } & CreateMemberOrganisatieRequest, MemberOrganisatie>(functions, 'createMemberOrganisatie');
-    return from(fn({ memberId, ...dto }).then(r => r.data));
+    return from(call<{ memberId: string } & CreateMemberOrganisatieRequest, MemberOrganisatie>('createMemberOrganisatie', { memberId, ...dto }));
   }
 
   update(memberId: string, id: string, dto: UpdateMemberOrganisatieRequest): Observable<MemberOrganisatie> {
-    const fn = httpsCallable<{ id: string; memberId: string } & UpdateMemberOrganisatieRequest, MemberOrganisatie>(functions, 'updateMemberOrganisatie');
-    return from(fn({ id, memberId, ...dto }).then(r => r.data));
+    return from(call<{ id: string; memberId: string } & UpdateMemberOrganisatieRequest, MemberOrganisatie>('updateMemberOrganisatie', { id, memberId, ...dto }));
   }
 
   delete(memberId: string, id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ id: string; memberId: string }, { success: boolean }>(functions, 'deleteMemberOrganisatie');
-    return from(fn({ id, memberId }).then(r => r.data));
+    return from(call<{ id: string; memberId: string }, { success: boolean }>('deleteMemberOrganisatie', { id, memberId }));
   }
 }

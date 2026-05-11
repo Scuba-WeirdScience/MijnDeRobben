@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { startOfMonth, subMonths, addMonths } from 'date-fns';
 import { SpinnerComponent } from '../../../shared/components/design-system';
-import { ActiviteitenService, ActiviteitDoc, ActiviteitOccurrenceDoc, ResolvedOccurrence } from '../activiteiten.service';
+import { ActiviteitenService, ActiviteitDoc, ActiviteitOccurrenceDoc, ResolvedOccurrence, generateOccurrences } from '../activiteiten.service';
 import { ActiviteitenAgendaComponent } from './components/activiteiten-agenda.component';
 import { ActiviteitenKalenderComponent } from './components/activiteiten-kalender.component';
 
@@ -37,7 +37,7 @@ export class ActiviteitenListPageComponent implements OnInit {
       van = this.kalenderMaand();
       tot = addMonths(this.kalenderMaand(), 1);
     }
-    return this.service.generateOccurrences(this.activiteiten(), van, tot, this.overrides());
+    return generateOccurrences(this.activiteiten(), van, tot, this.overrides());
   });
 
   ngOnInit(): void {

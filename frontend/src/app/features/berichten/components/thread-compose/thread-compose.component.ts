@@ -1,7 +1,8 @@
 import { Component, inject, model, signal, output, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BerichtenService, ThreadConcept } from '../../berichten.service';
+import { GroepenService } from '../../services/groepen.service';
+import { ThreadsService, ThreadConcept } from '../../services/threads.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { InputComponent, TextareaComponent, ButtonComponent } from '../../../../shared/components/design-system';
 import { LucideFileText } from '../../../../shared/lucide-icons';
@@ -19,7 +20,8 @@ const _TW_SAFELIST = [
   imports: [CommonModule, FormsModule, InputComponent, TextareaComponent, ButtonComponent, LucideFileText],
 })
 export class ThreadComposeComponent implements OnInit {
-  protected readonly service = inject(BerichtenService);
+  protected readonly groepenService = inject(GroepenService);
+  protected readonly threadsService = inject(ThreadsService);
   private readonly toast = inject(ToastService);
 
   readonly created = output<string>();
@@ -48,11 +50,11 @@ export class ThreadComposeComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
-    const groepId = this.service.activeGroepId();
+    const groepId = this.groepenService.activeGroepId();
     if (!groepId || !this.canSubmit || this.isBusy) return;
     this.saving.set(true);
     try {
-      const result = await this.service.createThread(groepId, this.title(), this.body());
+      const result = await this.threadsService.createThread(groepId, this.title(), this.body());
       this.toast.success('Thread aangemaakt.');
       this.resetForm();
       this.created.emit(result.threadId);
@@ -64,12 +66,12 @@ export class ThreadComposeComponent implements OnInit {
   }
 
   async saveAsConcept(): Promise<void> {
-    const groepId = this.service.activeGroepId();
+    const groepId = this.groepenService.activeGroepId();
     if (!groepId || !this.canSubmit || this.isBusy) return;
     this.savingConcept.set(true);
     try {
       const conceptId = this.editingConceptId() ?? undefined;
-      await this.service.saveThreadConcept(groepId, this.title(), this.body(), conceptId);
+      await this.threadsService.saveThreadConcept(groepId, this.title(), this.body(), conceptId);
       this.toast.success('Concept opgeslagen.');
       this.resetForm();
     } catch {
@@ -87,7 +89,7 @@ export class ThreadComposeComponent implements OnInit {
 
   async publishConcept(conceptId: string): Promise<void> {
     try {
-      const result = await this.service.publishThreadConcept(conceptId);
+      const result = await this.threadsService.publishThreadConcept(conceptId);
       this.toast.success('Thread gepubliceerd.');
       if (this.editingConceptId() === conceptId) this.resetForm();
       this.created.emit(result.threadId);
@@ -98,7 +100,7 @@ export class ThreadComposeComponent implements OnInit {
 
   async deleteConcept(conceptId: string): Promise<void> {
     try {
-      await this.service.deleteThreadConcept(conceptId);
+      await this.threadsService.deleteThreadConcept(conceptId);
       this.toast.success('Concept verwijderd.');
       if (this.editingConceptId() === conceptId) this.resetForm();
     } catch {

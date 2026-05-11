@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MateriaalService } from './materiaal.service';
+import { LeningService, LeningDoc } from '../../lening/lening.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent, EmptyStateComponent, BadgeComponent, PageContainerComponent } from '../../../shared/components/design-system';
 import {
@@ -20,12 +21,15 @@ import { MateriaalItemFormComponent } from './materiaal-item-form.component';
 })
 export class MateriaalBeheerComponent implements OnInit {
   private readonly materiaalService = inject(MateriaalService);
+  private readonly leningService = inject(LeningService);
   private readonly toast = inject(ToastService);
 
   // ── State ────────────────────────────────────────────────────────────────
   readonly loading = signal(false);
   readonly types = signal<MateriaalTypeWithMaterialen[]>([]);
   readonly selectedType = signal<MateriaalTypeWithMaterialen | null>(null);
+  readonly openLeningen = signal<LeningDoc[]>([]);
+  readonly leningenLoading = signal(false);
 
   // ── Type form ───────────────────────────────────────────────────────────
   readonly showTypeForm = signal(false);
@@ -41,6 +45,7 @@ export class MateriaalBeheerComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAll();
+    this.loadOpenLeningen();
   }
 
   private loadAll(): void {
@@ -65,6 +70,24 @@ export class MateriaalBeheerComponent implements OnInit {
   // ── Type selection ─────────────────────────────────────────────────────
   selectType(type: MateriaalTypeWithMaterialen): void {
     this.selectedType.set(type);
+  }
+
+  clearSelection(): void {
+    this.selectedType.set(null);
+  }
+
+  private loadOpenLeningen(): void {
+    this.leningenLoading.set(true);
+    this.leningService.getAll().subscribe({
+      next: leningen => {
+        this.openLeningen.set(leningen.filter(l => l.retourdatum === null));
+        this.leningenLoading.set(false);
+      },
+      error: () => {
+        this.leningenLoading.set(false);
+        this.toast.error('Kon uitgeleend materiaaloverzicht niet laden.');
+      }
+    });
   }
 
   // ── Type form ───────────────────────────────────────────────────────────

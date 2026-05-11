@@ -1,18 +1,14 @@
-import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { auth, db, storage, REGION } from '../shared/admin';
 import { UserDoc } from '../shared/types';
+import { requireRole, requireAuth } from '../shared/auth-guards';
 
 type Role = 'Beheer' | 'Lid' | 'Bestuur' | 'MateriaalCommissie' | 'InstructieKader';
 const VALID_ROLES: Role[] = ['Beheer', 'Lid', 'Bestuur', 'MateriaalCommissie', 'InstructieKader'];
 
-function isBeheer(request: CallableRequest): boolean {
-  return request.auth?.token?.['Beheer'] === true;
-}
-
 // ── getUsers ───────────────────────────────────────────────────────────────
 export const getUsers = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const listResult = await auth.listUsers();
   const users = await Promise.all(listResult.users.map(async (u) => {
@@ -36,8 +32,7 @@ export const getUsers = onCall({ region: REGION }, async (request) => {
 
 // ── getUserRoles ───────────────────────────────────────────────────────────
 export const getUserRoles = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { userId } = request.data as { userId: string };
   const user = await auth.getUser(userId);
@@ -47,8 +42,7 @@ export const getUserRoles = onCall({ region: REGION }, async (request) => {
 
 // ── assignRole ─────────────────────────────────────────────────────────────
 export const assignRole = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { userId, role } = request.data as { userId: string; role: Role };
   if (!VALID_ROLES.includes(role)) {
@@ -63,8 +57,7 @@ export const assignRole = onCall({ region: REGION }, async (request) => {
 
 // ── removeRole ─────────────────────────────────────────────────────────────
 export const removeRole = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { userId, role } = request.data as { userId: string; role: Role };
   const user = await auth.getUser(userId);
@@ -76,8 +69,7 @@ export const removeRole = onCall({ region: REGION }, async (request) => {
 
 // ── updateUser ─────────────────────────────────────────────────────────────
 export const updateUser = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { userId, email, firstName, lastName } = request.data as {
     userId: string; email?: string; firstName?: string; lastName?: string;
@@ -98,8 +90,7 @@ export const updateUser = onCall({ region: REGION }, async (request) => {
 
 // ── resetPassword ──────────────────────────────────────────────────────────
 export const resetPassword = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-  if (!isBeheer(request)) throw new HttpsError('permission-denied', 'Beheer only.');
+  requireRole(request, 'Beheer');
 
   const { userId, newPassword } = request.data as { userId: string; newPassword: string };
   await auth.updateUser(userId, { password: newPassword });
@@ -108,9 +99,8 @@ export const resetPassword = onCall({ region: REGION }, async (request) => {
 
 // ── deleteAvatar ───────────────────────────────────────────────────────────
 export const deleteAvatar = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
-
-  const uid = request.auth.uid;
+  const authCtx = requireAuth(request);
+  const uid = authCtx.uid;
   const bucket = storage.bucket();
   const [files] = await bucket.getFiles({ prefix: `avatars/${uid}` });
   await Promise.all(files.map(f => f.delete()));

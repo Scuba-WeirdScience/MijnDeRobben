@@ -7,8 +7,8 @@ import {
   User as FirebaseUser,
   IdTokenResult,
 } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
-import { auth, functions } from '@fire';
+import { auth } from '@fire';
+import { call } from '../firebase/callable';
 import { AppUser } from '../models/user.model';
 import { ThemeService } from '../services/theme.service';
 
@@ -66,12 +66,11 @@ export class AuthService {
    * geboortedatum. Invokes the validateGeboortedatum Cloud Function.
    */
   async validateGeboortedatum(geboortedatum: string): Promise<void> {
-    const fn = httpsCallable<{ geboortedatum: string }, { success: boolean }>(
-      functions,
+    const result = await call<{ geboortedatum: string }, { success: boolean }>(
       'validateGeboortedatum',
+      { geboortedatum },
     );
-    const result = await fn({ geboortedatum });
-    if (!result.data.success) {
+    if (!result.success) {
       throw new LoginApiError('InvalidGeboortedatum');
     }
     // Refresh token so custom claims (isValidated) are picked up

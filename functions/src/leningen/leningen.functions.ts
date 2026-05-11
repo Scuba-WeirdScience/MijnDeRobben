@@ -9,55 +9,56 @@ export const takeLening = onCall({ region: REGION }, async (request) => {
   const { materiaalId } = request.data as { materiaalId: string };
   const uid = request.auth.uid;
 
-  return await db.runTransaction(async (tx) => {
-    const materiaalSnap = await tx.get(db.collectionGroup('materialen').where('id', '==', materiaalId).limit(1) as never);
-    if (materiaalSnap.empty) throw new HttpsError('not-found', 'Materiaal niet gevonden.');
+  // Pre-fetch data that requires queries (not allowed inside transactions)
+  const materiaalRef = db.collection('materialen').doc(materiaalId);
+  const materiaalSnap = await materiaalRef.get();
+  if (!materiaalSnap.exists) throw new HttpsError('not-found', 'Materiaal niet gevonden.');
+  const materiaal = materiaalSnap.data() as MateriaalDoc;
 
-    const materiaalRef = materiaalSnap.docs[0].ref;
-    const materiaal = materiaalSnap.docs[0].data() as MateriaalDoc;
+  const typeRef = db.collection('materiaal-types').doc(materiaal.materiaalTypeId);
+  const typeSnap = await typeRef.get();
+  const type = typeSnap.data() as MateriaalTypeDoc;
 
-    if (materiaal.actief) {
-      throw new HttpsError('failed-precondition', 'Dit materiaal is al uitgeleend.');
+  if (type.maxLeningenPerLid !== null) {
+    const openSnap = await db.collection('leningen')
+      .where('memberId', '==', uid)
+      .where('materiaalTypeId', '==', materiaal.materiaalTypeId)
+      .where('retourdatum', '==', null)
+      .get();
+    if (openSnap.size >= type.maxLeningenPerLid) {
+      throw new HttpsError('failed-precondition', `Maximaal ${type.maxLeningenPerLid} items van dit type per lid.`);
     }
+  }
 
-    const typeRef = db.collection('materiaal-types').doc(materiaal.materiaalTypeId);
-    const typeSnap = await tx.get(typeRef);
-    const type = typeSnap.data() as MateriaalTypeDoc;
+  const memberSnap = await db.collection('members').doc(uid).get();
+  if (!memberSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+  const member = memberSnap.data() as MemberDoc;
 
-    if (type.maxLeningenPerLid !== null) {
-      const openQuery = db.collection('leningen')
-        .where('memberUserId', '==', uid)
-        .where('materiaalTypeId', '==', materiaal.materiaalTypeId)
-        .where('retourdatum', '==', null);
-      const openSnap = await tx.get(openQuery);
-      if (openSnap.size >= type.maxLeningenPerLid) {
-        throw new HttpsError('failed-precondition', `Maximaal ${type.maxLeningenPerLid} items van dit type per lid.`);
-      }
-    }
+  if (materiaal.actief) {
+    throw new HttpsError('failed-precondition', 'Dit materiaal is al uitgeleend.');
+  }
 
-    const memberSnap = await tx.get(db.collection('members').doc(uid));
-    if (!memberSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
-    const member = memberSnap.data() as MemberDoc;
+  const now = new Date().toISOString();
+  const today = now.split('T')[0];
 
-    const now = new Date().toISOString();
-    const today = now.split('T')[0];
+  const leningRef = db.collection('leningen').doc();
+  const lening: LeningDoc = {
+    id: leningRef.id, materiaalId,
+    materiaalTypeId: materiaal.materiaalTypeId,
+    materiaalNaam: materiaal.naam,
+    materiaalTypeNaam: type.naam,
+    memberId: uid, memberUserId: uid,
+    memberNaam: `${member.firstName} ${member.lastName}`,
+    uitgeleendDatum: today, retourdatum: null, notities: null,
+    createdAt: now,
+  };
 
-    const leningRef = db.collection('leningen').doc();
-    const lening: LeningDoc = {
-      id: leningRef.id, materiaalId,
-      materiaalTypeId: materiaal.materiaalTypeId,
-      materiaalNaam: materiaal.naam,
-      materiaalTypeNaam: type.naam,
-      memberId: uid, memberUserId: uid,
-      memberNaam: `${member.firstName} ${member.lastName}`,
-      uitgeleendDatum: today, retourdatum: null, notities: null,
-      createdAt: now,
-    };
+  const batch = db.batch();
+  batch.set(leningRef, lening);
+  batch.update(materiaalRef, { actief: true });
+  await batch.commit();
 
-    tx.set(leningRef, lening);
-    tx.update(materiaalRef, { actief: true });
-    return lening;
-  });
+  return lening;
 });
 
 // ── returnLening ───────────────────────────────────────────────────────────
@@ -81,11 +82,10 @@ export const returnLening = onCall({ region: REGION }, async (request) => {
     const today = new Date().toISOString().split('T')[0];
     tx.update(leningRef, { retourdatum: today, notities: notities ?? null });
 
-    const materiaalSnap = await tx.get(
-      db.collectionGroup('materialen').where('id', '==', lening.materiaalId).limit(1) as never
-    );
-    if (!materiaalSnap.empty) {
-      tx.update(materiaalSnap.docs[0].ref, { actief: false });
+    const materiaalRef2 = db.collection('materialen').doc(lening.materiaalId);
+    const materiaalSnap2 = await tx.get(materiaalRef2);
+    if (materiaalSnap2.exists) {
+      tx.update(materiaalRef2, { actief: false });
     }
 
     return { success: true };

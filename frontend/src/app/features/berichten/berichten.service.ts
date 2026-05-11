@@ -1,89 +1,12 @@
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
-import { httpsCallable } from 'firebase/functions';
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  onSnapshot,
-  doc,
-  getDoc,
-  getDocs,
-  QueryDocumentSnapshot,
-  DocumentData,
-  Timestamp,
-} from 'firebase/firestore';
-import { functions, firestore } from '@fire';
-import { AuthService } from '../../core/auth/auth.service';
+import { Injectable, inject } from '@angular/core';
 import { from, Observable } from 'rxjs';
+import { call } from '../../core/firebase/callable';
+import { GroepenService, Groep } from './services/groepen.service';
+import { ThreadsService, Thread, ThreadConcept } from './services/threads.service';
+import { MessagesService, Message, ThreadLezingInfo, ThreadLezingenResult } from './services/messages.service';
+import { BerichtenNavigationService } from './services/navigation.service';
 
-// ── DTOs ────────────────────────────────────────────────────────────────────
-
-export interface Groep {
-  id: string;
-  name: string;
-  description: string;
-  memberUids: string[];
-  unreadCount: number;
-}
-
-export interface Thread {
-  id: string;
-  groepId: string;
-  title: string;
-  authorUid: string;
-  authorName: string;
-  pinnedAt: any | null;
-  createdAt: any;
-  updatedAt: any;
-  lastMessageAt: any | null;
-  lastMessageBody: string;
-  messageCount: number;
-  unreadPerUser: { [uid: string]: number };
-  threadSeenCount: number;
-  threadSeenByUids: string[];
-}
-
-export interface Message {
-  id: string;
-  threadId: string;
-  groepId: string;
-  authorUid: string;
-  authorName: string;
-  body: string;
-  status: 'concept' | 'gepubliceerd';
-  pinnedAt: any | null;
-  deletedAt: any | null;
-  replyToId: string | null;
-  createdAt: any;
-  updatedAt: any;
-}
-
-export interface ThreadConcept {
-  id: string;
-  groepId: string;
-  authorUid: string;
-  authorName: string;
-  title: string;
-  body: string;
-  createdAt: any;
-  updatedAt: any;
-}
-
-export interface ThreadLezingInfo {
-  uid: string;
-  displayName: string;
-  avatarUrl: string | null;
-  gezien: boolean;
-}
-
-export interface ThreadLezingenResult {
-  lezingen: ThreadLezingInfo[];
-  gezienCount: number;
-  totalCount: number;
-}
+export type { Groep, Thread, ThreadConcept, Message, ThreadLezingInfo, ThreadLezingenResult };
 
 // ── Legacy types (kept for backwards compat with berichten-list.component) ──
 
@@ -125,636 +48,198 @@ export type Bericht = Message;
 
 // ── Service ─────────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 50;
-
 @Injectable({ providedIn: 'root' })
 export class BerichtenService {
-  private readonly auth = inject(AuthService);
+  private readonly _groepen = inject(GroepenService);
+  private readonly _threads = inject(ThreadsService);
+  private readonly _messages = inject(MessagesService);
+  private readonly _navigation = inject(BerichtenNavigationService);
 
-  // ── Unread counts ──────────────────────────────────────────────────────────
-  readonly unreadCount = signal<number>(0);
-  readonly unreadPerGroep = signal<Record<string, number>>({});
+  // ── Unread counts — delegated ────────────────────────────────────────────
+  readonly unreadCount = this._groepen.unreadCount;
+  readonly unreadPerGroep = this._groepen.unreadPerGroep;
+  readonly groepen = this._groepen.groepen;
+  readonly allGroepen = this._groepen.allGroepen;
+  readonly loadingGroepen = this._groepen.loadingGroepen;
+  readonly activeGroepId = this._groepen.activeGroepId;
+  readonly activeGroep = this._groepen.activeGroep;
 
-  // ── Groepen ────────────────────────────────────────────────────────────────
-  readonly groepen = signal<Groep[]>([]);
-  readonly allGroepen = signal<Groep[]>([]);
-  readonly loadingGroepen = signal<boolean>(false);
+  // ── Threads — delegated ──────────────────────────────────────────────────
+  readonly threads = this._threads.threads;
+  readonly loadingThreads = this._threads.loadingThreads;
+  readonly activeThreadId = this._threads.activeThreadId;
+  readonly activeThread = this._threads.activeThread;
+  readonly threadConcepten = this._threads.threadConcepten;
+  readonly allThreadConcepten = this._threads.allThreadConcepten;
 
-  readonly activeGroepId = signal<string | null>(null);
-  readonly activeGroep = computed(() =>
-    this.groepen().find(g => g.id === this.activeGroepId()) ?? null
-  );
+  // ── Messages — delegated ─────────────────────────────────────────────────
+  readonly messages = this._messages.messages;
+  readonly loadingMessages = this._messages.loadingMessages;
+  readonly hasMoreMessages = this._messages.hasMoreMessages;
+  readonly conceptMessages = this._messages.conceptMessages;
+  readonly readMessageIds = this._messages.readMessageIds;
+  readonly messageReaderCounts = this._messages.messageReaderCounts;
+  readonly allMessageConcepten = this._messages.allMessageConcepten;
+  readonly pendingConceptEdit = this._messages.pendingConceptEdit;
 
-  // ── Threads ────────────────────────────────────────────────────────────────
-  readonly threads = signal<Thread[]>([]);
-  readonly loadingThreads = signal<boolean>(false);
-
-  readonly activeThreadId = signal<string | null>(null);
-  readonly activeThread = computed(() =>
-    this.threads().find(t => t.id === this.activeThreadId()) ?? null
-  );
-
-  readonly threadConcepten = signal<ThreadConcept[]>([]);
-
-  /** All thread-concepts for the current user across ALL groups */
-  readonly allThreadConcepten = signal<ThreadConcept[]>([]);
-  /** All message-concepts for the current user across ALL groups */
-  readonly allMessageConcepten = signal<Message[]>([]);
-  /** A message-concept that should be loaded into the editor once its thread becomes active */
-  readonly pendingConceptEdit = signal<Message | null>(null);
-
-  // ── Messages ───────────────────────────────────────────────────────────────
-  readonly messages = signal<Message[]>([]);
-  readonly loadingMessages = signal<boolean>(false);
-  readonly hasMoreMessages = signal<boolean>(false);
-
-  readonly conceptMessages = signal<Message[]>([]);
-  readonly readMessageIds = signal<Set<string>>(new Set());
-  readonly messageReaderCounts = signal<Record<string, number>>({});
-
-  // ── Backward-compat aliases (used by existing components) ─────────────────
+  // ── Backward-compat aliases ─────────────────────────────────────────────
   /** @deprecated use messages */
-  readonly berichten = this.messages;
+  readonly berichten = this._messages.messages;
   /** @deprecated use conceptMessages */
-  readonly concepten = this.conceptMessages;
+  readonly concepten = this._messages.conceptMessages;
   /** @deprecated use readMessageIds */
-  readonly readBerichtIds = this.readMessageIds;
+  readonly readBerichtIds = this._messages.readMessageIds;
   /** @deprecated use loadingMessages */
-  readonly loadingBerichten = this.loadingMessages;
+  readonly loadingBerichten = this._messages.loadingMessages;
   /** @deprecated use hasMoreMessages */
-  readonly hasMoreBerichten = this.hasMoreMessages;
+  readonly hasMoreBerichten = this._messages.hasMoreMessages;
 
-  // ── Internal ───────────────────────────────────────────────────────────────
-  private unsubUserDoc: (() => void) | null = null;
-  private unsubGroepen: (() => void) | null = null;
-  private unsubAllGroepen: (() => void) | null = null;
-  private unsubAllThreadConcepten: (() => void) | null = null;
-  private unsubAllMessageConcepten: (() => void) | null = null;
-  private unsubThreads: (() => void) | null = null;
-  private unsubThreadConcepten: (() => void) | null = null;
-  private unsubMessages: (() => void) | null = null;
-  private unsubConceptMessages: (() => void) | null = null;
-  private lastMessageDoc: QueryDocumentSnapshot<DocumentData> | null = null;
-  private currentUid: string | null = null;
+  // ── Navigation — delegated ──────────────────────────────────────────────
+  selectGroep(groepId: string): void { this._navigation.selectGroep(groepId); }
+  selectGroepAndThread(groepId: string, threadId: string): void { this._navigation.selectGroepAndThread(groepId, threadId); }
+  selectThread(threadId: string): void { this._navigation.selectThread(threadId); }
 
-  constructor() {
-    // Auth state — set up user doc + groepen listeners
-    effect(() => {
-      const user = this.auth.currentUser();
+  // ── Pagination ──────────────────────────────────────────────────────────
+  loadMoreMessages(): void { this._messages.loadMoreMessages(); }
 
-      this.unsubUserDoc?.();
-      this.unsubGroepen?.();
-      this.unsubAllGroepen?.();
-      this.unsubAllThreadConcepten?.();
-      this.unsubAllMessageConcepten?.();
-      this.unsubUserDoc = null;
-      this.unsubGroepen = null;
-      this.unsubAllGroepen = null;
-      this.unsubAllThreadConcepten = null;
-      this.unsubAllMessageConcepten = null;
-
-      if (!user) {
-        this.currentUid = null;
-        this.unreadCount.set(0);
-        this.unreadPerGroep.set({});
-        this.groepen.set([]);
-        this.activeGroepId.set(null);
-        this.threads.set([]);
-        this.threadConcepten.set([]);
-        this.allThreadConcepten.set([]);
-        this.allMessageConcepten.set([]);
-        this.messages.set([]);
-        this.conceptMessages.set([]);
-        this.readMessageIds.set(new Set());
-        return;
-      }
-
-      const uid = user.uid;
-      this.currentUid = uid;
-
-      // users/{uid} — unread counts
-      this.unsubUserDoc = onSnapshot(doc(firestore, 'users', uid), (snap) => {
-        const data = snap.data() as { unreadCount?: number; unreadPerGroep?: Record<string, number> } | undefined;
-        this.unreadCount.set(data?.unreadCount ?? 0);
-        this.unreadPerGroep.set(data?.unreadPerGroep ?? {});
-      });
-
-      // groepen where memberUids array-contains uid
-      const groepenQ = query(
-        collection(firestore, 'groepen'),
-        where('memberUids', 'array-contains', uid),
-        orderBy('name', 'asc')
-      );
-      this.loadingGroepen.set(true);
-      this.unsubGroepen = onSnapshot(groepenQ, (snap) => {
-        const groepen: Groep[] = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            name: data['name'],
-            description: data['description'] ?? '',
-            memberUids: data['memberUids'] ?? [],
-            unreadCount: this.unreadPerGroep()[d.id] ?? 0,
-          };
-        });
-        this.groepen.set(groepen);
-        this.loadingGroepen.set(false);
-      });
-
-      // All groepen (for admin beheer panel — no memberUids filter)
-      const allGroepenQ = query(
-        collection(firestore, 'groepen'),
-        orderBy('name', 'asc')
-      );
-      this.unsubAllGroepen = onSnapshot(allGroepenQ, (snap) => {
-        const all: Groep[] = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            name: data['name'],
-            description: data['description'] ?? '',
-            memberUids: data['memberUids'] ?? [],
-            unreadCount: this.unreadPerGroep()[d.id] ?? 0,
-          };
-        });
-        this.allGroepen.set(all);
-      });
-
-      // All thread-concepts for this user (cross-group)
-      const allThreadConceptenQ = query(
-        collection(firestore, 'threadConcepten'),
-        where('authorUid', '==', uid)
-      );
-      this.unsubAllThreadConcepten = onSnapshot(allThreadConceptenQ, (snap) => {
-        this.allThreadConcepten.set(snap.docs.map(d => this.mapThreadConcept(d)));
-      });
-
-      // All message-concepts for this user (cross-group)
-      const allMessageConceptenQ = query(
-        collection(firestore, 'messages'),
-        where('authorUid', '==', uid),
-        where('status', '==', 'concept')
-      );
-      this.unsubAllMessageConcepten = onSnapshot(allMessageConceptenQ, (snap) => {
-        this.allMessageConcepten.set(snap.docs.map(d => this.mapMessage(d)));
-      });
-    });
-
-    // Threads listener — reacts to activeGroepId changes
-    effect(() => {
-      const groepId = this.activeGroepId();
-
-      this.unsubThreads?.();
-      this.unsubThreadConcepten?.();
-      this.unsubThreads = null;
-      this.unsubThreadConcepten = null;
-      this.threads.set([]);
-      this.threadConcepten.set([]);
-
-      if (!groepId) return;
-
-      // ── Threads ──
-      this.loadingThreads.set(true);
-      const threadsQ = query(
-        collection(firestore, 'groepen', groepId, 'threads')
-      );
-
-      this.unsubThreads = onSnapshot(threadsQ, (snap) => {
-        const all: Thread[] = snap.docs.map(d => this.mapThread(d, groepId));
-
-        // Sort: pinned first (desc pinnedAt), then by lastMessageAt desc (nulls last)
-        const pinned = all
-          .filter(t => t.pinnedAt != null)
-          .sort((a, b) => {
-            const aMs = (a.pinnedAt as Timestamp)?.toMillis?.() ?? 0;
-            const bMs = (b.pinnedAt as Timestamp)?.toMillis?.() ?? 0;
-            return bMs - aMs;
-          });
-        const unpinned = all
-          .filter(t => t.pinnedAt == null)
-          .sort((a, b) => {
-            const aMs = (a.lastMessageAt as Timestamp)?.toMillis?.() ?? 0;
-            const bMs = (b.lastMessageAt as Timestamp)?.toMillis?.() ?? 0;
-            return bMs - aMs;
-          });
-
-        this.threads.set([...pinned, ...unpinned]);
-        this.loadingThreads.set(false);
-      });
-
-      // ── Thread concepten (scoped to current user + current groep) ──
-      const uid = this.currentUid;
-      if (uid) {
-        const conceptenQ = query(
-          collection(firestore, 'threadConcepten'),
-          where('groepId', '==', groepId),
-          where('authorUid', '==', uid),
-          orderBy('updatedAt', 'desc')
-        );
-        this.unsubThreadConcepten = onSnapshot(conceptenQ, (snap) => {
-          this.threadConcepten.set(snap.docs.map(d => this.mapThreadConcept(d)));
-        });
-      }
-    });
-
-    // Messages + concept messages listeners — reacts to activeThreadId changes
-    effect(() => {
-      const threadId = this.activeThreadId();
-      const user = this.auth.currentUser();
-
-      this.unsubMessages?.();
-      this.unsubConceptMessages?.();
-      this.unsubMessages = null;
-      this.unsubConceptMessages = null;
-      this.messages.set([]);
-      this.conceptMessages.set([]);
-      this.readMessageIds.set(new Set());
-      this.lastMessageDoc = null;
-      this.hasMoreMessages.set(false);
-
-      if (!threadId || !user) return;
-
-      const uid = user.uid;
-
-      // Published messages
-      this.loadingMessages.set(true);
-      const messagesQ = query(
-        collection(firestore, 'messages'),
-        where('threadId', '==', threadId),
-        where('status', '==', 'gepubliceerd'),
-        orderBy('createdAt', 'asc'),
-        limit(PAGE_SIZE)
-      );
-      this.unsubMessages = onSnapshot(messagesQ, (snap) => {
-        if (!snap.empty) {
-          this.lastMessageDoc = snap.docs[snap.docs.length - 1];
-        }
-        this.hasMoreMessages.set(snap.docs.length === PAGE_SIZE);
-        const msgs = snap.docs.map(d => this.mapMessage(d));
-        this.messages.set(msgs);
-        this.loadingMessages.set(false);
-        this.loadLezingen(uid, msgs.map(m => m.id));
-      });
-
-      // Concept messages for current user
-      const conceptsQ = query(
-        collection(firestore, 'messages'),
-        where('authorUid', '==', uid),
-        where('threadId', '==', threadId),
-        where('status', '==', 'concept'),
-        orderBy('createdAt', 'desc')
-      );
-      this.unsubConceptMessages = onSnapshot(conceptsQ, (snap) => {
-        this.conceptMessages.set(snap.docs.map(d => this.mapMessage(d)));
-      });
-    });
-
-    // Refresh token once on init
-    this.auth.refreshUser();
-
-    // Drive browser badge
-    effect(() => {
-      const count = this.unreadCount();
-      if ('setAppBadge' in navigator) {
-        if (count > 0) {
-          (navigator as unknown as { setAppBadge: (n: number) => void }).setAppBadge(count);
-        } else {
-          (navigator as unknown as { clearAppBadge: () => void }).clearAppBadge();
-        }
-      }
-    });
-  }
-
-  // ── Navigation helpers ─────────────────────────────────────────────────────
-
-  selectGroep(groepId: string): void {
-    this.activeGroepId.set(groepId);
-    this.activeThreadId.set(null);
-    this.messages.set([]);
-    this.threads.set([]);
-  }
-
-  /** Navigate directly to a groep+thread (e.g. from concept panel).
-   *  Does NOT clear activeThreadId so the thread stays selected while
-   *  the Firestore listener re-loads the thread list in the background. */
-  selectGroepAndThread(groepId: string, threadId: string): void {
-    this.activeGroepId.set(groepId);
-    this.activeThreadId.set(threadId);
-    this.messages.set([]);
-    this.threads.set([]);
-    this.readMessageIds.set(new Set());
-  }
-
-  selectThread(threadId: string): void {
-    this.activeThreadId.set(threadId);
-    this.messages.set([]);
-    this.readMessageIds.set(new Set());
-  }
-
-  // ── Pagination ─────────────────────────────────────────────────────────────
-
-  loadMoreMessages(): void {
-    const threadId = this.activeThreadId();
-    if (!threadId || !this.lastMessageDoc) return;
-
-    const q = query(
-      collection(firestore, 'messages'),
-      where('threadId', '==', threadId),
-      where('status', '==', 'gepubliceerd'),
-      orderBy('createdAt', 'asc'),
-      limit(PAGE_SIZE),
-      startAfter(this.lastMessageDoc)
-    );
-
-    onSnapshot(q, { includeMetadataChanges: false }, (snap) => {
-      if (!snap.empty) {
-        this.lastMessageDoc = snap.docs[snap.docs.length - 1];
-      }
-      this.hasMoreMessages.set(snap.docs.length === PAGE_SIZE);
-      const newer = snap.docs.map(d => this.mapMessage(d));
-      this.messages.update(current => [...current, ...newer]);
-      const uid = this.auth.currentUser()?.uid;
-      if (uid) {
-        this.loadLezingen(uid, this.messages().map(m => m.id));
-      }
-    });
-  }
-
-  // ── Mappers ────────────────────────────────────────────────────────────────
-
-  private stripHtml(html: string): string {
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    return div.textContent ?? div.innerText ?? '';
-  }
-
-  private mapThread(d: QueryDocumentSnapshot<DocumentData>, groepId: string): Thread {
-    const data = d.data();
-    return {
-      id: d.id,
-      groepId,
-      title: data['title'] ?? '',
-      authorUid: data['authorUid'] ?? '',
-      authorName: data['authorName'] ?? '',
-      pinnedAt: data['pinnedAt'] ?? null,
-      createdAt: data['createdAt'],
-      updatedAt: data['updatedAt'],
-      lastMessageAt: data['lastMessageAt'] ?? null,
-      lastMessageBody: this.stripHtml(data['lastMessageBody'] ?? ''),
-      messageCount: data['messageCount'] ?? 0,
-      unreadPerUser: data['unreadPerUser'] ?? {},
-      threadSeenCount: data['threadSeenCount'] ?? 0,
-      threadSeenByUids: data['threadSeenByUids'] ?? [],
-    };
-  }
-
-  private mapMessage(d: QueryDocumentSnapshot<DocumentData>): Message {
-    const data = d.data();
-    return {
-      id: d.id,
-      threadId: data['threadId'] ?? '',
-      groepId: data['groepId'] ?? '',
-      authorUid: data['authorUid'] ?? '',
-      authorName: data['authorName'] ?? '',
-      body: data['body'] ?? '',
-      status: data['status'] ?? 'gepubliceerd',
-      pinnedAt: data['pinnedAt'] ?? null,
-      deletedAt: data['deletedAt'] ?? null,
-      replyToId: data['replyToId'] ?? null,
-      createdAt: data['createdAt'],
-      updatedAt: data['updatedAt'],
-    };
-  }
-
-  private mapThreadConcept(d: QueryDocumentSnapshot<DocumentData>): ThreadConcept {
-    const data = d.data();
-    return {
-      id: d.id,
-      groepId: data['groepId'] ?? '',
-      authorUid: data['authorUid'] ?? '',
-      authorName: data['authorName'] ?? '',
-      title: data['title'] ?? '',
-      body: data['body'] ?? '',
-      createdAt: data['createdAt'],
-      updatedAt: data['updatedAt'],
-    };
-  }
-
-  private async loadLezingen(uid: string, messageIds: string[]): Promise<void> {
-    const readIds = new Set<string>();
-    const counts: Record<string, number> = {};
-    const currentMessages = this.messages();
-
-    await Promise.all(
-      messageIds.map(async (id) => {
-        const snap = await getDoc(doc(firestore, 'messages', id, 'lezingen', uid));
-        if (snap.exists()) readIds.add(id);
-
-        // For own messages: count total readers so we can show WhatsApp-style checkmarks
-        const msg = currentMessages.find(m => m.id === id);
-        if (msg?.authorUid === uid) {
-          const lezingenSnap = await getDocs(
-            collection(firestore, 'messages', id, 'lezingen')
-          );
-          counts[id] = lezingenSnap.size;
-        }
-      })
-    );
-
-    this.readMessageIds.set(readIds);
-    this.messageReaderCounts.set(counts);
-  }
-
-  // ── Cloud Function wrappers — threads ──────────────────────────────────────
-
+  // ── Thread CRUD ─────────────────────────────────────────────────────────
   createThread(groepId: string, title: string, body: string): Promise<{ threadId: string }> {
-    const fn = httpsCallable<{ groepId: string; title: string; body: string }, { threadId: string }>(functions, 'createThread');
-    return fn({ groepId, title, body }).then(r => r.data);
+    return this._threads.createThread(groepId, title, body);
   }
-
   pinThread(threadId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ threadId: string; groepId: string }, { success: boolean }>(functions, 'pinThread');
-    return fn({ threadId, groepId }).then(r => r.data);
+    return this._threads.pinThread(threadId, groepId);
   }
-
-  // ── Cloud Function wrappers — messages ────────────────────────────────────
-
-  sendMessage(threadId: string, groepId: string, body: string, replyToId?: string | null): Promise<{ messageId: string }> {
-    const fn = httpsCallable<{ threadId: string; groepId: string; body: string; replyToId?: string | null }, { messageId: string }>(functions, 'sendMessage');
-    return fn({ threadId, groepId, body, replyToId: replyToId ?? null }).then(r => r.data);
-  }
-
-  saveMessageConcept(threadId: string, groepId: string, body: string, messageId?: string): Promise<{ messageId: string }> {
-    const fn = httpsCallable<{ threadId: string; groepId: string; body: string; messageId?: string }, { messageId: string }>(functions, 'saveMessageConcept');
-    return fn({ threadId, groepId, body, messageId }).then(r => r.data);
-  }
-
-  publishMessageConcept(messageId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ messageId: string }, { success: boolean }>(functions, 'publishMessageConcept');
-    return fn({ messageId }).then(r => r.data);
-  }
-
-  deleteMessageConcept(messageId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ messageId: string }, { success: boolean }>(functions, 'deleteMessageConcept');
-    return fn({ messageId }).then(r => r.data);
-  }
-
-  pinMessage(messageId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ messageId: string }, { success: boolean }>(functions, 'pinMessage');
-    return fn({ messageId }).then(r => r.data);
-  }
-
-  deleteMessage(messageId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ messageId: string }, { success: boolean }>(functions, 'deleteMessage');
-    return fn({ messageId }).then(r => r.data);
-  }
-
   deleteThread(threadId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ threadId: string; groepId: string }, { success: boolean }>(functions, 'deleteThread');
-    return fn({ threadId, groepId }).then(r => r.data);
+    return this._threads.deleteThread(threadId, groepId);
   }
 
+  // ── Message CRUD ────────────────────────────────────────────────────────
+  sendMessage(threadId: string, groepId: string, body: string, replyToId?: string | null): Promise<{ messageId: string }> {
+    return this._messages.sendMessage(threadId, groepId, body, replyToId);
+  }
+  saveMessageConcept(threadId: string, groepId: string, body: string, messageId?: string): Promise<{ messageId: string }> {
+    return this._messages.saveMessageConcept(threadId, groepId, body, messageId);
+  }
+  publishMessageConcept(messageId: string): Promise<{ success: boolean }> {
+    return this._messages.publishMessageConcept(messageId);
+  }
+  deleteMessageConcept(messageId: string): Promise<{ success: boolean }> {
+    return this._messages.deleteMessageConcept(messageId);
+  }
+  pinMessage(messageId: string): Promise<{ success: boolean }> {
+    return this._messages.pinMessage(messageId);
+  }
+  deleteMessage(messageId: string): Promise<{ success: boolean }> {
+    return this._messages.deleteMessage(messageId);
+  }
   markMessageRead(messageId: string, threadId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ messageId: string; threadId: string; groepId: string }, { success: boolean }>(functions, 'markMessageRead');
-    return fn({ messageId, threadId, groepId }).then(r => r.data);
+    return this._messages.markMessageRead(messageId, threadId, groepId);
   }
-
   markMessageUnread(messageId: string, threadId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ messageId: string; threadId: string; groepId: string }, { success: boolean }>(functions, 'markMessageUnread');
-    return fn({ messageId, threadId, groepId }).then(r => r.data);
+    return this._messages.markMessageUnread(messageId, threadId, groepId);
   }
-
   getThreadLezingen(threadId: string, groepId: string): Promise<ThreadLezingenResult> {
-    const fn = httpsCallable<{ threadId: string; groepId: string }, ThreadLezingenResult>(functions, 'getThreadLezingen');
-    return fn({ threadId, groepId }).then(r => r.data);
+    return this._messages.getThreadLezingen(threadId, groepId);
   }
 
-  // ── Cloud Function wrappers — thread concepten ────────────────────────────
-
+  // ── Thread concept CRUD ─────────────────────────────────────────────────
   saveThreadConcept(groepId: string, title: string, body: string, conceptId?: string): Promise<{ conceptId: string }> {
-    const fn = httpsCallable<{ groepId: string; title: string; body: string; conceptId?: string }, { conceptId: string }>(functions, 'saveThreadConcept');
-    return fn({ groepId, title, body, conceptId }).then(r => r.data);
+    return this._threads.saveThreadConcept(groepId, title, body, conceptId);
   }
-
   publishThreadConcept(conceptId: string): Promise<{ threadId: string }> {
-    const fn = httpsCallable<{ conceptId: string }, { threadId: string }>(functions, 'publishThreadConcept');
-    return fn({ conceptId }).then(r => r.data);
+    return this._threads.publishThreadConcept(conceptId);
   }
-
   deleteThreadConcept(conceptId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ conceptId: string }, { success: boolean }>(functions, 'deleteThreadConcept');
-    return fn({ conceptId }).then(r => r.data);
+    return this._threads.deleteThreadConcept(conceptId);
   }
 
-  // ── Cloud Function wrappers — groepen ─────────────────────────────────────
-
+  // ── Groep CRUD ──────────────────────────────────────────────────────────
   createGroep(data: { name: string; description: string; memberUids: string[] }): Promise<{ id: string }> {
-    const fn = httpsCallable<typeof data, { id: string }>(functions, 'createGroep');
-    return fn(data).then(r => r.data);
+    return this._groepen.createGroep(data);
   }
-
   updateGroep(data: { groepId: string; name: string; description: string; memberUids: string[] }): Promise<{ success: boolean }> {
-    const fn = httpsCallable<typeof data, { success: boolean }>(functions, 'updateGroep');
-    return fn(data).then(r => r.data);
+    return this._groepen.updateGroep(data);
   }
-
   deleteGroep(groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ groepId: string }, { success: boolean }>(functions, 'deleteGroep');
-    return fn({ groepId }).then(r => r.data);
+    return this._groepen.deleteGroep(groepId);
   }
 
   // ── Legacy methods (kept for berichten-list.component) ────────────────────
 
   /** @deprecated use loadMoreMessages */
-  loadMoreBerichten(): void { this.loadMoreMessages(); }
+  loadMoreBerichten(): void { this._messages.loadMoreMessages(); }
 
   /** @deprecated use sendMessage */
   sendBericht(groepId: string, body: string): Promise<{ id: string }> {
-    const fn = httpsCallable<{ groepId: string; body: string }, { id: string }>(functions, 'sendBericht');
-    return fn({ groepId, body }).then(r => r.data);
+    return call<{ groepId: string; body: string }, { id: string }>('sendBericht', { groepId, body });
   }
 
   /** @deprecated */
   saveConcept(data: { berichtId?: string; groepId?: string; body: string }): Promise<{ id: string }> {
-    const fn = httpsCallable<typeof data, { id: string }>(functions, 'saveConcept');
-    return fn(data).then(r => r.data);
+    return call<typeof data, { id: string }>('saveConcept', data);
   }
 
   /** @deprecated */
   publishConcept(berichtId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ berichtId: string; groepId: string }, { success: boolean }>(functions, 'publishConcept');
-    return fn({ berichtId, groepId }).then(r => r.data);
+    return call<{ berichtId: string; groepId: string }, { success: boolean }>('publishConcept', { berichtId, groepId });
   }
 
   /** @deprecated */
   deleteConcept(berichtId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ berichtId: string }, { success: boolean }>(functions, 'deleteConcept');
-    return fn({ berichtId }).then(r => r.data);
+    return call<{ berichtId: string }, { success: boolean }>('deleteConcept', { berichtId });
   }
 
   /** @deprecated */
   addReply(berichtId: string, body: string): Promise<{ id: string }> {
-    const fn = httpsCallable<{ berichtId: string; body: string }, { id: string }>(functions, 'addReply');
-    return fn({ berichtId, body }).then(r => r.data);
+    return call<{ berichtId: string; body: string }, { id: string }>('addReply', { berichtId, body });
   }
 
   /** @deprecated */
   pinBericht(berichtId: string, pin: boolean): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ berichtId: string; pin: boolean }, { success: boolean }>(functions, 'pinBericht');
-    return fn({ berichtId, pin }).then(r => r.data);
+    return call<{ berichtId: string; pin: boolean }, { success: boolean }>('pinBericht', { berichtId, pin });
   }
 
   /** @deprecated */
   markRead(berichtId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ berichtId: string; groepId: string }, { success: boolean }>(functions, 'markRead');
-    return fn({ berichtId, groepId }).then(r => r.data);
+    return call<{ berichtId: string; groepId: string }, { success: boolean }>('markRead', { berichtId, groepId });
   }
 
   /** @deprecated */
   markUnread(berichtId: string, groepId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ berichtId: string; groepId: string }, { success: boolean }>(functions, 'markUnread');
-    return fn({ berichtId, groepId }).then(r => r.data);
+    return call<{ berichtId: string; groepId: string }, { success: boolean }>('markUnread', { berichtId, groepId });
   }
 
   /** @deprecated */
   deleteNieuwBericht(berichtId: string): Promise<{ success: boolean }> {
-    const fn = httpsCallable<{ berichtId: string }, { success: boolean }>(functions, 'deleteNieuwBericht');
-    return fn({ berichtId }).then(r => r.data);
+    return call<{ berichtId: string }, { success: boolean }>('deleteNieuwBericht', { berichtId });
   }
 
   getAll(): Observable<BerichtDetail[]> {
-    const fn = httpsCallable<void, BerichtRaw[]>(functions, 'getBerichten');
-    return from(fn().then(r => r.data.map(raw => this.enrich(raw))));
+    return from(call<void, BerichtRaw[]>('getBerichten').then(list => list.map(raw => this.enrich(raw))));
   }
 
   getById(id: string): Observable<BerichtDetail> {
-    const fn = httpsCallable<{ id: string }, BerichtRaw>(functions, 'getBericht');
-    return from(fn({ id }).then(r => this.enrich(r.data)));
+    return from(call<{ id: string }, BerichtRaw>('getBericht', { id }).then(raw => this.enrich(raw)));
   }
 
   create(dto: CreateBerichtRequest): Observable<BerichtDetail> {
-    const fn = httpsCallable<CreateBerichtRequest, BerichtRaw>(functions, 'createBericht');
-    return from(fn(dto).then(r => this.enrich(r.data)));
+    return from(call<CreateBerichtRequest, BerichtRaw>('createBericht', dto).then(raw => this.enrich(raw)));
   }
 
   delete(id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ id: string }, { success: boolean }>(functions, 'deleteBericht');
-    return from(fn({ id }).then(r => r.data));
+    return from(call<{ id: string }, { success: boolean }>('deleteBericht', { id }));
   }
 
   markeerGelezen(id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ id: string }, { success: boolean }>(functions, 'markeerGelezen');
-    return from(fn({ id }).then(r => r.data));
+    return from(call<{ id: string }, { success: boolean }>('markeerGelezen', { id }));
   }
 
   markeerOngelezen(id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ id: string }, { success: boolean }>(functions, 'markeerOngelezen');
-    return from(fn({ id }).then(r => r.data));
+    return from(call<{ id: string }, { success: boolean }>('markeerOngelezen', { id }));
   }
 
   getBerichtenVoorLid(memberId: string): Observable<BerichtDetail[]> {
-    const fn = httpsCallable<{ memberId: string }, BerichtRaw[]>(functions, 'getBerichtenVoorLid');
-    return from(fn({ memberId }).then(r => r.data.map(raw => this.enrich(raw))));
+    return from(call<{ memberId: string }, BerichtRaw[]>('getBerichtenVoorLid', { memberId }).then(list => list.map(raw => this.enrich(raw))));
   }
 
   private enrich(raw: BerichtRaw): BerichtDetail {

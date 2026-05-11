@@ -4,7 +4,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Quill from 'quill';
-import { BerichtenService } from '../../berichten.service';
+import { MessagesService } from '../../services/messages.service';
+import { GroepenService } from '../../services/groepen.service';
+import { ThreadsService } from '../../services/threads.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideSend } from '../../../../shared/lucide-icons';
 
@@ -33,7 +35,9 @@ interface EmojiSuggestion {
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class MessageComposeComponent implements OnDestroy {
-  protected readonly service = inject(BerichtenService);
+  protected readonly messagesService = inject(MessagesService);
+  protected readonly groepenService = inject(GroepenService);
+  protected readonly threadsService = inject(ThreadsService);
   private readonly toast = inject(ToastService);
   private readonly zone = inject(NgZone);
   private readonly hostEl = inject(ElementRef<HTMLElement>);
@@ -67,7 +71,7 @@ export class MessageComposeComponent implements OnDestroy {
 
   constructor() {
     effect(() => {
-      const threadId = this.service.activeThreadId();
+      const threadId = this.threadsService.activeThreadId();
       if (!threadId) this.destroyQuill();
     });
 
@@ -266,12 +270,12 @@ export class MessageComposeComponent implements OnDestroy {
   }
 
   private async _sendMessage(): Promise<void> {
-    const threadId = this.service.activeThreadId();
-    const groepId = this.service.activeGroepId();
+    const threadId = this.threadsService.activeThreadId();
+    const groepId = this.groepenService.activeGroepId();
     if (!threadId || !groepId || !this.body().trim() || this.sending()) return;
     this.sending.set(true);
     try {
-      await this.service.sendMessage(threadId, groepId, this.body());
+      await this.messagesService.sendMessage(threadId, groepId, this.body());
       this.clearEditor();
     } catch {
       this.toast.error('Versturen mislukt.');
@@ -281,12 +285,12 @@ export class MessageComposeComponent implements OnDestroy {
   }
 
   async saveAsConcept(): Promise<void> {
-    const threadId = this.service.activeThreadId();
-    const groepId = this.service.activeGroepId();
+    const threadId = this.threadsService.activeThreadId();
+    const groepId = this.groepenService.activeGroepId();
     if (!threadId || !groepId || !this.body().trim() || this.savingConcept()) return;
     this.savingConcept.set(true);
     try {
-      const result = await this.service.saveMessageConcept(threadId, groepId, this.body(), this.currentConceptId() ?? undefined);
+      const result = await this.messagesService.saveMessageConcept(threadId, groepId, this.body(), this.currentConceptId() ?? undefined);
       this.currentConceptId.set(result.messageId);
       this.clearEditor();
       this.currentConceptId.set(null);
@@ -313,7 +317,7 @@ export class MessageComposeComponent implements OnDestroy {
 
   async publishConcept(conceptId: string): Promise<void> {
     try {
-      await this.service.publishMessageConcept(conceptId);
+      await this.messagesService.publishMessageConcept(conceptId);
       if (this.currentConceptId() === conceptId) {
         this.clearEditor();
         this.currentConceptId.set(null);
@@ -327,7 +331,7 @@ export class MessageComposeComponent implements OnDestroy {
 
   async deleteConcept(conceptId: string): Promise<void> {
     try {
-      await this.service.deleteMessageConcept(conceptId);
+      await this.messagesService.deleteMessageConcept(conceptId);
       if (this.currentConceptId() === conceptId) {
         this.clearEditor();
         this.currentConceptId.set(null);

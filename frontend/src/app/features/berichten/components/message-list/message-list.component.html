@@ -1,4 +1,4 @@
-@if (!service.activeThreadId()) {
+@if (!threadsService.activeThreadId()) {
   <!-- No thread selected -->
   <div class="flex-1 flex flex-col items-center justify-center text-center p-8">
     <svg lucideHash class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3"></svg>
@@ -12,14 +12,14 @@
       <div class="flex items-center gap-2">
         <svg lucideHash class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"></svg>
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-          {{ service.activeThread()?.title }}
+          {{ threadsService.activeThread()?.title }}
         </h3>
-        @if (service.activeThread()?.pinnedAt) {
+        @if (threadsService.activeThread()?.pinnedAt) {
           <svg lucidePin class="w-3.5 h-3.5 text-amber-500 flex-shrink-0"></svg>
         }
       </div>
-      @if (service.activeThread()) {
-        <app-thread-lezingen [thread]="service.activeThread()!" />
+      @if (threadsService.activeThread()) {
+        <app-thread-lezingen [thread]="threadsService.activeThread()!" />
       }
     </div>
 
@@ -36,20 +36,20 @@
     <!-- Messages scroll area -->
     <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
 
-      @if (service.loadingMessages()) {
+      @if (messagesService.loadingMessages()) {
         <div class="text-center text-sm text-gray-400 py-4">Laden…</div>
       }
 
-      @if (service.hasMoreMessages()) {
+      @if (messagesService.hasMoreMessages()) {
         <div class="text-center">
-          <button (click)="service.loadMoreMessages()"
+          <button (click)="messagesService.loadMoreMessages()"
             class="text-xs text-scuba-600 dark:text-scuba-400 hover:underline">
             Laad oudere berichten
           </button>
         </div>
       }
 
-      @for (message of service.messages(); track message.id) {
+      @for (message of messagesService.messages(); track message.id) {
         <div [id]="'msg-' + message.id"
              class="flex gap-2 rounded-xl transition-colors duration-300"
              [class.msg-highlight]="highlightedId() === message.id"

@@ -8,11 +8,7 @@ import {
   RecurrenceRule,
   RegistratiesZichtbaar,
 } from '../shared/types';
-
-function requireAuth(request: { auth?: { uid: string; token: Record<string, unknown> } }) {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Niet ingelogd.');
-  return request.auth;
-}
+import { requireAuth } from '../shared/auth-guards';
 
 // ── Locaties ───────────────────────────────────────────────────────────────
 
