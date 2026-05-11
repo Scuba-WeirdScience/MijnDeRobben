@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { auth as authV1 } from 'firebase-functions/v1';
+import * as v1 from 'firebase-functions/v1';
 import { auth, db, REGION } from '../shared/admin';
 import { UserDoc } from '../shared/types';
 
@@ -9,7 +9,7 @@ const ROLES = ['Beheer', 'Lid', 'Bestuur', 'MateriaalCommissie', 'InstructieKade
 // ── onUserCreated: bootstrap user + member docs ────────────────────────────
 // Uses v1 auth trigger — v2 auth triggers require Identity Platform (paid).
 // Uses merge:true so createMember's full write is never overwritten.
-export const onUserCreated = authV1.user().onCreate(async (user) => {
+export const onUserCreated = v1.region(REGION).auth.user().onCreate(async (user) => {
   const now = new Date().toISOString();
 
   await auth.setCustomUserClaims(user.uid, { Lid: true });
