@@ -32,6 +32,6 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
       - name: Deploy to Firebase
-        run: npx -y firebase-tools@latest deploy --only hosting,functions
+        run: npx -y firebase-tools@latest deploy --only hosting,functions --force
         env:
           FIREBASE_DEPLOY_AGENT: github-actions-${{ github.run_id }}
