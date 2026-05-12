@@ -7,6 +7,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      HAS_STAGING_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -59,20 +61,20 @@ jobs:
       #        (paste the staging service account JSON when prompted)
 
       - name: Export production Firestore to GCS
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING != '' }}
+        if: env.HAS_STAGING_SA == 'true'
         run: |
           gcloud firestore export gs://dcderobben-staging-exports/prod-seed \
             --project=dcderobben-d3536 \
             --async=false
 
       - name: Authenticate to Google Cloud (staging)
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING != '' }}
+        if: env.HAS_STAGING_SA == 'true'
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}
 
       - name: Import Firestore data into staging
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING != '' }}
+        if: env.HAS_STAGING_SA == 'true'
         run: |
           gcloud firestore import gs://dcderobben-staging-exports/prod-seed \
             --project=dcderobben-staging \
