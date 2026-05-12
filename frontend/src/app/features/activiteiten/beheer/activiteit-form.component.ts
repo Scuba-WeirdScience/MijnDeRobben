@@ -225,11 +225,18 @@ export class ActiviteitFormComponent {
     this.gesprekLaden.set(true);
     const groepen = this.groepenService.allGroepen();
     if (groepen.length === 0) {
+      let attempts = 0;
       const interval = setInterval(() => {
         const g = this.groepenService.allGroepen();
         if (g.length > 0) {
           clearInterval(interval);
           this.laadThreadsVoorGroepen(g);
+          return;
+        }
+        // Give up after ~3 seconds — user has no groepen or data not available
+        if (++attempts >= 10) {
+          clearInterval(interval);
+          this.gesprekLaden.set(false);
         }
       }, 300);
       return;
