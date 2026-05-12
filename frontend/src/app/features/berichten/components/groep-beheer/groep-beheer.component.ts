@@ -6,7 +6,6 @@ import { MemberService, Member } from '../../../../features/members/services/mem
 import {
   ButtonComponent,
   SpinnerComponent,
-  EmptyStateComponent,
   FormFieldComponent,
   InputComponent,
   TextareaComponent,
@@ -29,7 +28,6 @@ const _TW_SAFELIST = [
   imports: [
     ButtonComponent,
     SpinnerComponent,
-    EmptyStateComponent,
     FormFieldComponent,
     InputComponent,
     TextareaComponent,

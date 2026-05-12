@@ -1,5 +1,5 @@
 import { Component, input, output, signal } from '@angular/core';
-import { ButtonComponent, SpinnerComponent } from '../../../../shared/components/design-system';
+import { ButtonComponent } from '../../../../shared/components/design-system';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { inject } from '@angular/core';
 import { ActiviteitenService, ResolvedOccurrence, ActiviteitRegistratieDoc } from '../../activiteiten.service';
@@ -7,7 +7,7 @@ import { ActiviteitenService, ResolvedOccurrence, ActiviteitRegistratieDoc } fro
 @Component({
   selector: 'app-activiteit-inschrijving',
   standalone: true,
-  imports: [ButtonComponent, SpinnerComponent],
+  imports: [ButtonComponent],
   templateUrl: './activiteit-inschrijving.component.html',
 })
 export class ActiviteitInschrijvingComponent {

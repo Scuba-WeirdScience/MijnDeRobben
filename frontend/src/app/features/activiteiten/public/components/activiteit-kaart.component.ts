@@ -2,13 +2,13 @@ import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { ButtonComponent, BadgeComponent } from '../../../../shared/components/design-system';
+import { BadgeComponent } from '../../../../shared/components/design-system';
 import { ResolvedOccurrence } from '../../activiteiten.service';
 
 @Component({
   selector: 'app-activiteit-kaart',
   standalone: true,
-  imports: [RouterLink, ButtonComponent, BadgeComponent],
+  imports: [RouterLink, BadgeComponent],
   templateUrl: './activiteit-kaart.component.html',
 })
 export class ActiviteitKaartComponent {
