@@ -4,7 +4,6 @@ import {
 import { NgClass } from '@angular/common';
 import { FieldTree, form } from '@angular/forms/signals';
 import {
-  SidePanelComponent,
   ButtonComponent,
   FormFieldComponent,
   InputComponent,
@@ -39,7 +38,6 @@ export interface GroepMetThreads {
   standalone: true,
   imports: [
     NgClass,
-    SidePanelComponent,
     ButtonComponent,
     FormFieldComponent,
     InputComponent,

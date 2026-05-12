@@ -137,13 +137,17 @@ export class ActiviteitenBeheerComponent implements OnInit {
 
   openActiviteitForm(a: ActiviteitDoc | null): void {
     this.editingActiviteit.set(a);
+    if (!a) this.selectedActiviteit.set(null);
     this.showActiviteitForm.set(true);
   }
 
   onActiviteitSaved(): void {
+    const wasEditing = this.editingActiviteit();
     this.showActiviteitForm.set(false);
     this.editingActiviteit.set(null);
     this.loadAll();
+    // Keep the activiteit selected after editing so the detail view reappears
+    if (!wasEditing) this.selectedActiviteit.set(null);
   }
 
   onActiviteitFormCancelled(): void {

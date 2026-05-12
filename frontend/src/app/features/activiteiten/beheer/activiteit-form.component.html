@@ -1,9 +1,16 @@
-<app-side-panel
-  [title]="activiteit() ? 'Activiteit bewerken' : 'Activiteit toevoegen'"
-  [subtitle]="activiteit()?.titel"
-  [class.max-w-3xl]="true"
-  [canClose]="canCloseGuard"
-  (closed)="cancelled.emit()">
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+    <div>
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+        {{ activiteit() ? 'Activiteit bewerken' : 'Activiteit toevoegen' }}
+      </h2>
+      @if (activiteit()?.titel) {
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ activiteit()!.titel }}</p>
+      }
+    </div>
+  </div>
 
   <div class="space-y-6">
 
@@ -368,4 +375,4 @@
 
   </div>
 
-</app-side-panel>
+</div>
