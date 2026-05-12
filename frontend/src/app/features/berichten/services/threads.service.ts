@@ -1,10 +1,10 @@
 import { Injectable, inject, signal, computed, effect } from '@angular/core';
-import { collection, query, where, orderBy, onSnapshot, QueryDocumentSnapshot, DocumentData, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, QueryDocumentSnapshot, DocumentData, Timestamp, getDocs } from 'firebase/firestore';
 import { firestore } from '@fire';
 import { AuthService } from '../../../core/auth/auth.service';
 import { GroepenService } from './groepen.service';
 import { call } from '../../../core/firebase/callable';
-import { ThreadDoc, ThreadConceptDoc } from '../../../core/models/firestore-types';
+import { ThreadDoc, ThreadConceptDoc, ActiviteitDoc } from '../../../core/models/firestore-types';
 
 export type Thread = ThreadDoc;
 export type ThreadConcept = ThreadConceptDoc;
@@ -21,6 +21,9 @@ export class ThreadsService {
   readonly activeThread = computed(() =>
     this.threads().find(t => t.id === this.activeThreadId()) ?? null
   );
+
+  /** Activiteit that is linked to the active thread (null if none). */
+  readonly linkedActiviteit = signal<ActiviteitDoc | null>(null);
 
   readonly threadConcepten = signal<ThreadConcept[]>([]);
   readonly allThreadConcepten = signal<ThreadConcept[]>([]);
@@ -105,6 +108,28 @@ export class ThreadsService {
           this.threadConcepten.set(snap.docs.map(d => this.mapThreadConcept(d)));
         });
       }
+    });
+
+    // Reactive lookup: find the activiteit linked to the active thread
+    effect(() => {
+      const threadId = this.activeThreadId();
+      if (!threadId) {
+        this.linkedActiviteit.set(null);
+        return;
+      }
+      const q = query(
+        collection(firestore, 'activiteiten'),
+        where('threadId', '==', threadId)
+      );
+      getDocs(q).then(snap => {
+        if (!snap.empty) {
+          const d = snap.docs[0];
+          const data = d.data();
+          this.linkedActiviteit.set({ id: d.id, ...data } as ActiviteitDoc);
+        } else {
+          this.linkedActiviteit.set(null);
+        }
+      }).catch(() => this.linkedActiviteit.set(null));
     });
   }
 

@@ -23,6 +23,29 @@
       }
     </div>
 
+    <!-- Linked activiteit banner -->
+    @if (threadsService.linkedActiviteit(); as act) {
+      <a [routerLink]="['/activiteiten', act.id]"
+         class="flex items-center gap-3 px-4 py-3 bg-scuba-50 dark:bg-scuba-900/30 border-b border-scuba-200 dark:border-scuba-700 flex-shrink-0 hover:bg-scuba-100 dark:hover:bg-scuba-900/50 transition-colors group">
+        <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-scuba-500 dark:bg-scuba-600 flex items-center justify-center">
+          <svg lucideCalendar class="w-4 h-4 text-white"></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold text-scuba-800 dark:text-scuba-100 truncate group-hover:underline">
+            {{ act.titel }}
+          </p>
+          <p class="text-xs text-scuba-600 dark:text-scuba-300 mt-0.5 flex items-center gap-2">
+            <span>{{ act.startDatumTijd | date:'EEEE d MMMM, HH:mm':'':'nl' }}</span>
+            @if (act.locatieNaam || act.locatieVrij) {
+              <span class="opacity-50">·</span>
+              <span class="truncate">{{ act.locatieNaam ?? act.locatieVrij }}</span>
+            }
+          </p>
+        </div>
+        <svg lucideChevronRight class="w-4 h-4 text-scuba-400 dark:text-scuba-500 flex-shrink-0"></svg>
+      </a>
+    }
+
     <!-- Pinned messages banner -->
     @if (pinnedMessages().length > 0) {
       <div class="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 flex-shrink-0">

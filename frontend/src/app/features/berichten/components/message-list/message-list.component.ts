@@ -1,11 +1,12 @@
 import { Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MessagesService } from '../../services/messages.service';
 import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { LucidePin, LucidePinOff, LucideTrash2, LucideReply, LucideHash } from '../../../../shared/lucide-icons';
+import { LucidePin, LucidePinOff, LucideTrash2, LucideReply, LucideHash, LucideCalendar, LucideChevronRight } from '../../../../shared/lucide-icons';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 import { ThreadLezingenComponent } from '../thread-lezingen/thread-lezingen.component';
 
@@ -22,11 +23,14 @@ const _TW_SAFELIST = [
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     LucidePin,
     LucidePinOff,
     LucideTrash2,
     LucideReply,
     LucideHash,
+    LucideCalendar,
+    LucideChevronRight,
     EmoticonPipe,
     ThreadLezingenComponent,
   ],
@@ -97,24 +101,41 @@ export class MessageListComponent implements OnDestroy {
     if (!this.readObserver) {
       this.readObserver = new IntersectionObserver(
         (entries) => this._onIntersection(entries, threadId, groepId),
-        { threshold: 0.8 }
+        { threshold: 0.5 }
       );
     }
 
     const uid = this.auth.currentUser()?.uid;
     if (!uid) return;
 
-    // Observe every unread message element that isn't already being observed
+    // Observe every unread message element that isn't already being observed.
+    // Own messages are skipped for per-message read tracking (you always "read"
+    // your own messages), but we still need to register thread-level "seen".
+    let hasUnreadFromOthers = false;
     for (const msg of msgs) {
       if (msg.deletedAt) continue;
-      if (msg.authorUid === uid) continue; // own messages are always "read"
+      if (msg.authorUid === uid) continue;
       if (this.messagesService.readMessageIds().has(msg.id)) continue;
       if (this.observedMessageIds.has(msg.id)) continue;
 
+      hasUnreadFromOthers = true;
       const el = document.getElementById('msg-' + msg.id);
       if (el) {
         this.readObserver.observe(el);
         this.observedMessageIds.add(msg.id);
+      }
+    }
+
+    // If there are no unread messages from others (e.g. thread only contains
+    // your own messages, or all are already read), the IntersectionObserver
+    // will never fire — so threadSeenByUids would never be updated.
+    // Fix: pick any message in the thread and call markMessageRead directly.
+    // The backend is idempotent (skips the lezing write if it already exists)
+    // but always updates threadSeenByUids.
+    if (!hasUnreadFromOthers && msgs.length > 0) {
+      const anyMsg = msgs.find(m => !m.deletedAt);
+      if (anyMsg) {
+        this.messagesService.markMessageRead(anyMsg.id, threadId, groepId).catch(() => {});
       }
     }
   }
