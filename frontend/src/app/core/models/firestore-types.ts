@@ -95,7 +95,7 @@ export interface ActiviteitRegistratieDoc {
   memberNaam: string;
   aantalGasten: number;
   opmerking: string | null;
-  status: 'aangemeld' | 'afgemeld' | 'aanwezig';
+  status: 'aangemeld' | 'afgemeld' | 'aanwezig' | 'afwezig';
   createdAt: string;
   updatedAt: string | null;
 }

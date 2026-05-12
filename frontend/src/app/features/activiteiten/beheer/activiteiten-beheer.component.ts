@@ -69,6 +69,9 @@ export class ActiviteitenBeheerComponent implements OnInit {
   readonly activiteitToDelete = signal<ActiviteitDoc | null>(null);
   readonly deleting = signal(false);
 
+  readonly resettingOccurrence = signal(false);
+  readonly confirmResetOccurrence = signal<{ activiteitId: string; occurrenceDatum: string } | null>(null);
+
   readonly gefilterd = computed(() => {
     const term = this.zoekterm().toLowerCase().trim();
     if (!term) return this.activiteiten();
@@ -219,6 +222,30 @@ export class ActiviteitenBeheerComponent implements OnInit {
       error: () => {
         this.deleting.set(false);
         this.toast.error('Verwijderen mislukt.');
+      },
+    });
+  }
+
+  resetOccurrenceInschrijvingen(occ: ResolvedOccurrence): void {
+    this.confirmResetOccurrence.set({ activiteitId: occ.activiteitId, occurrenceDatum: occ.occurrenceDatum });
+  }
+
+  resetOccurrenceConfirmed(): void {
+    const target = this.confirmResetOccurrence();
+    if (!target) return;
+    this.resettingOccurrence.set(true);
+    this.service.resetInschrijvingen(target.activiteitId, target.occurrenceDatum).subscribe({
+      next: () => {
+        this.confirmResetOccurrence.set(null);
+        this.resettingOccurrence.set(false);
+        this.toast.success('Inschrijvingen gereset.');
+        if (this.selectedOccurrenceDatum() === target.occurrenceDatum) {
+          this.registraties.set([]);
+        }
+      },
+      error: () => {
+        this.resettingOccurrence.set(false);
+        this.toast.error('Reset mislukt.');
       },
     });
   }

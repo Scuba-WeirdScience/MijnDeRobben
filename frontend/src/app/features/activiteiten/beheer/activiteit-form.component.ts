@@ -110,6 +110,22 @@ export class ActiviteitFormComponent {
   readonly formState: FieldTree<ActiviteitForm>;
   readonly recurrenceRule = signal<RecurrenceRule | null>(null);
 
+  /** Snapshot taken each time the activiteit input changes — used for dirty detection. */
+  private readonly cleanModel = signal<ActiviteitForm>({ ...this.formModel() });
+
+  /** True when the user has changed anything since the form was last loaded. */
+  readonly isDirty = computed(() => {
+    const c = this.cleanModel();
+    const m = this.formModel();
+    return JSON.stringify(c) !== JSON.stringify(m);
+  });
+
+  /** Guard passed to <app-side-panel>: shows a Dutch confirm dialog when dirty. */
+  readonly canCloseGuard = (): boolean => {
+    if (!this.isDirty()) return true;
+    return window.confirm('Je hebt niet-opgeslagen wijzigingen. Wil je het formulier sluiten?');
+  };
+
   // Computed: welke thread is geselecteerd (voor highlight)
   readonly geselecteerdeThreadId = computed(() => this.formModel().threadId);
 
@@ -175,6 +191,8 @@ export class ActiviteitFormComponent {
       this.recurrenceRule.set(a?.recurrenceRule ?? null);
       this.locatieType.set(a?.locatieVrij ? 'vrij' : 'selecteer');
       this.nieuweThreadModus.set(false);
+      // Reset dirty tracking after form is loaded
+      this.cleanModel.set({ ...this.formModel() });
 
       // Open de groep van de gekoppelde thread automatisch
       if (a?.groepId) {
@@ -356,10 +374,9 @@ export class ActiviteitFormComponent {
 
   onSave(): void {
     const fs = this.formState;
-    if (!fs.titel().valid() || !fs.startDatumTijd().valid() || !fs.eindDatumTijd().valid()) {
+    if (!fs.titel().valid() || !fs.startDatumTijd().valid()) {
       fs.titel().markAsTouched();
       fs.startDatumTijd().markAsTouched();
-      fs.eindDatumTijd().markAsTouched();
       return;
     }
 
@@ -381,7 +398,7 @@ export class ActiviteitFormComponent {
       const dto = {
         titel: model.titel.trim(),
         startDatumTijd: model.startDatumTijd,
-        eindDatumTijd: model.eindDatumTijd,
+        eindDatumTijd: model.eindDatumTijd ?? '',
         locatieId: this.locatieType() === 'selecteer' ? (model.locatieId || null) : null,
         locatieNaam: this.locatieType() === 'selecteer' && model.locatieId
           ? (this.locaties().find(l => l.id === model.locatieId)?.naam ?? null)
@@ -414,6 +431,7 @@ export class ActiviteitFormComponent {
       req$.subscribe({
         next: () => {
           this.saving.set(false);
+          this.cleanModel.set({ ...this.formModel() }); // mark clean so canClose guard won't fire
           this.toast.success(existing ? 'Activiteit bijgewerkt.' : 'Activiteit aangemaakt.');
           this.saved.emit();
         },

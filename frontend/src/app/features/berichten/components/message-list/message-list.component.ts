@@ -9,6 +9,7 @@ import { ToastService } from '../../../../shared/components/toast/toast.service'
 import { LucidePin, LucidePinOff, LucideTrash2, LucideReply, LucideHash, LucideCalendar, LucideChevronRight } from '../../../../shared/lucide-icons';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 import { ThreadLezingenComponent } from '../thread-lezingen/thread-lezingen.component';
+import { ActiviteitThreadCardComponent } from '../activiteit-thread-card/activiteit-thread-card.component';
 
 const _TW_SAFELIST = [
   'bg-scuba-600', 'bg-scuba-700', 'dark:bg-scuba-700', 'rounded-tr-none',
@@ -33,6 +34,7 @@ const _TW_SAFELIST = [
     LucideChevronRight,
     EmoticonPipe,
     ThreadLezingenComponent,
+    ActiviteitThreadCardComponent,
   ],
 })
 export class MessageListComponent implements OnDestroy {

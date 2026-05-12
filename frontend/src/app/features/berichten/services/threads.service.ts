@@ -4,10 +4,18 @@ import { firestore } from '@fire';
 import { AuthService } from '../../../core/auth/auth.service';
 import { GroepenService } from './groepen.service';
 import { call } from '../../../core/firebase/callable';
-import { ThreadDoc, ThreadConceptDoc, ActiviteitDoc } from '../../../core/models/firestore-types';
+import { ThreadDoc, ThreadConceptDoc, ActiviteitDoc, ActiviteitRegistratieDoc } from '../../../core/models/firestore-types';
+import { generateOccurrences } from '../../activiteiten/recurrence';
 
 export type Thread = ThreadDoc;
 export type ThreadConcept = ThreadConceptDoc;
+
+/** The next upcoming occurrence for the linked activiteit (null if none / no activiteit). */
+export interface UpcomingOccurrence {
+  activiteitId: string;
+  occurrenceDatum: string;   // yyyy-MM-dd
+  startDatumTijd: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ThreadsService {
@@ -24,6 +32,15 @@ export class ThreadsService {
 
   /** Activiteit that is linked to the active thread (null if none). */
   readonly linkedActiviteit = signal<ActiviteitDoc | null>(null);
+
+  /** Next upcoming occurrence for the linked activiteit (null if none). */
+  readonly upcomingOccurrence = signal<UpcomingOccurrence | null>(null);
+
+  /** Current user's registration for the upcoming occurrence (null = not registered, undefined = loading). */
+  readonly mijnRegistratie = signal<ActiviteitRegistratieDoc | null | undefined>(undefined);
+
+  /** All registrations for the upcoming occurrence (empty while loading or no occurrence). */
+  readonly occurrenceRegistraties = signal<ActiviteitRegistratieDoc[]>([]);
 
   readonly threadConcepten = signal<ThreadConcept[]>([]);
   readonly allThreadConcepten = signal<ThreadConcept[]>([]);
@@ -115,6 +132,9 @@ export class ThreadsService {
       const threadId = this.activeThreadId();
       if (!threadId) {
         this.linkedActiviteit.set(null);
+        this.upcomingOccurrence.set(null);
+        this.mijnRegistratie.set(undefined);
+        this.occurrenceRegistraties.set([]);
         return;
       }
       const q = query(
@@ -125,16 +145,143 @@ export class ThreadsService {
         if (!snap.empty) {
           const d = snap.docs[0];
           const data = d.data();
-          this.linkedActiviteit.set({ id: d.id, ...data } as ActiviteitDoc);
+          const act = { id: d.id, ...data } as ActiviteitDoc;
+          this.linkedActiviteit.set(act);
+          this._deriveUpcomingOccurrence(act);
         } else {
           this.linkedActiviteit.set(null);
+          this.upcomingOccurrence.set(null);
+          this.mijnRegistratie.set(undefined);
+          this.occurrenceRegistraties.set([]);
         }
-      }).catch(() => this.linkedActiviteit.set(null));
+      }).catch(() => {
+        this.linkedActiviteit.set(null);
+        this.upcomingOccurrence.set(null);
+        this.mijnRegistratie.set(undefined);
+        this.occurrenceRegistraties.set([]);
+      });
     });
   }
 
   selectThread(threadId: string): void {
     this.activeThreadId.set(threadId);
+  }
+
+  // ── Registratie helpers ──────────────────────────────────────────────────
+
+  registreer(aantalGasten = 0, opmerking: string | null = null): Promise<ActiviteitRegistratieDoc> {
+    const occ = this.upcomingOccurrence();
+    if (!occ) return Promise.reject(new Error('Geen aankomende activiteit.'));
+    return call<object, ActiviteitRegistratieDoc>('registreerVoorActiviteit', {
+      activiteitId: occ.activiteitId,
+      occurrenceDatum: occ.occurrenceDatum,
+      aantalGasten,
+      opmerking,
+    }).then(reg => {
+      this.mijnRegistratie.set(reg);
+      return reg;
+    });
+  }
+
+  meldAfwezig(): Promise<ActiviteitRegistratieDoc> {
+    const occ = this.upcomingOccurrence();
+    if (!occ) return Promise.reject(new Error('Geen aankomende activiteit.'));
+
+    const existing = this.mijnRegistratie();
+
+    const setAfwezig = (reg: ActiviteitRegistratieDoc) =>
+      call<object, ActiviteitRegistratieDoc>('updateRegistratieStatus', {
+        registratieId: reg.id,
+        status: 'afwezig',
+      }).then(updated => {
+        this.mijnRegistratie.set(updated);
+        return updated;
+      });
+
+    if (existing) {
+      return setAfwezig(existing);
+    }
+
+    // No registration yet — create one (aangemeld) and immediately flip to afwezig
+    return call<object, ActiviteitRegistratieDoc>('registreerVoorActiviteit', {
+      activiteitId: occ.activiteitId,
+      occurrenceDatum: occ.occurrenceDatum,
+      aantalGasten: 0,
+      opmerking: null,
+    }).then(reg => setAfwezig(reg));
+  }
+
+  annuleerInschrijving(): Promise<{ success: boolean }> {
+    const occ = this.upcomingOccurrence();
+    if (!occ) return Promise.reject(new Error('Geen aankomende activiteit.'));
+    return call<object, { success: boolean }>('annuleerRegistratie', {
+      activiteitId: occ.activiteitId,
+      occurrenceDatum: occ.occurrenceDatum,
+    }).then(res => {
+      this.mijnRegistratie.set(null);
+      return res;
+    });
+  }
+
+  resetInschrijvingen(): Promise<{ deleted: number }> {
+    const occ = this.upcomingOccurrence();
+    if (!occ) return Promise.reject(new Error('Geen aankomende activiteit.'));
+    return call<object, { deleted: number }>('resetInschrijvingen', {
+      activiteitId: occ.activiteitId,
+      occurrenceDatum: occ.occurrenceDatum,
+    }).then(res => {
+      this.mijnRegistratie.set(null);
+      this.occurrenceRegistraties.set([]);
+      return res;
+    });
+  }
+
+  private _deriveUpcomingOccurrence(act: ActiviteitDoc): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let occurrenceDatum: string;
+
+    if (act.isHerhalend && act.recurrenceRule) {
+      // Generate occurrences from today up to 1 year out, pick the first one
+      const to = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+      const occurrences = generateOccurrences([act], today, to, []);
+      if (occurrences.length === 0) {
+        this.upcomingOccurrence.set(null);
+        this.mijnRegistratie.set(undefined);
+        this.occurrenceRegistraties.set([]);
+        return;
+      }
+      const first = occurrences[0];
+      occurrenceDatum = first.occurrenceDatum;
+    } else {
+      occurrenceDatum = act.startDatumTijd.substring(0, 10);
+    }
+
+    this.upcomingOccurrence.set({
+      activiteitId: act.id,
+      occurrenceDatum,
+      startDatumTijd: act.startDatumTijd,
+    });
+
+    this._loadRegistraties(act.id, occurrenceDatum);
+  }
+
+  private _loadRegistraties(activiteitId: string, occurrenceDatum: string): void {
+    const uid = this.auth.currentUser()?.uid;
+    this.mijnRegistratie.set(undefined);
+    this.occurrenceRegistraties.set([]);
+
+    call<object, ActiviteitRegistratieDoc[]>('getRegistratiesVoorOccurrence', {
+      activiteitId,
+      occurrenceDatum,
+    }).then(list => {
+      this.occurrenceRegistraties.set(list);
+      const mine = uid ? (list.find(r => r.memberUid === uid) ?? null) : null;
+      this.mijnRegistratie.set(mine);
+    }).catch(() => {
+      this.mijnRegistratie.set(null);
+    });
   }
 
   createThread(groepId: string, title: string, body: string): Promise<{ threadId: string }> {

@@ -71,7 +71,27 @@
         />
       }
 
+      @if (isAdminOfOrganisator() && occurrence()!.inschrijvingenActief) {
+        <div class="pt-2">
+          <app-button variant="danger" size="sm" (click)="confirmReset.set(true)">
+            Inschrijvingen resetten
+          </app-button>
+        </div>
+      }
+
     </div>
   }
 
 </div>
+
+@if (confirmReset()) {
+  <app-confirm-dialog
+    title="Inschrijvingen resetten"
+    [message]="'Weet je zeker dat je alle inschrijvingen voor deze activiteit wilt verwijderen? Dit kan niet ongedaan worden gemaakt.'"
+    confirmLabel="Reset"
+    confirmVariant="danger"
+    [loading]="resetting()"
+    (confirmed)="resetInschrijvingenConfirmed()"
+    (cancelled)="confirmReset.set(false)"
+  />
+}

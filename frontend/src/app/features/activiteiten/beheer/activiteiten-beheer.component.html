@@ -115,6 +115,10 @@
                             class="text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium text-xs mr-3">
                             Registraties
                           </button>
+                          <button type="button" (click)="resetOccurrenceInschrijvingen(occ)"
+                            class="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 font-medium text-xs mr-3">
+                            Reset
+                          </button>
                         }
                         <button type="button" (click)="openOccurrenceEdit(occ)"
                           class="text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium text-xs mr-3">
@@ -221,5 +225,17 @@
     [loading]="deleting()"
     (confirmed)="deleteActiviteitConfirmed()"
     (cancelled)="activiteitToDelete.set(null)"
+  />
+}
+
+@if (confirmResetOccurrence()) {
+  <app-confirm-dialog
+    title="Inschrijvingen resetten"
+    [message]="'Weet je zeker dat je alle inschrijvingen voor ' + confirmResetOccurrence()!.occurrenceDatum + ' wilt verwijderen? Dit kan niet ongedaan worden gemaakt.'"
+    confirmLabel="Reset"
+    confirmVariant="danger"
+    [loading]="resettingOccurrence()"
+    (confirmed)="resetOccurrenceConfirmed()"
+    (cancelled)="confirmResetOccurrence.set(null)"
   />
 }

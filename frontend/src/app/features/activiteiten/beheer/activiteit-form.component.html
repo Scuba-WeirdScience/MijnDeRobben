@@ -1,7 +1,8 @@
 <app-side-panel
   [title]="activiteit() ? 'Activiteit bewerken' : 'Activiteit toevoegen'"
   [subtitle]="activiteit()?.titel"
-  [class.max-w-2xl]="true"
+  [class.max-w-3xl]="true"
+  [canClose]="canCloseGuard"
   (closed)="cancelled.emit()">
 
   <div class="space-y-6">
@@ -26,7 +27,7 @@
             (input)="formModel.update(m => ({ ...m, startDatumTijd: $any($event.target).value }))"
             class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500 focus:border-transparent" />
         </app-form-field>
-        <app-form-field label="Einddatum en -uur *" [error]="firstError(formState.eindDatumTijd())">
+        <app-form-field label="Einddatum en -uur">
           <input type="datetime-local"
             [value]="formModel().eindDatumTijd"
             (input)="formModel.update(m => ({ ...m, eindDatumTijd: $any($event.target).value }))"
@@ -320,8 +321,8 @@
           </button>
         } @else {
           <!-- Nieuw gesprek formulier -->
-          <div class="space-y-3 rounded-lg border border-scuba-200 dark:border-scuba-800 bg-scuba-50 dark:bg-scuba-950 p-4">
-            <p class="text-xs font-semibold text-scuba-700 dark:text-scuba-300 uppercase tracking-wide">Nieuw gesprek</p>
+          <div class="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+            <p class="text-xs font-semibold text-scuba-700 dark:text-gray-300 uppercase tracking-wide">Nieuw gesprek</p>
 
             <app-form-field label="Groep *">
               <app-select
@@ -343,9 +344,9 @@
             </app-form-field>
 
             <app-form-field label="Openingsbericht" hint="Optioneel">
-              <app-input
+              <app-rich-text-editor
                 [value]="formModel().nieuweThreadBericht ?? ''"
-                (input)="formModel.update(m => ({ ...m, nieuweThreadBericht: $any($event.target).value || null }))"
+                (valueChange)="formModel.update(m => ({ ...m, nieuweThreadBericht: $event || null }))"
                 placeholder="Optioneel openingsbericht…"
               />
             </app-form-field>

@@ -2,8 +2,9 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { SpinnerComponent, BadgeComponent } from '../../../shared/components/design-system';
+import { SpinnerComponent, BadgeComponent, ButtonComponent, ConfirmDialogComponent } from '../../../shared/components/design-system';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 import {
   ActiviteitenService,
   ActiviteitDoc,
@@ -17,13 +18,14 @@ import { ActiviteitInschrijvingComponent } from './components/activiteit-inschri
 @Component({
   selector: 'app-activiteiten-detail-page',
   standalone: true,
-  imports: [RouterLink, SpinnerComponent, BadgeComponent, ActiviteitInschrijvingComponent],
+  imports: [RouterLink, SpinnerComponent, BadgeComponent, ButtonComponent, ConfirmDialogComponent, ActiviteitInschrijvingComponent],
   templateUrl: './activiteiten-detail-page.component.html',
 })
 export class ActiviteitenDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(ActiviteitenService);
   readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
 
   readonly loading = signal(true);
   readonly activiteit = signal<ActiviteitDoc | null>(null);
@@ -32,6 +34,13 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   readonly registraties = signal<ActiviteitRegistratieDoc[]>([]);
 
   readonly occurrenceDatum = signal<string | null>(null);
+
+  readonly resetting = signal(false);
+  readonly confirmReset = signal(false);
+
+  readonly isAdminOfOrganisator = computed(() =>
+    this.auth.hasAnyRole(['Beheer', 'Bestuur'])
+  );
 
   readonly occurrence = computed((): ResolvedOccurrence | null => {
     const a = this.activiteit();
@@ -87,6 +96,24 @@ export class ActiviteitenDetailPageComponent implements OnInit {
 
   onGeannuleerd(): void {
     this.mijnRegistratie.set(null);
+  }
+
+  resetInschrijvingenConfirmed(): void {
+    const occ = this.occurrence();
+    if (!occ) return;
+    this.resetting.set(true);
+    this.service.resetInschrijvingen(occ.activiteitId, occ.occurrenceDatum).subscribe({
+      next: () => {
+        this.confirmReset.set(false);
+        this.resetting.set(false);
+        this.mijnRegistratie.set(null);
+        this.toast.success('Inschrijvingen gereset.');
+      },
+      error: () => {
+        this.resetting.set(false);
+        this.toast.error('Reset mislukt.');
+      },
+    });
   }
 
   formatDatum(iso: string): string {

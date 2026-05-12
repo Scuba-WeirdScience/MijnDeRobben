@@ -1,0 +1,133 @@
+@if (visible()) {
+  <div class="mx-4 mt-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden flex-shrink-0">
+
+    <!-- Header -->
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+      <p class="text-sm font-semibold text-gray-900 dark:text-white">Inschrijving</p>
+      <div class="flex items-center gap-3">
+        @if (act()!.lidKosten) {
+          <p class="text-xs text-gray-500 dark:text-gray-400">€ {{ act()!.lidKosten }} per lid</p>
+        }
+        @if (isAdminOfOrganisator()) {
+          <button type="button"
+            (click)="confirmReset.set(true)"
+            class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+            Reset inschrijvingen
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="px-4 py-3 space-y-3">
+
+      @if (loading()) {
+        <!-- Loading -->
+        <div class="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500">
+          <app-spinner size="sm" />
+          <span>Laden…</span>
+        </div>
+      } @else {
+
+        @let reg = mijnReg();
+
+        @if (reg === null) {
+          <!-- State 1: niet ingeschreven -->
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Je bent nog niet ingeschreven.</p>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <app-button variant="secondary" size="sm" [loading]="saving()" (click)="onMeldAfwezig()">
+                Ik kan niet
+              </app-button>
+              <app-button variant="primary" size="sm" [loading]="saving()" (click)="onInschrijven()">
+                Inschrijven
+              </app-button>
+            </div>
+          </div>
+        }
+
+        @if (reg?.status === 'aangemeld' || reg?.status === 'aanwezig') {
+          <!-- State 2: ingeschreven -->
+          <div class="space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <p class="text-sm font-medium text-green-700 dark:text-green-400">Je bent ingeschreven</p>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <app-button variant="secondary" size="sm" [loading]="saving()" (click)="onMeldAfwezig()">
+                  Kan niet
+                </app-button>
+                <app-button variant="danger" size="sm" [loading]="saving()" (click)="onAnnuleer()">
+                  Annuleer
+                </app-button>
+              </div>
+            </div>
+
+            <!-- Gastenveld — enkel als gasten:true -->
+            @if (toonGasten()) {
+              <div class="flex items-center gap-3">
+                <label class="text-xs font-medium text-gray-600 dark:text-gray-400 shrink-0">
+                  Aantal gasten
+                </label>
+                <input type="number"
+                  [value]="aantalGasten()"
+                  (input)="aantalGasten.set(+$any($event.target).value || 0)"
+                  min="0"
+                  [max]="act()!.maxGastenPerInschrijving ?? 99"
+                  class="w-20 text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-scuba-500" />
+                @if (act()!.gastKosten) {
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    € {{ act()!.gastKosten }} per gast
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (reg?.status === 'afgemeld' || reg?.status === 'afwezig') {
+          <!-- State 3: afgemeld / afwezig -->
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm text-amber-700 dark:text-amber-400">
+              @if (reg!.status === 'afwezig') { Je hebt aangegeven er niet bij te zijn. }
+              @else { Je inschrijving is geannuleerd. }
+            </p>
+            <app-button variant="secondary" size="sm" [loading]="saving()" (click)="onInschrijven()">
+              Toch inschrijven
+            </app-button>
+          </div>
+        }
+
+      }
+
+      <!-- Deelnemerslijst -->
+      @if (!loading() && aangemeldDeelnemers().length > 0) {
+        <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            {{ aangemeldDeelnemers().length }} ingeschreven
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            @for (r of aangemeldDeelnemers(); track r.id) {
+              <span
+                title="{{ r.memberNaam }}{{ r.aantalGasten > 0 ? ' (+' + r.aantalGasten + ')' : '' }}"
+                class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-scuba-100 dark:bg-scuba-900/40 text-scuba-700 dark:text-scuba-300 text-xs font-semibold cursor-default">
+                {{ getInitialen(r.memberNaam) }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+}
+
+<!-- Reset bevestiging -->
+@if (confirmReset()) {
+  <app-confirm-dialog
+    title="Inschrijvingen resetten"
+    message="Alle inschrijvingen voor deze activiteit worden permanent verwijderd. Dit kan niet ongedaan worden gemaakt."
+    confirmLabel="Reset"
+    confirmVariant="danger"
+    [loading]="resetting()"
+    (confirmed)="onResetBevestigd()"
+    (cancelled)="confirmReset.set(false)"
+  />
+}

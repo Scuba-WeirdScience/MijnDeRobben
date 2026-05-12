@@ -149,4 +149,10 @@ export class ActiviteitenService {
       'updateRegistratieStatus', { registratieId, status }
     ));
   }
+
+  resetInschrijvingen(activiteitId: string, occurrenceDatum: string): Observable<{ deleted: number }> {
+    return from(call<{ activiteitId: string; occurrenceDatum: string }, { deleted: number }>(
+      'resetInschrijvingen', { activiteitId, occurrenceDatum }
+    ));
+  }
 }

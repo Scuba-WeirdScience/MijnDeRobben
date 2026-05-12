@@ -389,5 +389,52 @@ export const updateRegistratieStatus = onCall({ region: REGION }, async (request
   return (await ref.get()).data() as ActiviteitRegistratieDoc;
 });
 
+export const resetInschrijvingen = onCall({ region: REGION }, async (request) => {
+  const auth = requireAuth(request);
+  const { activiteitId, occurrenceDatum } = request.data as {
+    activiteitId: string;
+    occurrenceDatum: string;
+  };
+
+  // Fetch activiteit for organisator check
+  const activiteitSnap = await db.collection('activiteiten').doc(activiteitId).get();
+  if (!activiteitSnap.exists) throw new HttpsError('not-found', 'Activiteit niet gevonden.');
+  const activiteit = activiteitSnap.data() as ActiviteitDoc;
+
+  // Auth: Beheer/Bestuur OR organisator (losse leden of groep-organisator)
+  const token = auth.token as Record<string, unknown>;
+  const isAdmin = token['Beheer'] === true || token['Bestuur'] === true;
+
+  if (!isAdmin) {
+    // Check if caller is an organisator member
+    const memberSnap = await db.collection('members').where('userId', '==', auth.uid).limit(1).get();
+    if (memberSnap.empty) throw new HttpsError('permission-denied', 'Geen toegang.');
+    const memberId = memberSnap.docs[0].data()['id'] as string;
+    const isOrganisatorLid = (activiteit.organisatorLeden ?? []).includes(memberId)
+      || activiteit.organisatorId === memberId;
+    if (!isOrganisatorLid) throw new HttpsError('permission-denied', 'Geen toegang.');
+  }
+
+  // Hard delete all registraties for this occurrence
+  const snap = await db
+    .collection('activiteitRegistraties')
+    .where('activiteitId', '==', activiteitId)
+    .where('occurrenceDatum', '==', occurrenceDatum)
+    .get();
+
+  if (snap.empty) return { deleted: 0 };
+
+  const BATCH_SIZE = 500;
+  let deleted = 0;
+  for (let i = 0; i < snap.docs.length; i += BATCH_SIZE) {
+    const batch = db.batch();
+    snap.docs.slice(i, i + BATCH_SIZE).forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    deleted += Math.min(BATCH_SIZE, snap.docs.length - i);
+  }
+
+  return { deleted };
+});
+
 // Keep RegistratiesZichtbaar in scope (used by other modules that import types)
 export type { RegistratiesZichtbaar };

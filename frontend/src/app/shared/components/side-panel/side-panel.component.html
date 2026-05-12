@@ -1,17 +1,20 @@
 <!-- Backdrop -->
 <div class="fixed inset-0 z-40 bg-black/40"
-     (click)="closed.emit()">
+     (click)="requestClose()">
 </div>
 
-<!-- Side panel -->
+<!-- Side panel — width: explicit px when dragged, otherwise inherits host max-w-* class -->
 <div class="fixed inset-y-0 right-0 z-50 flex flex-col w-full bg-white dark:bg-gray-900 shadow-2xl"
-     [class.max-w-sm]="size() === 'sm'"
-     [class.max-w-lg]="size() === 'md'"
-     [class.max-w-2xl]="size() === 'lg'"
-     [class.max-w-4xl]="size() === 'xl'">
+     [style.width.px]="panelWidth() ?? null">
+
+  <!-- Drag handle -->
+  <div class="absolute inset-y-0 left-0 w-2 cursor-ew-resize group z-10 flex items-center justify-center"
+       (mousedown)="startDrag($event)">
+    <div class="h-12 w-1 rounded-full bg-gray-200 dark:bg-gray-700 group-hover:bg-scuba-400 dark:group-hover:bg-scuba-500 transition-colors"></div>
+  </div>
 
   <!-- Header -->
-  <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex-shrink-0">
+  <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 pl-5 pr-6 py-4 flex-shrink-0">
 
     <!-- Titel + ondertitel -->
     <div class="min-w-0 flex-1">
@@ -31,7 +34,7 @@
     }
 
     <!-- Sluitknop -->
-    <button (click)="closed.emit()"
+    <button (click)="requestClose()"
             class="flex-shrink-0 rounded-lg p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Sluiten">
       <svg lucideX class="h-5 w-5"></svg>

@@ -71,7 +71,7 @@ export type LocatieForm = z.infer<typeof locatieFormSchema>;
 export const activiteitFormSchema = z.object({
   titel: z.string().min(1, 'Titel is verplicht.').max(200, 'Max 200 tekens.'),
   startDatumTijd: z.string().min(1, 'Startdatum is verplicht.'),
-  eindDatumTijd: z.string().min(1, 'Einddatum is verplicht.'),
+  eindDatumTijd: z.string().optional(),
   locatieId: z.string().nullable().optional(),
   locatieVrij: z.string().nullable().optional(),
   beschrijving: z.string().optional(),
