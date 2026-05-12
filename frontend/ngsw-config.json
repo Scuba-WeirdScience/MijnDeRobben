@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
   "appData": {
-    "version": "2.2.0"
+    "version": "2.3.1"
   },
   "assetGroups": [
     {
@@ -40,6 +40,8 @@
     "!https://identitytoolkit.googleapis.com/**",
     "!https://securetoken.googleapis.com/**",
     "!https://*.cloudfunctions.net/**",
-    "!https://*.run.app/**"
+    "!https://*.run.app/**",
+    "!https://www.googleapis.com/**",
+    "!https://*.googleapis.com/**"
   ]
 }

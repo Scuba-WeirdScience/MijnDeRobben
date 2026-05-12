@@ -16,7 +16,7 @@ import { AuthService } from '../auth/auth.service';
 export class UnreadCountService {
   private readonly auth = inject(AuthService);
 
-  /** Total unread berichten count for the current user. */
+  /** Total unread count: legacy berichten + all thread messages across all groepen. */
   readonly unreadCount = signal<number>(0);
 
   private unsub: (() => void) | null = null;
@@ -34,10 +34,14 @@ export class UnreadCountService {
       }
 
       this.unsub = onSnapshot(doc(firestore, 'users', user.uid), (snap) => {
-        const data = snap.data() as { unreadCount?: number } | undefined;
-        const count = data?.unreadCount ?? 0;
-        this.unreadCount.set(count);
-        this._driveBadge(count);
+        const data = snap.data() as { unreadCount?: number; unreadPerGroep?: Record<string, number> } | undefined;
+        const legacyCount = data?.unreadCount ?? 0;
+        const threadCount = data?.unreadPerGroep
+          ? Object.values(data.unreadPerGroep).reduce((sum, n) => sum + (n ?? 0), 0)
+          : 0;
+        const total = legacyCount + threadCount;
+        this.unreadCount.set(total);
+        this._driveBadge(total);
       });
     });
   }

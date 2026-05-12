@@ -1,6 +1,7 @@
 {
   "projects": {
     "default": "dcderobben-d3536",
-    "dev": "dcderobben-d3536"
+    "production": "dcderobben-d3536",
+    "staging": "dcderobben-staging"
   }
 }

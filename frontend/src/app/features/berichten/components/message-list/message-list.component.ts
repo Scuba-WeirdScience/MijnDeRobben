@@ -1,19 +1,17 @@
-import { Component, computed, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MessagesService } from '../../services/messages.service';
 import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { LucidePin, LucidePinOff, LucideTrash2, LucideMail, LucideMailOpen, LucideReply, LucideHash } from '../../../../shared/lucide-icons';
+import { LucidePin, LucidePinOff, LucideTrash2, LucideReply, LucideHash } from '../../../../shared/lucide-icons';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 import { ThreadLezingenComponent } from '../thread-lezingen/thread-lezingen.component';
 
 const _TW_SAFELIST = [
   'bg-scuba-600', 'bg-scuba-700', 'dark:bg-scuba-700', 'rounded-tr-none',
   'bg-gray-100', 'dark:bg-gray-800', 'rounded-tl-none',
-  'text-scuba-500', 'hover:text-scuba-700', 'dark:hover:text-scuba-300',
-  'text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-200',
   'text-scuba-400', 'dark:text-scuba-300',
   'msg-highlight',
 ];
@@ -27,15 +25,13 @@ const _TW_SAFELIST = [
     LucidePin,
     LucidePinOff,
     LucideTrash2,
-    LucideMail,
-    LucideMailOpen,
     LucideReply,
     LucideHash,
     EmoticonPipe,
     ThreadLezingenComponent,
   ],
 })
-export class MessageListComponent {
+export class MessageListComponent implements OnDestroy {
   protected readonly messagesService = inject(MessagesService);
   protected readonly groepenService = inject(GroepenService);
   protected readonly threadsService = inject(ThreadsService);
@@ -53,7 +49,11 @@ export class MessageListComponent {
   deletingId = signal<string | null>(null);
   highlightedId = signal<string | null>(null);
 
+  private readObserver: IntersectionObserver | null = null;
+  private observedMessageIds = new Set<string>();
+
   constructor() {
+    // Scroll to bottom when messages load
     effect(() => {
       const msgs = this.messagesService.messages();
       if (msgs.length > 0) {
@@ -62,6 +62,91 @@ export class MessageListComponent {
         }, 50);
       }
     });
+
+    // Auto-read: reconnect observer whenever messages or thread changes
+    effect(() => {
+      const msgs = this.messagesService.messages();
+      const threadId = this.threadsService.activeThreadId();
+      const groepId = this.groepenService.activeGroepId();
+
+      // Reset tracked ids when thread changes
+      if (!threadId) {
+        this._destroyObserver();
+        return;
+      }
+
+      // Defer so the DOM is rendered before we query elements
+      setTimeout(() => this._setupReadObserver(msgs, threadId, groepId), 100);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this._destroyObserver();
+  }
+
+  private _destroyObserver(): void {
+    this.readObserver?.disconnect();
+    this.readObserver = null;
+    this.observedMessageIds.clear();
+  }
+
+  private _setupReadObserver(msgs: any[], threadId: string, groepId: string | null): void {
+    if (!groepId) return;
+
+    // Create observer once (or reuse if already exists for this thread)
+    if (!this.readObserver) {
+      this.readObserver = new IntersectionObserver(
+        (entries) => this._onIntersection(entries, threadId, groepId),
+        { threshold: 0.8 }
+      );
+    }
+
+    const uid = this.auth.currentUser()?.uid;
+    if (!uid) return;
+
+    // Observe every unread message element that isn't already being observed
+    for (const msg of msgs) {
+      if (msg.deletedAt) continue;
+      if (msg.authorUid === uid) continue; // own messages are always "read"
+      if (this.messagesService.readMessageIds().has(msg.id)) continue;
+      if (this.observedMessageIds.has(msg.id)) continue;
+
+      const el = document.getElementById('msg-' + msg.id);
+      if (el) {
+        this.readObserver.observe(el);
+        this.observedMessageIds.add(msg.id);
+      }
+    }
+  }
+
+  private _onIntersection(entries: IntersectionObserverEntry[], threadId: string, groepId: string): void {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+
+      const el = entry.target as HTMLElement;
+      const messageId = el.id.replace('msg-', '');
+      if (!messageId) continue;
+
+      // Stop observing this element — one-shot
+      this.readObserver?.unobserve(el);
+      this.observedMessageIds.delete(messageId);
+
+      // Already marked read locally — skip
+      if (this.messagesService.readMessageIds().has(messageId)) continue;
+
+      // Optimistic local update
+      const s = new Set(this.messagesService.readMessageIds());
+      s.add(messageId);
+      this.messagesService.readMessageIds.set(s);
+
+      // Fire-and-forget cloud function call
+      this.messagesService.markMessageRead(messageId, threadId, groepId).catch(() => {
+        // Silently revert on failure
+        const revert = new Set(this.messagesService.readMessageIds());
+        revert.delete(messageId);
+        this.messagesService.readMessageIds.set(revert);
+      });
+    }
   }
 
   isOwnMessage(message: any): boolean {
@@ -102,27 +187,6 @@ export class MessageListComponent {
       this.toast.error('Verwijderen mislukt.');
     } finally {
       this.deletingId.set(null);
-    }
-  }
-
-  async toggleRead(message: any): Promise<void> {
-    const thread = this.threadsService.activeThread();
-    const groepId = this.groepenService.activeGroepId();
-    if (!thread || !groepId) return;
-    try {
-      if (this.isRead(message)) {
-        await this.messagesService.markMessageUnread(message.id, thread.id, groepId);
-        const s = new Set(this.messagesService.readMessageIds());
-        s.delete(message.id);
-        this.messagesService.readMessageIds.set(s);
-      } else {
-        await this.messagesService.markMessageRead(message.id, thread.id, groepId);
-        const s = new Set(this.messagesService.readMessageIds());
-        s.add(message.id);
-        this.messagesService.readMessageIds.set(s);
-      }
-    } catch {
-      this.toast.error('Status kon niet worden gewijzigd.');
     }
   }
 

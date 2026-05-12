@@ -41,10 +41,9 @@ export class LoginComponent {
     this.serverError.set('');
 
     try {
-      await this.auth.login(value.email, value.password);
-      // After login, check if the user still needs to validate their geboortedatum.
-      // The Cloud Function sets a custom claim `isValidated` on first validation.
-      const user = this.auth.currentUser();
+      const user = await this.auth.login(value.email, value.password);
+      // Use the user returned directly from login — avoids reading the signal
+      // before onAuthStateChanged has had a chance to update it.
       if (user && !user.roles.includes('Lid') && !user.roles.includes('Beheer')) {
         // User exists but has no role yet — needs validation step
         this.loginStep.set('geboortedatum');

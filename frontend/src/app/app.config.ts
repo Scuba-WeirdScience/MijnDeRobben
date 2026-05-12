@@ -27,6 +27,20 @@ function initPwa(pwa: PwaService) {
   return () => {};
 }
 
+/**
+ * In dev mode, unregister any stale service workers left over from a previous
+ * production/staging build. Without this, a cached SW keeps intercepting
+ * Firestore streaming requests and crashing them.
+ */
+function unregisterStaleServiceWorkers() {
+  return async () => {
+    if (isDevMode() && 'serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(r => r.unregister()));
+    }
+  };
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -38,6 +52,11 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: 'registerImmediately',
     }),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: unregisterStaleServiceWorkers,
+      multi: true,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: initTheme,
@@ -52,5 +71,4 @@ export const appConfig: ApplicationConfig = {
     },
   ],
 };
-
 

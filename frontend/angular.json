@@ -57,6 +57,27 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
+            },
+            "staging-local": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true,
+              "serviceWorker": false
             }
           },
           "defaultConfiguration": "production"
@@ -72,6 +93,12 @@
             },
             "development": {
               "buildTarget": "frontend:build:development"
+            },
+            "staging": {
+              "buildTarget": "frontend:build:staging"
+            },
+            "staging-local": {
+              "buildTarget": "frontend:build:staging-local"
             }
           },
           "defaultConfiguration": "development"

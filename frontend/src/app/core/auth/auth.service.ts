@@ -51,10 +51,21 @@ export class AuthService {
     });
   }
 
-  async login(email: string, password: string): Promise<void> {
+  async login(email: string, password: string): Promise<AppUser> {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged above will update _currentUser automatically
+      // onAuthStateChanged fires asynchronously — wait until _currentUser is populated
+      return await new Promise<AppUser>((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+          if (fbUser) {
+            unsubscribe();
+            await fbUser.getIdToken(true);
+            const appUser = await this.toAppUser(fbUser);
+            this._currentUser.set(appUser);
+            resolve(appUser);
+          }
+        });
+      });
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code ?? 'UnknownError';
       throw new LoginApiError(code);

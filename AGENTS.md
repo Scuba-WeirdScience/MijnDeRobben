@@ -176,6 +176,106 @@ Steps (always in this order):
 
 ---
 
+## Staging environment (`dcderobben-staging`)
+
+A second Firebase project mirrors production data for local debugging without running
+local emulators. Data flows **production → staging** automatically.
+
+### How the sync works
+
+| Mechanism | When | What |
+|-----------|------|------|
+| **Real-time Cloud Function triggers** | Every production write | Mirrors the write (~1-2 s lag) to staging via `functions/src/sync/firestore-sync.functions.ts` |
+| **Firestore export/import** (CI) | Every production deploy | Full re-seed via `gcloud firestore export` + `import` in `.github/workflows/deploy.yml` |
+
+The sync stamps `_sync: { syncedAt, syncedFrom: "production" }` on every replicated document.
+
+### Running the frontend against staging
+
+```powershell
+# workdir: frontend/
+ng serve --configuration=staging
+# or build:
+ng build --configuration=staging
+```
+
+### Adding a new collection to the real-time sync
+
+1. Add the collection path to `SYNCED_COLLECTIONS` in
+   `functions/src/sync/firestore-sync.functions.ts`.
+2. Deploy functions: `firebase --project production deploy --only functions`.
+
+### Staging data-model migrations — REQUIRED after every field change
+
+When you add or remove a field on a Firestore document type and deploy to **production**,
+the real-time sync will start writing documents with the new shape. However, **documents
+already in staging** (synced before the deploy) will still have the old shape.
+
+**After every production deploy that changes a document shape, you must:**
+
+1. Write a migration script (same script you would run on production) targeting the
+   staging project:
+   ```typescript
+   // Use the staging service account credential, not the default
+   import stagingCred from './staging-sa.json';
+   const stagingApp = admin.initializeApp({ credential: admin.credential.cert(stagingCred), projectId: 'dcderobben-staging' }, 'migration');
+   const stagingDb = stagingApp.firestore();
+   // ... your migration logic
+   ```
+2. Run against staging first to verify correctness.
+3. Then run the identical script against production.
+
+The CI export/import in `deploy.yml` will re-seed staging with the latest production
+data after each deploy, automatically resolving any shape divergence for newly written
+documents. Old documents that were not touched by the production deploy may still need
+the manual migration.
+
+### One-time manual setup for the staging sync (prerequisites)
+
+These steps must be completed by a human before the sync activates:
+
+1. **Enable billing** on `dcderobben-staging` at
+   https://console.developers.google.com/billing/enable?project=dcderobben-staging
+
+2. **Create the Firestore database** in staging (europe-west4):
+   ```bash
+   firebase --project staging firestore:databases:create --location=europe-west4
+   ```
+
+3. **Create a GCS export bucket** in the staging project:
+   ```bash
+   gsutil mb -p dcderobben-staging -l europe-west4 gs://dcderobben-staging-exports
+   ```
+
+4. **Grant the production service account Storage Admin** on the export bucket:
+   ```bash
+   gsutil iam ch serviceAccount:<PROD_SA_EMAIL>:roles/storage.admin \
+     gs://dcderobben-staging-exports
+   ```
+
+5. **Grant the staging service account Firestore import rights**:
+   ```bash
+   gcloud projects add-iam-policy-binding dcderobben-staging \
+     --member=serviceAccount:<STAGING_SA_EMAIL> \
+     --role=roles/datastore.importExportAdmin
+   ```
+
+6. **Add GitHub Actions secrets**:
+   - `FIREBASE_SERVICE_ACCOUNT_STAGING` — staging service account JSON
+
+7. **Set the Functions secret** (enables real-time sync):
+   ```bash
+   firebase --project dcderobben-d3536 functions:secrets:set STAGING_SERVICE_ACCOUNT_KEY
+   # paste the staging service account JSON when prompted
+   ```
+
+8. **Deploy functions** to activate the sync triggers:
+   ```bash
+   firebase --project dcderobben-d3536 deploy --only functions --force
+   ```
+
+---
+
 ## Detailed instructions
 
 `frontend/copilot-instructions.md` contains extended UI patterns, component APIs, and common fixes.  
