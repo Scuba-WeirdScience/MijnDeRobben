@@ -77,6 +77,9 @@
                     € {{ act()!.gastKosten }} per gast
                   </span>
                 }
+                <app-button variant="primary" size="sm" [loading]="saving()" (click)="onUpdateGasten()">
+                  Opslaan
+                </app-button>
               </div>
             }
           </div>

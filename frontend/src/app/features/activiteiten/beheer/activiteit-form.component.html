@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6 pb-10">
 
   <!-- Header -->
   <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -11,8 +11,6 @@
       }
     </div>
   </div>
-
-  <div class="space-y-6">
 
     <!-- Basisgegevens -->
     <section class="space-y-4">
@@ -372,7 +370,5 @@
       <app-button variant="secondary" (click)="cancelled.emit()">Annuleren</app-button>
       <app-button variant="primary" [loading]="saving()" (click)="onSave()">Opslaan</app-button>
     </div>
-
-  </div>
 
 </div>

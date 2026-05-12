@@ -13,6 +13,7 @@ import {
   format,
   isBefore,
   isAfter,
+  isValid,
   startOfDay,
   getDay,
   getDate,
@@ -62,6 +63,7 @@ export function generateOccurrences(
 
 function singleOccurrence(activiteit: ActiviteitDoc, van: Date, tot: Date): string[] {
   const d = parseISO(activiteit.startDatumTijd);
+  if (!isValid(d)) return [];
   if (isAfter(d, tot) || isBefore(d, van)) return [];
   return [format(d, 'yyyy-MM-dd')];
 }
@@ -70,6 +72,7 @@ function expandRecurrence(activiteit: ActiviteitDoc, van: Date, tot: Date): stri
   const rule = activiteit.recurrenceRule!;
   const results: string[] = [];
   let current = parseISO(activiteit.startDatumTijd);
+  if (!isValid(current)) return [];
   const vanDay = startOfDay(van);
   const totDay = startOfDay(tot);
 

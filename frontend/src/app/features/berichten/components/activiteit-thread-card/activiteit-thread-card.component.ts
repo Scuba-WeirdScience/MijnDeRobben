@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -29,6 +29,17 @@ export class ActiviteitThreadCardComponent {
   readonly resetting = signal(false);
   readonly confirmReset = signal(false);
   readonly aantalGasten = signal(0);
+  readonly reg = computed(() => this.mijnReg());
+
+  constructor() {
+    // Sync aantalGasten from existing registration when it loads
+    effect(() => {
+      const r = this.mijnReg();
+      if (r && (r.status === 'aangemeld' || r.status === 'aanwezig')) {
+        this.aantalGasten.set(r.aantalGasten ?? 0);
+      }
+    });
+  }
 
   readonly act = computed(() => this.threadsService.linkedActiviteit());
   readonly occ = computed(() => this.threadsService.upcomingOccurrence());
@@ -92,6 +103,18 @@ export class ActiviteitThreadCardComponent {
       this.toast.success('Je bent ingeschreven!');
     } catch {
       this.toast.error('Inschrijven mislukt. Probeer opnieuw.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async onUpdateGasten(): Promise<void> {
+    this.saving.set(true);
+    try {
+      await this.threadsService.registreer(this.aantalGasten());
+      this.toast.success('Aantal gasten opgeslagen.');
+    } catch {
+      this.toast.error('Opslaan mislukt. Probeer opnieuw.');
     } finally {
       this.saving.set(false);
     }
