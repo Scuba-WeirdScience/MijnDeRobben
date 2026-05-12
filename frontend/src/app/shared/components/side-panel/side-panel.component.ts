@@ -6,9 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { NgTemplateOutlet } from '@angular/common';
 import { LucideX } from '../../lucide-icons';
 
-const STORAGE_KEY = 'sidePanelWidth';
-const MIN_WIDTH   = 480;
-const MAX_WIDTH   = Math.round(window?.innerWidth * 0.92) || 1400;
+const MIN_WIDTH = 320;
 
 @Component({
   selector: 'app-side-panel',
@@ -28,7 +26,8 @@ export class SidePanelComponent implements OnDestroy {
 
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  readonly panelWidth = signal<number | null>(this.loadWidth());
+  /** Width set by dragging — null means use CSS max-w-* from the host element. */
+  readonly panelWidth = signal<number | null>(null);
 
   private dragging = false;
   private startX   = 0;
@@ -56,8 +55,9 @@ export class SidePanelComponent implements OnDestroy {
 
   private handleDrag(e: MouseEvent): void {
     if (!this.dragging) return;
+    const maxWidth = Math.round(window.innerWidth * 0.95);
     const delta = this.startX - e.clientX;          // dragging left = wider
-    const next  = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, this.startW + delta));
+    const next  = Math.min(maxWidth, Math.max(MIN_WIDTH, this.startW + delta));
     this.panelWidth.set(next);
   }
 
@@ -68,7 +68,6 @@ export class SidePanelComponent implements OnDestroy {
     document.removeEventListener('mouseup',   this.onMouseUp);
     document.body.style.userSelect = '';
     document.body.style.cursor     = '';
-    this.saveWidth(this.panelWidth()!);
   }
 
   ngOnDestroy(): void {
@@ -87,17 +86,5 @@ export class SidePanelComponent implements OnDestroy {
     if (s === 'xl')  return 896;
     return 512; // md
   }
-
-  private loadWidth(): number | null {
-    if (!this.isBrowser) return null;
-    try {
-      const v = localStorage.getItem(STORAGE_KEY);
-      return v ? Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Number(v))) : null;
-    } catch { return null; }
-  }
-
-  private saveWidth(w: number): void {
-    if (!this.isBrowser) return;
-    try { localStorage.setItem(STORAGE_KEY, String(w)); } catch { /* noop */ }
-  }
 }
+

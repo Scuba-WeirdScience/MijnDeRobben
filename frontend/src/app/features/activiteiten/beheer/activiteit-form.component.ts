@@ -191,8 +191,32 @@ export class ActiviteitFormComponent {
       this.recurrenceRule.set(a?.recurrenceRule ?? null);
       this.locatieType.set(a?.locatieVrij ? 'vrij' : 'selecteer');
       this.nieuweThreadModus.set(false);
-      // Reset dirty tracking after form is loaded
-      this.cleanModel.set({ ...this.formModel() });
+      // Reset dirty tracking after form is loaded — use the same object we just set
+      const snapshot: ActiviteitForm = {
+        titel: a?.titel ?? '',
+        startDatumTijd: this.toDatetimeLocal(a?.startDatumTijd ?? ''),
+        eindDatumTijd: this.toDatetimeLocal(a?.eindDatumTijd ?? ''),
+        locatieId: a?.locatieId ?? null,
+        locatieVrij: a?.locatieVrij ?? null,
+        beschrijving: a?.beschrijving ?? '',
+        inschrijvingenActief: a?.inschrijvingenActief ?? false,
+        isPubliek: a?.isPubliek ?? false,
+        maxDeelnemers: a?.maxDeelnemers ?? null,
+        registratiesZichtbaar: a?.registratiesZichtbaar ?? 'iedereen',
+        gasten: a?.gasten ?? false,
+        maxGastenPerInschrijving: a?.maxGastenPerInschrijving ?? null,
+        gastKosten: a?.gastKosten ?? null,
+        lidKosten: a?.lidKosten ?? null,
+        organisatorId: a?.organisatorId ?? null,
+        organisatorLeden: a?.organisatorLeden ?? [],
+        organisatorGroepId: a?.organisatorGroepId ?? null,
+        bannerUrl: a?.bannerUrl ?? null,
+        threadId: a?.threadId ?? null,
+        groepId: a?.groepId ?? null,
+        nieuweThreadTitel: null,
+        nieuweThreadBericht: null,
+      };
+      this.cleanModel.set(snapshot);
 
       // Open de groep van de gekoppelde thread automatisch
       if (a?.groepId) {
