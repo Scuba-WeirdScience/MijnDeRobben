@@ -7,8 +7,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      HAS_STAGING_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -38,44 +36,3 @@ jobs:
         env:
           FIREBASE_DEPLOY_AGENT: github-actions-${{ github.run_id }}
 
-      # ── Staging Firestore seed ──────────────────────────────────────────────
-      # After every production deploy, export the latest Firestore data and
-      # import it into the staging project. This seeds any newly added
-      # collections or documents that the real-time sync hasn't seen yet.
-      #
-      # Prerequisites (one-time manual setup — see AGENTS.md § Staging):
-      #   1. Enable billing on dcderobben-staging in the GCP console.
-      #   2. Create a GCS bucket in the STAGING project for the export:
-      #        gsutil mb -p dcderobben-staging -l europe-west4 gs://dcderobben-staging-exports
-      #   3. Grant the PRODUCTION service account Storage Admin on that bucket:
-      #        gsutil iam ch serviceAccount:<PROD_SA>:roles/storage.admin \
-      #          gs://dcderobben-staging-exports
-      #   4. Grant the STAGING service account Firestore Import/Export Admin:
-      #        gcloud projects add-iam-policy-binding dcderobben-staging \
-      #          --member=serviceAccount:<STAGING_SA> \
-      #          --role=roles/datastore.importExportAdmin
-      #   5. Add the staging service account JSON as a GitHub secret:
-      #        FIREBASE_SERVICE_ACCOUNT_STAGING
-      #   6. Set the STAGING_SERVICE_ACCOUNT_KEY Functions secret (for real-time sync):
-      #        firebase --project dcderobben-d3536 functions:secrets:set STAGING_SERVICE_ACCOUNT_KEY
-      #        (paste the staging service account JSON when prompted)
-
-      - name: Export production Firestore to GCS
-        if: env.HAS_STAGING_SA == 'true'
-        run: |
-          gcloud firestore export gs://dcderobben-staging-exports/prod-seed \
-            --project=dcderobben-d3536 \
-            --async=false
-
-      - name: Authenticate to Google Cloud (staging)
-        if: env.HAS_STAGING_SA == 'true'
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}
-
-      - name: Import Firestore data into staging
-        if: env.HAS_STAGING_SA == 'true'
-        run: |
-          gcloud firestore import gs://dcderobben-staging-exports/prod-seed \
-            --project=dcderobben-staging \
-            --async=false
