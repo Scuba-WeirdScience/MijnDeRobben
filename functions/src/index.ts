@@ -129,6 +129,7 @@ export {
   getRegistratiesVoorOccurrence,
   getMijnRegistraties,
   updateRegistratieStatus,
+  resetInschrijvingen,
 } from './activiteiten/activiteiten.functions';
 
 export { activiteitenIcs } from './activiteiten/activiteiten-ics.functions';
@@ -145,8 +146,3 @@ export {
   deleteMateriaal,
 } from './materialen/materialen.functions';
 
-// ── Staging sync ──────────────────────────────────────────────────────────────
-// Mirrors every Firestore write from production to the staging project.
-// Only active when STAGING_SERVICE_ACCOUNT_KEY secret is set.
-// See functions/src/sync/firestore-sync.functions.ts for configuration.
-export { syncFunctions } from './sync/firestore-sync.functions';
