@@ -26,7 +26,7 @@ Write-Host "Starting DeRobben development environment..." -ForegroundColor Cyan
 # Build functions first, then start all emulators in the same tab so the
 # emulator always starts with a freshly compiled lib/.
 # After the emulator starts, wait 40 s for it to be ready, then seed.
-$emuCmd = "Set-Location '$root\functions'; npm install; npm run build; Set-Location '$root'; firebase emulators:start --project demo-derobben --import=./emulator-data --export-on-exit=./emulator-data"
+$emuCmd = "Set-Location '$root\functions'; pnpm install; pnpm run build; Set-Location '$root'; firebase emulators:start --project demo-derobben --import=./emulator-data --export-on-exit=./emulator-data"
 $emuB64 = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($emuCmd))
 
 $seedCmd = "Start-Sleep 40; Write-Host '[Seed] Starting emulator seed...' -ForegroundColor Cyan; npx ts-node --esm '$root\scripts\seed-emulator.ts'; Write-Host '[Seed] Done.' -ForegroundColor Green"

@@ -10,21 +10,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
       - name: Build frontend
         working-directory: frontend
         run: |
-          npm ci
+          pnpm install --frozen-lockfile
           npx ng build
 
       - name: Build functions
         working-directory: functions
         run: |
-          npm ci
-          npm run build
+          pnpm install --frozen-lockfile
+          pnpm run build
 
       - name: Authenticate to Google Cloud (production)
         uses: google-github-actions/auth@v2
@@ -35,4 +40,3 @@ jobs:
         run: npx -y firebase-tools@latest deploy --only hosting,functions --force
         env:
           FIREBASE_DEPLOY_AGENT: github-actions-${{ github.run_id }}
-
