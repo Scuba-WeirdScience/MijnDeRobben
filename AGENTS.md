@@ -24,9 +24,9 @@ migrations/     Hand-written SQL scripts (no EF migrations CLI)
 npx ng serve                          # dev server on :4300 (local backend)
 npx ng serve --configuration=staging-local  # dev server on :4300 (staging Firebase backend, HMR enabled)
 npx ng build                        # production build — use to verify CSS is correct
-npm run generate:api            # regenerates frontend/src/generated/ from gateway swagger (gateway must be running)
-npm run generate:icons          # regenerates SVG icon sprite
-npm run generate:release-notes  # parses CHANGELOG.md → release-notes.json + syncs app-version meta tag
+pnpm run generate:api           # regenerates frontend/src/generated/ from gateway swagger (gateway must be running)
+pnpm run generate:icons         # regenerates SVG icon sprite
+pnpm run generate:release-notes # parses CHANGELOG.md → release-notes.json + syncs app-version meta tag
 
 # Backend (workdir: member-api/ or api-gateway/)
 dotnet run                      # starts the service; auto-migrates + seeds on first run
@@ -47,7 +47,7 @@ No lint/test commands are wired into CI. Run `npx ng build` as the primary verif
 
 All `@angular/*` and `@angular-devkit/*` packages **must be pinned to exact `21.2.7`** (no `^` or `~`).  
 `@angular/build` and `@angular/cli` only reach `21.2.7` while other packages go to `21.2.9`, causing peer-dep conflicts.  
-`npm install` works without `--legacy-peer-deps` only when all are pinned at the same exact version.
+`pnpm install` works without issues only when all are pinned at the same exact version.
 
 ---
 
@@ -315,7 +315,7 @@ Use the `gh-worktree` skill to start work on a GitHub Issue:
 
 - Skill file: `.opencode/skills/gh-worktree/SKILL.md`
 - Fetches the issue title from GitHub, derives a branch name (`feature/[issue-number]-[sanitized-title]`), and creates a worktree at `C:\Projects\feature-[issue-number]`
-- Worktrees are placed **next to** `C:\Projects\DeRobben`, not inside it
+- Worktrees are placed **inside** `C:\Projects\DeRobben` (e.g. `C:\Projects\DeRobben\feature-[issue-number]`)
 - Branch protection on `main` requires a PR — never push directly to `main`
 
 ### PR flow
