@@ -296,7 +296,10 @@ Read it before making broad frontend changes. Note: some sections are outdated (
 
 ### Issue tracker
 
-Issues live in GitHub Issues on `Scuba-WeirdScience/MijnDeRobben`. See `docs/agents/issue-tracker.md`.
+Issues live in **GitHub Issues** on `Scuba-WeirdScience/MijnDeRobben`. See `docs/agents/issue-tracker.md`.
+
+- Create issues via `gh issue create` or the GitHub UI
+- Reference issues in branch names and PR titles as `#[number]`
 
 ### Triage labels
 
@@ -305,3 +308,20 @@ Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `
 ### Domain docs
 
 Single-context layout — `CONTEXT.md` + `docs/adr/` at the repo root (neither exists yet; skills will proceed silently until created). See `docs/agents/domain.md`.
+
+### Worktree workflow (gh-worktree skill)
+
+Use the `gh-worktree` skill to start work on a GitHub Issue:
+
+- Skill file: `.opencode/skills/gh-worktree/SKILL.md`
+- Fetches the issue title from GitHub, derives a branch name (`feature/[issue-number]-[sanitized-title]`), and creates a worktree at `C:\Projects\feature-[issue-number]`
+- Worktrees are placed **next to** `C:\Projects\DeRobben`, not inside it
+- Branch protection on `main` requires a PR — never push directly to `main`
+
+### PR flow
+
+1. Create a GitHub Issue for the work item (if one doesn't exist)
+2. Run `gh-worktree` to create a worktree + branch
+3. Implement, then push: `git push -u origin feature/[issue-number]-[sanitized-title]`
+4. Open a PR: `gh pr create --title "..." --body "Closes #[issue-number]"`
+5. PR requires: `build-frontend` + `build-functions` checks passing + 1 approval
