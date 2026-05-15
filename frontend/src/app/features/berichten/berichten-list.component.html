@@ -10,7 +10,9 @@
   </div>
 
   @if (loading()) {
-    <app-spinner />
+    <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+      <app-skeleton-table [rows]="8" />
+    </div>
   } @else if (berichten().length === 0) {
     <app-empty-state
       message="Nog geen berichten geplaatst."

@@ -1,5 +1,9 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { filter, startWith, map } from 'rxjs';
 import { addMonths, format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import {
@@ -7,6 +11,7 @@ import {
   SpinnerComponent,
   EmptyStateComponent,
   ConfirmDialogComponent,
+  SkeletonRowsComponent,
 } from '../../../shared/components/design-system';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import {
@@ -29,10 +34,12 @@ import { ActiviteitOccurrenceDialogComponent } from './activiteit-occurrence-dia
   standalone: true,
   imports: [
     NgClass,
+    RouterOutlet,
     ButtonComponent,
     SpinnerComponent,
     EmptyStateComponent,
     ConfirmDialogComponent,
+    SkeletonRowsComponent,
     ActiviteitFormComponent,
     ActiviteitOccurrenceEditComponent,
     LocatiesBeheerComponent,
@@ -43,6 +50,18 @@ import { ActiviteitOccurrenceDialogComponent } from './activiteit-occurrence-dia
 export class ActiviteitenBeheerComponent implements OnInit {
   private readonly service = inject(ActiviteitenService);
   private readonly toast = inject(ToastService);
+  protected readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  readonly isMobile = toSignal(
+    inject(BreakpointObserver).observe('(max-width: 767px)').pipe(
+      map(r => r.matches)
+    ),
+    { initialValue: false }
+  );
+
+  /** On mobile: which panel is visible — 'list' or 'detail' */
+  mobileView = signal<'list' | 'detail'>('list');
 
   readonly activiteiten = signal<ActiviteitDoc[]>([]);
   readonly overrides = signal<ActiviteitOccurrenceDoc[]>([]);
@@ -90,7 +109,33 @@ export class ActiviteitenBeheerComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAll();
+
+    // After data loads (or on nav), select the activiteit from the URL param.
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      startWith(null),
+    ).subscribe(() => {
+      const id = this.route.firstChild?.snapshot.params['activiteitId'];
+      if (id) {
+        // Wait for the list to be populated before selecting
+        const trySelect = () => {
+          const found = this.activiteiten().find(a => a.id === id);
+          if (found) {
+            this.selectedActiviteit.set(found);
+            this.selectedOccurrenceDatum.set(null);
+            this.registraties.set([]);
+            this.mobileView.set('detail');
+          }
+        };
+        // If list already loaded, select immediately; else it will be picked up
+        // by the loadAll() subscription which calls trySelect after setting activiteiten.
+        trySelect();
+        this._pendingSelectId = id;
+      }
+    });
   }
+
+  private _pendingSelectId: string | null = null;
 
   loadAll(): void {
     this.loading.set(true);
@@ -98,6 +143,17 @@ export class ActiviteitenBeheerComponent implements OnInit {
       next: list => {
         this.activiteiten.set(list.sort((a, b) => a.startDatumTijd.localeCompare(b.startDatumTijd)));
         this.loading.set(false);
+        // Resolve any pending URL-driven selection that arrived before the list loaded
+        if (this._pendingSelectId) {
+          const found = this.activiteiten().find(a => a.id === this._pendingSelectId);
+          if (found) {
+            this.selectedActiviteit.set(found);
+            this.selectedOccurrenceDatum.set(null);
+            this.registraties.set([]);
+            this.mobileView.set('detail');
+          }
+          this._pendingSelectId = null;
+        }
       },
       error: () => {
         this.loading.set(false);
@@ -118,6 +174,8 @@ export class ActiviteitenBeheerComponent implements OnInit {
     this.selectedActiviteit.set(a);
     this.selectedOccurrenceDatum.set(null);
     this.registraties.set([]);
+    this.mobileView.set('detail');
+    this.router.navigate(['/activiteiten/beheer', a.id]);
   }
 
   selectOccurrence(occ: ResolvedOccurrence): void {

@@ -12,6 +12,10 @@ export const activiteitenRoutes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./beheer/activiteiten-beheer.component').then(m => m.ActiviteitenBeheerComponent),
+    children: [
+      { path: '', pathMatch: 'full', children: [] },
+      { path: ':activiteitId', children: [] },
+    ]
   },
   {
     path: ':id',

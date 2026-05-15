@@ -13,7 +13,7 @@
         <path d="M8 12l5 5L23 4" opacity="0.5"/>
       </svg>
       <span>
-        {{ thread().threadSeenCount }}/{{ totalCount() || thread().threadSeenCount }} gelezen
+        {{ thread().threadSeenCount }}/{{ totalCount() }} gelezen
       </span>
       <!-- Expand/collapse chevron -->
       <svg class="w-3 h-3 transition-transform" [ngClass]="isExpanded() ? 'rotate-180' : ''"

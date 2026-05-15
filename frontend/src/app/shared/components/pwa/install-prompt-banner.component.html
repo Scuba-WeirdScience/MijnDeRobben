@@ -1,4 +1,4 @@
-@if (pwa.isInstallable()) {
+@if (pwa.isInstallable() && !pwa.bannerDismissed() && !pwa.isRunningAsApp) {
   <div class="fixed top-16 left-0 right-0 z-50 flex justify-center px-4 pt-2 pointer-events-none">
     <div class="pointer-events-auto w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg flex items-center gap-3 px-4 py-3" role="banner" aria-label="App installeren">
       <!-- Icon -->

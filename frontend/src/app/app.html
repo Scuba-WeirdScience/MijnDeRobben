@@ -19,3 +19,8 @@
 
 <!-- Update notification — fixed bottom banner when new SW version is ready -->
 <app-update-notification />
+
+<!-- Release notes dialog — shown once after a version update with notes -->
+@if (pwa.showReleaseNotes()) {
+  <app-release-notes-dialog />
+}

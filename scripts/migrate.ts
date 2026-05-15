@@ -49,7 +49,7 @@ const SQL_CONFIG: sql.config = {
     type: 'default',
     options: {
       userName: 'sa',
-      password: process.env['SA_PASSWORD'] ?? 'REQUIRED_ENV_VAR',
+      password: process.env['SA_PASSWORD'] ?? (() => { throw new Error('SA_PASSWORD env var is required'); })(),
     },
   },
 };

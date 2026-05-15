@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MessagesService, ThreadLezingInfo } from '../../services/messages.service';
 import { Thread } from '../../services/threads.service';
@@ -19,7 +19,7 @@ const _TW_SAFELIST = [
   imports: [NgClass, SpinnerComponent],
   templateUrl: './thread-lezingen.component.html',
 })
-export class ThreadLezingenComponent {
+export class ThreadLezingenComponent implements OnInit {
   private readonly messagesService = inject(MessagesService);
   private readonly auth = inject(AuthService);
 
@@ -34,6 +34,21 @@ export class ThreadLezingenComponent {
   readonly isAuthor = computed(() =>
     this.thread().authorUid === this.auth.currentUser()?.uid
   );
+
+  async ngOnInit(): Promise<void> {
+    if (!this.isAuthor()) return;
+    try {
+      const result = await this.messagesService.getThreadLezingen(
+        this.thread().id,
+        this.thread().groepId,
+      );
+      this.lezingen.set(result.lezingen);
+      this.gezienCount.set(result.gezienCount);
+      this.totalCount.set(result.totalCount);
+    } catch {
+      // silently fail — non-critical UI
+    }
+  }
 
   async toggle(): Promise<void> {
     if (!this.isAuthor()) return;

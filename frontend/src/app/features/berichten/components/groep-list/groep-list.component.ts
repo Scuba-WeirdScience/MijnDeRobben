@@ -4,7 +4,7 @@ import { GroepenService, Groep } from '../../services/groepen.service';
 import { ThreadsService } from '../../services/threads.service';
 import { MessagesService } from '../../services/messages.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { BadgeComponent } from '../../../../shared/components/design-system';
+import { BadgeComponent, SkeletonRowsComponent } from '../../../../shared/components/design-system';
 import {
   LucideMessageSquare,
   LucideUsers,
@@ -25,6 +25,7 @@ const _TW_SAFELIST = [
   imports: [
     CommonModule,
     BadgeComponent,
+    SkeletonRowsComponent,
     LucideMessageSquare,
     LucideUsers,
     LucideFileText,
@@ -39,7 +40,7 @@ export class GroepListComponent {
 
   readonly openBeheer = output<void>();
   readonly selectConcepten = output<void>();
-  readonly groepSelected = output<void>();
+  readonly groepSelected = output<string>();
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
@@ -49,7 +50,7 @@ export class GroepListComponent {
 
   selectGroep(groep: Groep): void {
     this.groepenService.selectGroep(groep.id);
-    this.groepSelected.emit();
+    this.groepSelected.emit(groep.id);
   }
 
   totalUnread(): number {

@@ -8,7 +8,9 @@
   <!-- Group list -->
   <nav class="flex-1 overflow-y-auto py-2 space-y-0.5 px-2">
     @if (groepenService.loadingGroepen()) {
-      <div class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">Laden...</div>
+      <div class="py-2">
+        <app-skeleton-rows [rows]="4" />
+      </div>
     } @else if (groepenService.groepen().length === 0) {
       <div class="px-3 py-4 text-sm text-gray-400 dark:text-gray-500 text-center">
         <svg lucideUsers class="w-8 h-8 mx-auto mb-2 opacity-40"></svg>

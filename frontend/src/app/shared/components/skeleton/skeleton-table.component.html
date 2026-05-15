@@ -1,0 +1,8 @@
+<div class="space-y-0 divide-y divide-gray-100 dark:divide-gray-800">
+  @for (item of items; track item) {
+    <div class="flex items-center gap-4 px-4 py-3">
+      <app-skeleton height="0.875rem" [width]="item % 3 === 0 ? '40%' : item % 3 === 1 ? '55%' : '30%'" />
+      <app-skeleton height="0.875rem" width="20%" class="ml-auto" />
+    </div>
+  }
+</div>

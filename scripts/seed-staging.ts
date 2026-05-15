@@ -20,9 +20,12 @@ const prodCred = JSON.parse(
   readFileSync(resolve(__dirname, '../service-account.json'), 'utf8'),
 );
 
-const adcPath = `${process.env['APPDATA']}/firebase/YOUR_FIREBASE_ADC_FILENAME_application_default_credentials.json`;
-// Point GOOGLE_APPLICATION_CREDENTIALS to the Firebase CLI ADC file so staging app can use it
-process.env['GOOGLE_APPLICATION_CREDENTIALS'] = adcPath;
+// Point GOOGLE_APPLICATION_CREDENTIALS to the Firebase CLI ADC file so staging app can use it.
+// Set FIREBASE_ADC_PATH to your own ADC file, or rely on `gcloud auth application-default login`.
+const adcPath = process.env['FIREBASE_ADC_PATH'];
+if (adcPath) {
+  process.env['GOOGLE_APPLICATION_CREDENTIALS'] = adcPath;
+}
 
 const prodApp = admin.initializeApp(
   { credential: admin.credential.cert(prodCred), projectId: 'dcderobben-d3536' },

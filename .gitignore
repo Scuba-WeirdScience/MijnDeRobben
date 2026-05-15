@@ -1,5 +1,6 @@
 # ── Secrets & credentials ─────────────────────────────────────────────────────
 service-account.json
+staging-sa.json
 **/appsettings.Development.json
 
 # ── Log / temp output files ───────────────────────────────────────────────────

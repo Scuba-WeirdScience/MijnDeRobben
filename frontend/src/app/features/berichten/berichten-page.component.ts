@@ -2,8 +2,9 @@ import { Component, computed, inject, signal, HostListener, ElementRef, ViewChil
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { map } from 'rxjs';
-import { MessagesService, Message } from './services/messages.service';
+import { ActivatedRoute, Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { map, filter, startWith } from 'rxjs';
+import { MessagesService } from './services/messages.service';
 import { ThreadsService, ThreadConcept } from './services/threads.service';
 import { GroepenService } from './services/groepen.service';
 import { BerichtenNavigationService } from './services/navigation.service';
@@ -32,6 +33,7 @@ const STORAGE_KEY = 'berichten-compose-height';
   standalone: true,
   imports: [
     CommonModule,
+    RouterOutlet,
     GroepListComponent,
     ThreadListComponent,
     ThreadComposeComponent,
@@ -50,6 +52,8 @@ export class BerichtenPageComponent {
   private readonly navigation = inject(BerichtenNavigationService);
   protected readonly auth = inject(AuthService);
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
@@ -107,6 +111,34 @@ export class BerichtenPageComponent {
   constructor() {
     this.auth.refreshUser();
 
+    // ── Sync route params → service signals ─────────────────────────────────
+    // After every navigation, read params from the active child route.
+    const childParams = toSignal(
+      this.router.events.pipe(
+        filter(e => e instanceof NavigationEnd),
+        startWith(null),
+        map(() => {
+          const child = this.route.firstChild;
+          return child?.snapshot.params ?? {};
+        })
+      ),
+      { initialValue: {} }
+    );
+
+    effect(() => {
+      const p = childParams() as Record<string, string | undefined>;
+      const groepId = p['groepId'];
+      const threadId = p['threadId'];
+
+      if (groepId && threadId) {
+        this.navigation.selectGroepAndThread(groepId, threadId);
+        this.mobilePanel.set('messages');
+      } else if (groepId) {
+        this.navigation.selectGroep(groepId);
+        this.mobilePanel.set('threads');
+      }
+    });
+
     // When a pending message concept edit is set AND the thread becomes active,
     // load it into the editor and clear the pending state.
     effect(() => {
@@ -126,12 +158,20 @@ export class BerichtenPageComponent {
     });
   }
 
-  onGroepSelected(): void {
+  onGroepSelected(groepId: string): void {
     this.showConcepten.set(false);
     this.mobilePanel.set('threads');
+    this.router.navigate(['/berichten', groepId]);
   }
 
-  onThreadSelected(): void { this.mobilePanel.set('messages'); }
+  onThreadSelected(threadId: string): void {
+    this.mobilePanel.set('messages');
+    const groepId = this.groepenService.activeGroepId();
+    if (groepId) {
+      this.router.navigate(['/berichten', groepId, threadId]);
+    }
+  }
+
   onNewThread(): void { this.showNewThread.set(true); }
 
   onShowConcepten(): void {
@@ -143,6 +183,10 @@ export class BerichtenPageComponent {
     this.showNewThread.set(false);
     this.editingThreadConcept.set(null);
     this.navigation.selectThread(threadId);
+    const groepId = this.groepenService.activeGroepId();
+    if (groepId) {
+      this.router.navigate(['/berichten', groepId, threadId]);
+    }
     this.mobilePanel.set('messages');
   }
 
@@ -157,7 +201,7 @@ export class BerichtenPageComponent {
       // Navigate to groep+thread, then load concept into editor
       const concept = event.concept;
       this.messagesService.setPendingConceptEdit(concept);
-      this.navigation.selectGroepAndThread(concept.groepId, concept.threadId);
+      this.router.navigate(['/berichten', concept.groepId, concept.threadId]);
       this.mobilePanel.set('messages');
     }
   }

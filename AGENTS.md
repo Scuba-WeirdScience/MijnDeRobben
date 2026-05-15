@@ -21,16 +21,25 @@ migrations/     Hand-written SQL scripts (no EF migrations CLI)
 
 ```powershell
 # Frontend (workdir: frontend/)
-ng serve                        # dev server on :4300
-ng build                        # production build — use to verify CSS is correct
+npx ng serve                          # dev server on :4300 (local backend)
+npx ng serve --configuration=staging-local  # dev server on :4300 (staging Firebase backend, HMR enabled)
+npx ng build                        # production build — use to verify CSS is correct
 npm run generate:api            # regenerates frontend/src/generated/ from gateway swagger (gateway must be running)
 npm run generate:icons          # regenerates SVG icon sprite
+npm run generate:release-notes  # parses CHANGELOG.md → release-notes.json + syncs app-version meta tag
 
 # Backend (workdir: member-api/ or api-gateway/)
 dotnet run                      # starts the service; auto-migrates + seeds on first run
 ```
 
-No lint/test commands are wired into CI. Run `ng build` as the primary verification step.
+**Always use `npx ng` instead of `ng` directly** — `ng` is not on the global PATH.
+
+To start a dev server in a new PowerShell window (never use `wt`):
+```powershell
+Start-Process pwsh -ArgumentList '-NoExit', '-Command', 'Set-Location ''C:\Projects\DeRobben\frontend''; npx ng serve'
+```
+
+No lint/test commands are wired into CI. Run `npx ng build` as the primary verification step.
 
 ---
 

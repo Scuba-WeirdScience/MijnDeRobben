@@ -1,7 +1,9 @@
 <div class="flex h-full min-h-0">
 
   <!-- Linkerkolom: lijst van activiteiten -->
-  <aside class="w-80 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+  <aside
+    class="w-80 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+    [style.display]="isMobile() && mobileView() === 'detail' ? 'none' : 'flex'">
 
     <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
       <div class="flex items-center justify-between">
@@ -21,9 +23,7 @@
 
     <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
       @if (loading()) {
-        <div class="flex justify-center py-8">
-          <app-spinner />
-        </div>
+        <app-skeleton-rows [rows]="7" />
       } @else if (gefilterd().length === 0) {
         <app-empty-state message="Geen activiteiten gevonden." icon="document" />
       } @else {
@@ -46,7 +46,19 @@
   </aside>
 
   <!-- Rechtergedeelte: detail of formulier -->
-  <main class="flex-1 min-h-0 overflow-y-auto p-6">
+  <main
+    class="flex-1 min-h-0 overflow-y-auto p-6"
+    [style.display]="isMobile() && mobileView() === 'list' ? 'none' : 'block'">
+
+    <!-- Mobile back button -->
+    @if (isMobile()) {
+      <div class="md:hidden flex items-center mb-4">
+        <button (click)="mobileView.set('list'); router.navigate(['/activiteiten/beheer'])"
+          class="flex items-center gap-1 text-sm text-scuba-600 dark:text-scuba-400">
+          ← Activiteiten
+        </button>
+      </div>
+    }
 
     @if (showActiviteitForm()) {
       <!-- Inline formulier -->
@@ -191,6 +203,9 @@
   </main>
 
 </div>
+
+<!-- Hidden outlet — needed to activate child routes (:activiteitId param) -->
+<router-outlet />
 
 <!-- Dialogs -->
 @if (editingOccurrence()) {

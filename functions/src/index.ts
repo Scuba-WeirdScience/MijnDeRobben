@@ -130,6 +130,7 @@ export {
   getMijnRegistraties,
   updateRegistratieStatus,
   resetInschrijvingen,
+  getActiviteitByThreadId,
 } from './activiteiten/activiteiten.functions';
 
 export { activiteitenIcs } from './activiteiten/activiteiten-ics.functions';

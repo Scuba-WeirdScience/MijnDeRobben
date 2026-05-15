@@ -12,7 +12,8 @@
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "e2e:report": "playwright show-report",
-    "generate:icons": "node scripts/generate-icons.mjs"
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "generate:release-notes": "node --experimental-strip-types ../scripts/parse-changelog.ts"
   },
   "prettier": {
     "printWidth": 100,

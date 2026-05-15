@@ -101,7 +101,7 @@
   <!-- Thread list -->
   <div class="flex-1 overflow-y-auto">
     @if (threadsService.loadingThreads()) {
-      <div class="p-4 text-sm text-gray-500 dark:text-gray-400">Laden…</div>
+      <app-skeleton-rows [rows]="6" />
     } @else if (threadsService.threads().length === 0) {
       <div class="p-6 text-center">
         <svg lucideHash class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"></svg>
@@ -144,7 +144,7 @@
           </button>
           @if (canDeleteThread(thread)) {
             <button
-              (click)="deleteThread(thread)"
+              (click)="initiateDeleteThread(thread)"
               [disabled]="deletingThreadId() === thread.id"
               class="flex-shrink-0 w-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500 dark:hover:text-red-400 disabled:opacity-30"
               title="Thread verwijderen">
@@ -156,3 +156,29 @@
     }
   </div>
 </div>
+
+<!-- Stap 1: thread verwijderen bevestigen -->
+@if (threadToDelete() && !showActiviteitConfirm()) {
+  <app-confirm-dialog
+    [title]="'Thread verwijderen'"
+    [message]="'Weet je zeker dat je de thread \'' + threadToDelete().title + '\' en alle berichten wilt verwijderen?'"
+    confirmLabel="Verwijderen"
+    confirmVariant="danger"
+    [loading]="deleting()"
+    (confirmed)="onThreadDeleteConfirmed()"
+    (cancelled)="cancelDeleteThread()"
+  />
+}
+
+<!-- Stap 2: ook de gekoppelde activiteit verwijderen? -->
+@if (showActiviteitConfirm()) {
+  <app-confirm-dialog
+    [title]="'Ook activiteit verwijderen?'"
+    [message]="'Deze thread is gekoppeld aan de activiteit \'' + linkedActiviteit()!.titel + '\'. Wil je deze activiteit ook verwijderen?'"
+    confirmLabel="Ja, ook verwijderen"
+    confirmVariant="danger"
+    [loading]="deleting()"
+    (confirmed)="onActiviteitDeleteConfirmed()"
+    (cancelled)="onActiviteitDeleteSkipped()"
+  />
+}

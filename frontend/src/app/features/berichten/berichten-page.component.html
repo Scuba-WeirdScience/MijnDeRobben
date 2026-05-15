@@ -5,7 +5,7 @@
     class="w-56 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col"
     [style.display]="mobilePanel() === 'groepen' ? 'flex' : isMobile() ? 'none' : 'flex'">
     <app-groep-list
-      (groepSelected)="onGroepSelected()"
+      (groepSelected)="onGroepSelected($event)"
       (openBeheer)="showBeheer.set(true)"
       (selectConcepten)="onShowConcepten()">
     </app-groep-list>
@@ -32,7 +32,7 @@
     } @else if (groepenService.activeGroepId()) {
       <app-thread-list
         (newThread)="onNewThread()"
-        (threadSelected)="onThreadSelected()"
+        (threadSelected)="onThreadSelected($event)"
         class="flex-1 overflow-hidden flex flex-col">
       </app-thread-list>
     } @else {
@@ -81,6 +81,9 @@
     <app-groep-beheer></app-groep-beheer>
   </app-side-panel>
 }
+
+<!-- Hidden outlet — needed to activate child routes (:groepId, :threadId params) -->
+<router-outlet />
 
 <!-- ── Side panel: Nieuwe thread / Thread concept bewerken ─── -->
 @if (showNewThread()) {

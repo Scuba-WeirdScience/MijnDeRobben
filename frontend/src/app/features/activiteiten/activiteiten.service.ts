@@ -109,6 +109,11 @@ export class ActiviteitenService {
     return from(call<DeleteActiviteitRequest, { success: boolean }>('deleteActiviteit', payload));
   }
 
+  /** Returns the activiteit linked to the given threadId, or null if none. */
+  getActiviteitByThreadId(threadId: string): Observable<ActiviteitDoc | null> {
+    return from(call<{ threadId: string }, ActiviteitDoc | null>('getActiviteitByThreadId', { threadId }));
+  }
+
   getOccurrenceOverrides(activiteitId: string): Observable<ActiviteitOccurrenceDoc[]> {
     return from(call<{ activiteitId: string }, ActiviteitOccurrenceDoc[]>('getOccurrenceOverrides', { activiteitId }));
   }

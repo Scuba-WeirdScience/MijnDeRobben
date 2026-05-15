@@ -28,7 +28,11 @@
               "src/styles.css",
               "node_modules/quill/dist/quill.snow.css"
             ],
-            "serviceWorker": true
+            "serviceWorker": false,
+            "allowedCommonJsDependencies": [
+              "qrcode",
+              "quill-delta"
+            ]
           },
           "configurations": {
             "production": {

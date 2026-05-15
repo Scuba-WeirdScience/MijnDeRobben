@@ -1,0 +1,11 @@
+@for (item of items; track item) {
+  <div class="flex items-center gap-3 px-4 py-3">
+    <!-- Avatar circle -->
+    <app-skeleton width="2rem" height="2rem" rounded="rounded-full" class="flex-shrink-0" />
+    <!-- Text lines -->
+    <div class="flex-1 space-y-2">
+      <app-skeleton height="0.875rem" [width]="item % 2 === 0 ? '60%' : '75%'" />
+      <app-skeleton height="0.75rem"  width="45%" />
+    </div>
+  </div>
+}

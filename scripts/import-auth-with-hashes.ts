@@ -5,9 +5,15 @@ import admin from 'firebase-admin';
 import { readFileSync } from 'fs';
 import { GoogleAuth } from 'google-auth-library';
 
-process.env['GOOGLE_APPLICATION_CREDENTIALS'] = `${process.env['APPDATA']}/firebase/YOUR_FIREBASE_ADC_FILENAME_application_default_credentials.json`;
+// Set GOOGLE_APPLICATION_CREDENTIALS to your ADC file path, or run `gcloud auth application-default login`.
+// Optionally set FIREBASE_ADC_PATH env var to override the default ADC location.
+const adcPath = process.env['FIREBASE_ADC_PATH'];
+if (adcPath) {
+  process.env['GOOGLE_APPLICATION_CREDENTIALS'] = adcPath;
+}
 
-const prodCred = JSON.parse(readFileSync('service-account.json', 'utf8'));
+const serviceAccountPath = process.env['SERVICE_ACCOUNT_PATH'] ?? 'service-account.json';
+const prodCred = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
 
 const prodApp = admin.initializeApp(
   { credential: admin.credential.cert(prodCred), projectId: 'dcderobben-d3536' },

@@ -1,0 +1,27 @@
+[
+  {
+    "version": "2.5.0",
+    "date": "2026-05-15",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Releasenotes: na een update zie je automatisch wat er nieuw is in de app."
+        ]
+      }
+    ]
+  },
+  {
+    "version": "2.4.0",
+    "date": "2026-04-01",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Eerste versie van het materiaalbeheersysteem.",
+          "Uitleenregistratie voor duikmateriaal."
+        ]
+      }
+    ]
+  }
+]

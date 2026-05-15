@@ -38,11 +38,19 @@ export { AlertComponent }         from './alert/alert.component';
 export { BadgeComponent }         from './badge/badge.component';
 export { EmptyStateComponent }    from './empty-state/empty-state.component';
 
+// ── Skeleton loading ───────────────────────────────────────────────────────
+export { SkeletonComponent }      from './skeleton/skeleton.component';
+export { SkeletonRowsComponent }  from './skeleton/skeleton-rows.component';
+export { SkeletonTableComponent } from './skeleton/skeleton-table.component';
+
 // ── Data Display ───────────────────────────────────────────────────────────
 export { PaginationComponent }    from './pagination/pagination.component';
 
 // ── Rich Text ──────────────────────────────────────────────────────────────
 export { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
+
+// ── PWA ────────────────────────────────────────────────────────────────────
+export { ReleaseNotesDialogComponent } from './release-notes-dialog/release-notes-dialog.component';
 
 // ── Berichten features ─────────────────────────────────────────────────────
 export { ActiviteitThreadCardComponent } from '../../features/berichten/components/activiteit-thread-card/activiteit-thread-card.component';

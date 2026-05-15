@@ -12,6 +12,7 @@ import {
   ConfirmDialogComponent,
   RichTextEditorComponent,
   PageContainerComponent,
+  SkeletonTableComponent,
 } from '../../shared/components/design-system';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -50,6 +51,7 @@ const _TW_SAFELIST = [
     LucideMailOpen,
     LucideTrash2,
     PageContainerComponent,
+    SkeletonTableComponent,
   ],
   templateUrl: './berichten-list.component.html',
 })

@@ -438,3 +438,17 @@ export const resetInschrijvingen = onCall({ region: REGION }, async (request) =>
 
 // Keep RegistratiesZichtbaar in scope (used by other modules that import types)
 export type { RegistratiesZichtbaar };
+
+// ── getActiviteitByThreadId ───────────────────────────────────────────────────
+
+/** Returns the activiteit linked to the given threadId, or null if none. */
+export const getActiviteitByThreadId = onCall({ region: REGION }, async (request) => {
+  requireAuth(request);
+  const { threadId } = request.data as { threadId: string };
+  const snap = await db.collection('activiteiten')
+    .where('threadId', '==', threadId)
+    .limit(1)
+    .get();
+  if (snap.empty) return null;
+  return snap.docs[0].data() as ActiviteitDoc;
+});

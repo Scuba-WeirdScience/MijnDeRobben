@@ -1,26 +1,62 @@
 import { Injectable, inject, signal, DestroyRef } from '@angular/core';
-import { SwUpdate, VersionReadyEvent, UnrecoverableStateEvent } from '@angular/service-worker';
+import { HttpClient } from '@angular/common/http';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, interval } from 'rxjs';
 
 /** Poll for SW updates every 2 minutes */
 const UPDATE_POLL_INTERVAL_MS = 2 * 60 * 1000;
 
+const LAST_SEEN_VERSION_KEY = 'pwa_last_seen_version';
+
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+export interface ReleaseSection {
+  heading: string;
+  items: string[];
+}
+
+export interface ReleaseEntry {
+  version: string;
+  date: string;
+  sections: ReleaseSection[];
 }
 
 @Injectable({ providedIn: 'root' })
 export class PwaService {
   private readonly swUpdate = inject(SwUpdate);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly http = inject(HttpClient);
 
   /** True when NGSW has detected a new version ready to activate */
   readonly updateAvailable = signal(false);
 
   /** True when the browser has a deferred install prompt available */
   readonly isInstallable = signal(false);
+
+  private static readonly BANNER_DISMISSED_KEY = 'pwa_banner_dismissed';
+
+  /** True when the user has dismissed the install banner (persisted in localStorage) */
+  readonly bannerDismissed = signal(
+    localStorage.getItem(PwaService.BANNER_DISMISSED_KEY) === 'true',
+  );
+
+  /** True when the app is already running as an installed PWA */
+  get isRunningAsApp(): boolean {
+    return window.matchMedia('(display-mode: standalone)').matches;
+  }
+
+  /**
+   * Release notes for the current version, if available and not yet seen.
+   * Non-null triggers the release notes dialog.
+   */
+  readonly releaseNotes = signal<ReleaseEntry | null>(null);
+
+  /** Whether to show the release notes dialog */
+  readonly showReleaseNotes = signal(false);
 
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
   private readonly boundBeforeInstallPrompt = this.onBeforeInstallPrompt.bind(this);
@@ -29,6 +65,7 @@ export class PwaService {
   constructor() {
     this.initUpdateDetection();
     this.initInstallPrompt();
+    this.checkReleaseNotesOnBoot();
   }
 
   // ─── SW Update Detection ────────────────────────────────────────────────────
@@ -69,6 +106,71 @@ export class PwaService {
     document.location.reload();
   }
 
+  // ─── Release Notes ──────────────────────────────────────────────────────────
+
+  /**
+   * On boot: compare running version against the last version the user
+   * acknowledged. If they differ and the running version has release notes,
+   * surface the dialog.
+   */
+  private checkReleaseNotesOnBoot(): void {
+    const currentVersion = this.getAppVersion();
+    if (!currentVersion) return;
+
+    const lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
+    if (lastSeen === currentVersion) return; // already seen this version
+
+    this.http
+      .get<ReleaseEntry[]>('/assets/release-notes.json')
+      .subscribe({
+        next: (entries) => {
+          const entry = entries.find((e) => e.version === currentVersion) ?? null;
+          if (entry) {
+            this.releaseNotes.set(entry);
+            this.showReleaseNotes.set(true);
+          } else {
+            // No notes for this version — silently mark as seen
+            localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
+          }
+        },
+        error: () => {
+          // Asset missing or network error — fail silently
+        },
+      });
+  }
+
+  /** Dismiss the release notes dialog and persist the seen version */
+  dismissReleaseNotes(): void {
+    const version = this.releaseNotes()?.version;
+    if (version) {
+      localStorage.setItem(LAST_SEEN_VERSION_KEY, version);
+    }
+    this.showReleaseNotes.set(false);
+  }
+
+  /** Returns the version from the NGSW appData, or null when SW is unavailable */
+  private getAppVersion(): string | null {
+    try {
+      // SwUpdate exposes appData on the VERSION_READY event, but we can also
+      // read it from the cached ngsw.json or simply fall back to the manifest.
+      // The simplest reliable approach: read from the global NGSW state.
+      // Angular embeds appData in the registration as a meta tag when using
+      // the default ngsw config; we parse it from ngsw-config via a build step.
+      // For now, we fetch it lazily from the SW registration if available,
+      // otherwise we leave version detection to the VERSION_READY flow.
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // Version is injected into index.html as a meta tag by the build step.
+        const meta = document.querySelector<HTMLMetaElement>('meta[name="app-version"]');
+        if (meta?.content) return meta.content;
+      }
+      // Fallback: read from the meta tag unconditionally (set by ng build via index transform)
+      const meta = document.querySelector<HTMLMetaElement>('meta[name="app-version"]');
+      return meta?.content ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   // ─── Install Prompt ─────────────────────────────────────────────────────────
 
   private initInstallPrompt(): void {
@@ -91,6 +193,8 @@ export class PwaService {
   private onAppInstalled(): void {
     this.deferredPrompt = null;
     this.isInstallable.set(false);
+    localStorage.removeItem(PwaService.BANNER_DISMISSED_KEY);
+    this.bannerDismissed.set(false);
   }
 
   /** Trigger the native browser install prompt */
@@ -103,9 +207,9 @@ export class PwaService {
     this.isInstallable.set(false);
   }
 
-  /** Dismiss the install banner for this session */
+  /** Dismiss the install banner permanently (persisted in localStorage) */
   dismissInstall(): void {
-    this.deferredPrompt = null;
-    this.isInstallable.set(false);
+    localStorage.setItem(PwaService.BANNER_DISMISSED_KEY, 'true');
+    this.bannerDismissed.set(true);
   }
 }

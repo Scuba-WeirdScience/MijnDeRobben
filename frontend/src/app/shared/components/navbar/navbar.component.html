@@ -140,8 +140,8 @@
               }
             </div>
 
-            <!-- Install app button (only shown when browser supports install) -->
-            @if (pwa.isInstallable()) {
+            <!-- Install app button (only shown when browser supports install and not already running as app) -->
+            @if (pwa.isInstallable() && !pwa.isRunningAsApp) {
               <button (click)="pwa.promptInstall()"
                       title="Installeer app"
                       class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-scuba-600 hover:bg-scuba-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-scuba-500">
