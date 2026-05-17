@@ -12,7 +12,7 @@ Creates a git worktree for a GitHub Issue in the MijnDeRobben repository.
 
 - **GitHub repo:** `Scuba-WeirdScience/MijnDeRobben`
 - **Main worktree:** `C:\Projects\DeRobben`
-- **Worktrees placed next to** the main worktree folder (i.e. in `C:\Projects\`)
+- **Worktrees placed inside** the main worktree folder (i.e. in `C:\Projects\DeRobben\`)
 
 ## When to Use
 
@@ -30,11 +30,9 @@ Run:
 git worktree list --porcelain
 ```
 
-Parse the output. The **first** entry is always the main worktree. Extract its `worktree` path — call this `[repo-root]`. Its parent folder is `[worktree-parent]`.
+Parse the output. The **first** entry is always the main worktree. Extract its `worktree` path — call this `[repo-root]`.
 
-> Example: if `[repo-root]` is `C:/Projects/DeRobben`, then `[worktree-parent]` is `C:/Projects`.
-
-All worktrees are placed in `[worktree-parent]`, not inside `[repo-root]`.
+All worktrees are placed **inside** `[repo-root]`, not next to it.
 
 ---
 
@@ -73,18 +71,17 @@ Call the sanitized title `[sanitized-title]`.
 | Variable | Value |
 |---|---|
 | `[repo-root]` | Main worktree path from Step 0 |
-| `[worktree-parent]` | Parent folder of `[repo-root]` |
 | `[issue-number]` | The GitHub issue number (e.g. `42`) |
 | `[sanitized-title]` | Sanitized title (e.g. `add-login-page`) |
 | **Branch name** | `feature/[issue-number]-[sanitized-title]` |
 | **Folder name** | `feature-[issue-number]` |
-| **Worktree path** | `[worktree-parent]/feature-[issue-number]` |
+| **Worktree path** | `[repo-root]/feature-[issue-number]` |
 
 Show the user the derived names and ask for confirmation before proceeding:
 
 > I'll create:
 > - Branch: `feature/[issue-number]-[sanitized-title]`
-> - Folder: `[worktree-parent]/feature-[issue-number]`
+> - Folder: `[repo-root]/feature-[issue-number]`
 >
 > Proceed?
 
@@ -114,7 +111,7 @@ If `--ff-only` fails (local main has diverged), warn the user and stop. Do NOT f
 Check first that the folder does not already exist:
 
 ```powershell
-Test-Path "[worktree-parent]/feature-[issue-number]"
+Test-Path "[repo-root]/feature-[issue-number]"
 ```
 
 If it exists, warn the user and offer to use the existing folder or pick a different name.
@@ -122,13 +119,13 @@ If it exists, warn the user and offer to use the existing folder or pick a diffe
 Otherwise create the worktree:
 
 ```powershell
-git -C "[repo-root]" worktree add "[worktree-parent]/feature-[issue-number]" -b "feature/[issue-number]-[sanitized-title]"
+git -C "[repo-root]" worktree add "[repo-root]/feature-[issue-number]" -b "feature/[issue-number]-[sanitized-title]"
 ```
 
 If the local branch already exists (e.g. from a previous attempt), omit `-b`:
 
 ```powershell
-git -C "[repo-root]" worktree add "[worktree-parent]/feature-[issue-number]" "feature/[issue-number]-[sanitized-title]"
+git -C "[repo-root]" worktree add "[repo-root]/feature-[issue-number]" "feature/[issue-number]-[sanitized-title]"
 ```
 
 ---
@@ -148,10 +145,10 @@ Confirm the new worktree appears in the list.
 Run `npm install` in both `frontend/` and `functions/` inside the new worktree:
 
 ```powershell
-# workdir: [worktree-parent]/feature-[issue-number]/frontend
+# workdir: [repo-root]/feature-[issue-number]/frontend
 npm install
 
-# workdir: [worktree-parent]/feature-[issue-number]/functions
+# workdir: [repo-root]/feature-[issue-number]/functions
 npm install
 ```
 
@@ -162,7 +159,7 @@ npm install
 Use the `/cd` command (from the `opencode-dir` plugin) to switch the session to the new worktree root:
 
 ```text
-/cd [worktree-parent]/feature-[issue-number]
+/cd [repo-root]/feature-[issue-number]
 ```
 
 If the `opencode-dir` plugin is not installed, add it to `~/.config/opencode/opencode.json`:
@@ -183,7 +180,7 @@ Ask the user:
 
 > Would you like me to start implementing issue #[issue-number] now?
 
-- If **yes**: load the `feature-dev` skill and begin the feature development workflow using `[worktree-parent]/feature-[issue-number]` as the working directory.
+- If **yes**: load the `feature-dev` skill and begin the feature development workflow using `[repo-root]/feature-[issue-number]` as the working directory.
 - If **no**: proceed to the summary.
 
 ---
@@ -194,7 +191,7 @@ Ask the user:
 >
 > - **Issue:** #[issue-number] — [original title]
 > - **Branch:** `feature/[issue-number]-[sanitized-title]`
-> - **Folder:** `[worktree-parent]/feature-[issue-number]`
+> - **Folder:** `[repo-root]/feature-[issue-number]`
 >
 > When you're ready to open a PR, push the branch and run the `gh-ship` skill (or `git push -u origin feature/[issue-number]-[sanitized-title]`).
 
@@ -203,7 +200,7 @@ Ask the user:
 ## Rules
 
 - Always resolve `[repo-root]` from `git worktree list --porcelain` at runtime — never hardcode.
-- Always place worktrees in `[worktree-parent]` (next to, not inside, `[repo-root]`).
+- Always place worktrees **inside** `[repo-root]` (e.g. `[repo-root]/feature-[issue-number]`).
 - Always use `git -C "[repo-root]"` for git commands — never `cd` into the repo.
 - Never create the worktree if the folder already exists — warn and offer alternatives.
 - Always confirm branch/folder names with the user before creating anything.
