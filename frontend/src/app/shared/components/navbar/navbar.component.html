@@ -26,16 +26,18 @@
 
           <!-- Desktop nav links -->
           <div class="hidden md:flex items-center gap-6">
-            <a routerLink="/members" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
-               class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
-              Leden
-            </a>
+            @if (auth.isAuthenticated()) {
+              <a routerLink="/members" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
+                 class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
+                Leden
+              </a>
 
-            <a routerLink="/activiteiten" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
-               [routerLinkActiveOptions]="{ exact: false }"
-               class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
-              Activiteiten
-            </a>
+              <a routerLink="/activiteiten" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
+                 [routerLinkActiveOptions]="{ exact: false }"
+                 class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
+                Activiteiten
+              </a>
+            }
 
             @if (auth.isAuthenticated()) {
               <a routerLink="/berichten" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
@@ -232,15 +234,17 @@
         <!-- Mobile menu -->
         @if (mobileOpen) {
           <div class="md:hidden pb-4 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
-            <a routerLink="/members" (click)="mobileOpen=false"
-               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-              Leden
-            </a>
+            @if (auth.isAuthenticated()) {
+              <a routerLink="/members" (click)="mobileOpen=false"
+                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                Leden
+              </a>
 
-            <a routerLink="/activiteiten" (click)="mobileOpen=false"
-               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-              Activiteiten
-            </a>
+              <a routerLink="/activiteiten" (click)="mobileOpen=false"
+                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                Activiteiten
+              </a>
+            }
 
             @if (auth.isAuthenticated()) {
               <a routerLink="/berichten" (click)="mobileOpen=false"
