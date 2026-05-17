@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: |
+            frontend/pnpm-lock.yaml
+            functions/pnpm-lock.yaml
 
       - name: Build frontend
         working-directory: frontend
