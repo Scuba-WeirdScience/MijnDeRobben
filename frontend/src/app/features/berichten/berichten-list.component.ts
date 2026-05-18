@@ -81,7 +81,7 @@ export class BerichtenListComponent implements OnInit {
   readonly deleteTarget = signal<BerichtSummary | null>(null);
   readonly deleting = signal(false);
 
-  readonly isAdmin = () => this.auth.hasAnyRole(['Beheer', 'Bestuur', 'Admin']);
+  readonly isAdmin = () => this.auth.hasAnyRole(['Beheer', 'Bestuur']);
 
   safeHtml(html: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(html);
