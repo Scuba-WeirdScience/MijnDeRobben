@@ -172,16 +172,40 @@ you must update ALL of these locations in the same change:**
 
 ## PWA deployment — CRITICAL
 
-**Every time you deploy the frontend, you must bump the `version` in `frontend/ngsw-config.json`**
-before running `ng build`. Use semantic versioning (`2.1.0` → `2.2.0`, etc.).
+**Do NOT manually bump `frontend/ngsw-config.json` or edit `frontend/src/assets/release-notes.json`.**
+The `release-notes.yml` workflow does this automatically on every merge to `main`.
 
-Without this bump, users whose service worker is already active will not receive the update
-notification and will keep running the old cached version indefinitely.
+### How it works
 
-Steps (always in this order):
-1. Bump `appData.version` in `frontend/ngsw-config.json`
-2. `ng build` (workdir: `frontend/`)
-3. `firebase deploy --only hosting` (or `hosting,functions` if functions also changed)
+Add one of these labels to the PR before merging:
+
+| Label | Bump | Example |
+|-------|------|---------|
+| `release:patch` | Bug fixes (default) | `2.6.0` → `2.6.1` |
+| `release:minor` | New features | `2.6.0` → `2.7.0` |
+| `release:major` | Breaking changes | `2.6.0` → `3.0.0` |
+
+After merge, the bot will:
+1. Bump `appData.version` in `ngsw-config.json`
+2. Prepend an entry to `release-notes.json`
+3. Commit back to `main` with `[skip release]` (triggering the deploy workflow)
+
+### Release notes content
+
+By default the PR title is used as the single bullet. To customise, add a section to the PR body:
+
+```markdown
+## Release notes
+- Eerste bullet
+- Tweede bullet
+```
+
+### PR flow for agents
+
+1. Create branch + PR as normal
+2. Add the appropriate `release:*` label to the PR
+3. Optionally add a `## Release notes` section to the PR body
+4. Merge — the bot handles everything else
 
 ---
 
