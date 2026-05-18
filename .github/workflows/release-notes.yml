@@ -117,7 +117,21 @@ jobs:
           fs.writeFileSync(rnPath, JSON.stringify(entries, null, 2) + '\n');
           console.log(`Prepended release notes for ${newVersion}`);
 
-          // ── 3. Write new version to output file for later steps ─────────
+          // ── 3. Bump <meta name="app-version"> in index.html ────────────
+          const indexPath = 'frontend/src/index.html';
+          let html = fs.readFileSync(indexPath, 'utf8');
+          const updated = html.replace(
+            /(<meta\s+name="app-version"\s+content=")[^"]*(")/,
+            `$1${newVersion}$2`,
+          );
+          if (updated === html) {
+            console.warn('[release-notes] Warning: could not find app-version meta tag in index.html');
+          } else {
+            fs.writeFileSync(indexPath, updated, 'utf8');
+            console.log(`Updated app-version meta tag to ${newVersion}`);
+          }
+
+          // ── 4. Write new version to output file for later steps ─────────
           fs.writeFileSync(process.env.GITHUB_OUTPUT, `new_version=${newVersion}\n`, { flag: 'a' });
           EOF
         env:
@@ -138,7 +152,7 @@ jobs:
 
           # Create branch (or reset it if it already exists from a previous failed run)
           git checkout -B "${BRANCH}"
-          git add frontend/ngsw-config.json frontend/public/assets/release-notes.json
+          git add frontend/ngsw-config.json frontend/public/assets/release-notes.json frontend/src/index.html
 
           # Nothing to commit → skip (should not happen in normal flow)
           if git diff --cached --quiet; then
