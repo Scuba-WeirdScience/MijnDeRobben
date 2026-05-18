@@ -4,7 +4,7 @@ import { MemberService } from '../../members/services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MemberBrevetPanelComponent } from './member-brevet-panel/member-brevet-panel.component';
-import { Member } from '../../members/models/member.model';
+import { Member } from '../../members/services/member.service';
 import { LucideX } from '../../../shared/lucide-icons';
 import { PageContainerComponent } from '../../../shared/components/design-system';
 

@@ -3,14 +3,13 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { MemberService } from '../services/member.service';
-import { Member, PagedResult } from '../models/member.model';
+import { Member, PagedResult } from '../services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { UserDisplayComponent } from '../../../shared/components/user-display/user-display.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PageContainerComponent } from '../../../shared/components/design-system';
-
-const ADMIN_ROLES = ['Beheer', 'Bestuur', 'MateriaalCommissie', 'InstructieKader'];
+import { ADMIN_ROLES } from '../../../core/models/role.model';
 
 @Component({
   selector: 'app-member-list',
