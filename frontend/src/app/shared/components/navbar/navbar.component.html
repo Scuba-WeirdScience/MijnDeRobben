@@ -142,6 +142,32 @@
               }
             </div>
 
+            <!-- Colour scheme picker -->
+            <div class="relative" data-scheme-menu>
+              <button (click)="toggleSchemeMenu()"
+                      class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      title="Kleurschema">
+                <span class="block w-4 h-4 rounded-full ring-2 ring-white dark:ring-gray-700"
+                      [style.background-color]="theme.schemeAccentColor()"></span>
+              </button>
+              @if (schemeMenuOpen()) {
+                <div class="absolute right-0 mt-1 w-44 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2 px-3 z-50">
+                  <p class="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">Kleurschema</p>
+                  <div class="flex gap-2 flex-wrap">
+                    @for (scheme of colorSchemes; track scheme.value) {
+                      <button
+                        (click)="selectScheme(scheme.value)"
+                        [title]="scheme.label"
+                        class="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
+                        [style.background-color]="scheme.accent"
+                        [ngClass]="theme.colorScheme() === scheme.value ? 'ring-2 ring-offset-2 ring-scuba-500' : ''"
+                      ></button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
             <!-- Install app button (only shown when browser supports install and not already running as app) -->
             @if (pwa.isInstallable() && !pwa.isRunningAsApp) {
               <button (click)="pwa.promptInstall()"

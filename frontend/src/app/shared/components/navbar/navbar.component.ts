@@ -2,7 +2,7 @@ import { Component, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ThemeService, ThemeOption } from '../../../core/services/theme.service';
+import { ThemeService, ThemeOption, ColorScheme, COLOR_SCHEMES } from '../../../core/services/theme.service';
 import { AvatarStateService } from '../../../core/services/avatar-state.service';
 import { PwaService } from '../../../core/services/pwa.service';
 import { UnreadCountService } from '../../../core/services/unread-count.service';
@@ -13,6 +13,7 @@ import { LUCIDE_ICONS } from '../../lucide-icons';
 const _TW_SAFELIST = [
   'bg-scuba-50', 'dark:bg-scuba-900/20',
   'text-scuba-700', 'dark:text-scuba-300',
+  'ring-2', 'ring-scuba-500', 'ring-white',
 ];
 
 @Component({
@@ -26,6 +27,7 @@ export class NavbarComponent {
   readonly userMenuOpen = signal(false);
   readonly adminMenuOpen = signal(false);
   readonly themeMenuOpen = signal(false);
+  readonly schemeMenuOpen = signal(false);
 
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
@@ -40,6 +42,8 @@ export class NavbarComponent {
     { value: 'dark',   label: 'Donker', icon: '🌙' },
     { value: 'system', label: 'Systeem', icon: '💻' },
   ];
+
+  readonly colorSchemes = COLOR_SCHEMES;
 
   userInitial(): string {
     const email = this.auth.currentUser()?.email ?? '';
@@ -56,6 +60,12 @@ export class NavbarComponent {
 
   toggleThemeMenu(): void {
     this.themeMenuOpen.update(v => !v);
+    this.schemeMenuOpen.set(false);
+  }
+
+  toggleSchemeMenu(): void {
+    this.schemeMenuOpen.update(v => !v);
+    this.themeMenuOpen.set(false);
   }
 
   closeUserMenu(): void {
@@ -78,6 +88,11 @@ export class NavbarComponent {
     this.themeMenuOpen.set(false);
   }
 
+  selectScheme(s: ColorScheme): void {
+    this.theme.setColorScheme(s);
+    this.schemeMenuOpen.set(false);
+  }
+
   currentThemeIcon(): string {
     return this.themeOptions.find(o => o.value === this.theme.theme())?.icon ?? '💻';
   }
@@ -94,6 +109,9 @@ export class NavbarComponent {
     }
     if (!target.closest('[data-theme-menu]')) {
       this.themeMenuOpen.set(false);
+    }
+    if (!target.closest('[data-scheme-menu]')) {
+      this.schemeMenuOpen.set(false);
     }
   }
 }

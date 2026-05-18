@@ -22,6 +22,7 @@ export interface UserDoc {
 /** Parsed shape of UserDoc.settings */
 export interface UserSettings {
   theme?: 'light' | 'dark' | 'system';
+  colorScheme?: 'ocean' | 'forest' | 'sunset' | 'slate' | 'rose';
 }
 
 export interface MemberDoc {
