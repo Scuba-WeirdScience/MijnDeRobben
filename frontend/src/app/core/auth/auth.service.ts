@@ -8,6 +8,7 @@ import {
   IdTokenResult,
 } from 'firebase/auth';
 import { auth } from '@fire';
+import { ALL_ROLES } from '../models/role.model';
 import { call } from '../firebase/callable';
 import { AppUser } from '../models/user.model';
 import { ThemeService } from '../services/theme.service';
@@ -121,7 +122,7 @@ export class AuthService {
     const tokenResult: IdTokenResult = await fbUser.getIdTokenResult();
     const claims = tokenResult.claims as Record<string, unknown>;
 
-    const allRoles = ['Beheer', 'Lid', 'Bestuur', 'MateriaalCommissie', 'InstructieKader'];
+    const allRoles = ALL_ROLES;
     const roles = allRoles.filter(r => claims[r] === true);
 
     return {
