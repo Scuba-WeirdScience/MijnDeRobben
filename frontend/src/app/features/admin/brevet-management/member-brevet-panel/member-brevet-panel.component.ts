@@ -1,10 +1,11 @@
 import { Component, input, inject, signal, computed, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, from, of } from 'rxjs';
 import { BrevetManagementService, CreateBrevetRequest } from '../brevet-management.service';
 import { MemberOrganisatieService, CreateMemberOrganisatieRequest, UpdateMemberOrganisatieRequest, MemberOrganisatie } from '../member-organisatie.service';
-import { BrevetTypeService, BrevetTypeDef } from '../../../../shared/services';
+import { LookupTypeDoc } from '../../lookup-type-management/lookup-type-management.component';
+import { call } from '../../../../core/firebase/callable';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { BrevetDoc as Brevet } from '../../../profile/brevet.service';
@@ -16,7 +17,7 @@ import {
 /** One row in the checkbox list — one BrevetTypeDef mapped to its current state */
 interface BrevetCheckboxRow {
   /** The brevet type definition */
-  def: BrevetTypeDef;
+  def: LookupTypeDoc;
   /** Whether this brevet type is currently selected (has a Brevet record) */
   checked: boolean;
   /** The behaaldDatum of the existing Brevet (if any), or '' */
@@ -45,7 +46,6 @@ export class MemberBrevetPanelComponent {
 
   private readonly brevetService = inject(BrevetManagementService);
   private readonly organisatieService = inject(MemberOrganisatieService);
-  private readonly brevetTypeService = inject(BrevetTypeService);
   private readonly toast = inject(ToastService);
 
   // ── Brevetten (checkbox state) ────────────────────────────────────────────
@@ -53,7 +53,7 @@ export class MemberBrevetPanelComponent {
   readonly brevetten = signal<Brevet[]>([]);
   readonly brevetToDelete = signal<Brevet | null>(null);
 
-  readonly brevetTypeDefs = signal<BrevetTypeDef[]>([]);
+  readonly brevetTypeDefs = signal<LookupTypeDoc[]>([]);
   readonly brevetTypeDefsLoading = signal(false);
 
   /** Grouped checkbox rows, one group per organisatie */
@@ -101,7 +101,7 @@ export class MemberBrevetPanelComponent {
 
   private loadBrevetTypeDefs(): void {
     this.brevetTypeDefsLoading.set(true);
-    this.brevetTypeService.getAll().subscribe({
+    from(call<void, LookupTypeDoc[]>('getBrevetTypes')).subscribe({
       next: list => {
         this.brevetTypeDefs.set(list);
         this.brevetTypeDefsLoading.set(false);
