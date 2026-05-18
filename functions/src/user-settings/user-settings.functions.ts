@@ -3,6 +3,7 @@ import { db, REGION } from '../shared/admin';
 import { UserSettings } from '../shared/types';
 
 const ALLOWED_THEMES = ['light', 'dark', 'system'] as const;
+const ALLOWED_SCHEMES = ['ocean', 'forest', 'sunset', 'slate', 'rose'] as const;
 
 // ── getUserSettings ────────────────────────────────────────────────────────
 export const getUserSettings = onCall({ region: REGION }, async (request) => {
@@ -29,6 +30,9 @@ export const saveUserSettings = onCall({ region: REGION }, async (request) => {
 
   if (incoming.theme !== undefined && !ALLOWED_THEMES.includes(incoming.theme)) {
     throw new HttpsError('invalid-argument', 'Ongeldig thema.');
+  }
+  if (incoming.colorScheme !== undefined && !ALLOWED_SCHEMES.includes(incoming.colorScheme)) {
+    throw new HttpsError('invalid-argument', 'Ongeldig kleurenschema.');
   }
 
   const docRef = db.collection('users').doc(request.auth.uid);

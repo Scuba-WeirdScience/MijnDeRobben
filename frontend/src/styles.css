@@ -19,7 +19,7 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 
-  /* scuba palette */
+  /* scuba palette — default: ocean (overridden by data-scheme below) */
   --color-scuba-50:  #e0f7ff;
   --color-scuba-100: #b3edff;
   --color-scuba-200: #80e2ff;
@@ -30,6 +30,80 @@
   --color-scuba-700: #005f92;
   --color-scuba-800: #004a73;
   --color-scuba-900: #03045e;
+}
+
+/* ── Colour schemes ─────────────────────────────────────────────────────── */
+/* Each scheme overrides the scuba-* design tokens. The rest of the app      */
+/* continues to use scuba-* classes — no other changes needed.               */
+
+/* 🌊 Ocean (default — same as the @theme tokens above) */
+:root[data-scheme="ocean"] {
+  --color-scuba-50:  #e0f7ff;
+  --color-scuba-100: #b3edff;
+  --color-scuba-200: #80e2ff;
+  --color-scuba-300: #4dd7ff;
+  --color-scuba-400: #26cdff;
+  --color-scuba-500: #00b4d8;
+  --color-scuba-600: #0077b6;
+  --color-scuba-700: #005f92;
+  --color-scuba-800: #004a73;
+  --color-scuba-900: #03045e;
+}
+
+/* 🌲 Forest */
+:root[data-scheme="forest"] {
+  --color-scuba-50:  #ecfdf5;
+  --color-scuba-100: #d1fae5;
+  --color-scuba-200: #a7f3d0;
+  --color-scuba-300: #6ee7b7;
+  --color-scuba-400: #34d399;
+  --color-scuba-500: #10b981;
+  --color-scuba-600: #059669;
+  --color-scuba-700: #047857;
+  --color-scuba-800: #065f46;
+  --color-scuba-900: #064e3b;
+}
+
+/* 🌅 Sunset */
+:root[data-scheme="sunset"] {
+  --color-scuba-50:  #fff7ed;
+  --color-scuba-100: #ffedd5;
+  --color-scuba-200: #fed7aa;
+  --color-scuba-300: #fdba74;
+  --color-scuba-400: #fb923c;
+  --color-scuba-500: #f97316;
+  --color-scuba-600: #ea580c;
+  --color-scuba-700: #c2410c;
+  --color-scuba-800: #9a3412;
+  --color-scuba-900: #7c2d12;
+}
+
+/* 🪨 Slate */
+:root[data-scheme="slate"] {
+  --color-scuba-50:  #f8fafc;
+  --color-scuba-100: #f1f5f9;
+  --color-scuba-200: #e2e8f0;
+  --color-scuba-300: #cbd5e1;
+  --color-scuba-400: #94a3b8;
+  --color-scuba-500: #64748b;
+  --color-scuba-600: #475569;
+  --color-scuba-700: #334155;
+  --color-scuba-800: #1e293b;
+  --color-scuba-900: #0f172a;
+}
+
+/* 🌸 Rose */
+:root[data-scheme="rose"] {
+  --color-scuba-50:  #fff1f2;
+  --color-scuba-100: #ffe4e6;
+  --color-scuba-200: #fecdd3;
+  --color-scuba-300: #fda4af;
+  --color-scuba-400: #fb7185;
+  --color-scuba-500: #f43f5e;
+  --color-scuba-600: #e11d48;
+  --color-scuba-700: #be185d;
+  --color-scuba-800: #9f1239;
+  --color-scuba-900: #881337;
 }
 
 /*
