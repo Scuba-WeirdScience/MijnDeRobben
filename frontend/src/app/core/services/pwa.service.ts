@@ -55,8 +55,14 @@ export class PwaService {
    */
   readonly releaseNotes = signal<ReleaseEntry | null>(null);
 
+  /** All release entries — populated when the user manually opens the changelog */
+  readonly allReleaseEntries = signal<ReleaseEntry[]>([]);
+
   /** Whether to show the release notes dialog */
   readonly showReleaseNotes = signal(false);
+
+  /** True when the dialog was opened manually (show full changelog, not just latest) */
+  readonly showingFullChangelog = signal(false);
 
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
   private readonly boundBeforeInstallPrompt = this.onBeforeInstallPrompt.bind(this);
@@ -142,10 +148,26 @@ export class PwaService {
   /** Dismiss the release notes dialog and persist the seen version */
   dismissReleaseNotes(): void {
     const version = this.releaseNotes()?.version;
-    if (version) {
+    if (version && !this.showingFullChangelog()) {
       localStorage.setItem(LAST_SEEN_VERSION_KEY, version);
     }
     this.showReleaseNotes.set(false);
+    this.showingFullChangelog.set(false);
+  }
+
+  /**
+   * Manually open the full changelog (all versions).
+   * Called from the navbar menu item.
+   */
+  openChangelog(): void {
+    this.http.get<ReleaseEntry[]>('/assets/release-notes.json').subscribe({
+      next: (entries) => {
+        this.allReleaseEntries.set(entries);
+        this.showingFullChangelog.set(true);
+        this.showReleaseNotes.set(true);
+      },
+      error: () => { /* fail silently */ },
+    });
   }
 
   /** Returns the version from the NGSW appData, or null when SW is unavailable */

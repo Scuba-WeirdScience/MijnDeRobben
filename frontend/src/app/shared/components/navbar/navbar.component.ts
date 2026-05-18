@@ -93,6 +93,11 @@ export class NavbarComponent {
     this.schemeMenuOpen.set(false);
   }
 
+  openChangelog(): void {
+    this.closeUserMenu();
+    this.pwa.openChangelog();
+  }
+
   currentThemeIcon(): string {
     return this.themeOptions.find(o => o.value === this.theme.theme())?.icon ?? '💻';
   }
