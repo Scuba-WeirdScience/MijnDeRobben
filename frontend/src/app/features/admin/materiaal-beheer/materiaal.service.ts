@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '@fire';
 import { from, Observable } from 'rxjs';
+import { call } from '../../../core/firebase/callable';
 import { CustomFieldDef, MateriaalTypeDoc, MateriaalDoc } from '../../../core/models/firestore-types';
 
 export type MateriaalType = MateriaalTypeDoc;
@@ -18,49 +17,39 @@ export type UpdateMateriaalRequest = Partial<CreateMateriaalRequest>;
 
 @Injectable({ providedIn: 'root' })
 export class MateriaalService {
-  // ── Types ────────────────────────────────────────────────────────────────
+  // 📦 Types ────────────────────────────────────────────────────────────────
 
   getAllWithMaterialen(): Observable<MateriaalTypeWithMaterialen[]> {
-    const fn = httpsCallable<void, MateriaalTypeWithMaterialen[]>(functions, 'getMateriaalTypesWithMaterialen');
-    return from(fn().then(r => r.data));
+    return from(call<void, MateriaalTypeWithMaterialen[]>('getMateriaalTypesWithMaterialen'));
   }
 
   getAllTypes(): Observable<MateriaalType[]> {
-    const fn = httpsCallable<void, MateriaalType[]>(functions, 'getMateriaalTypes');
-    return from(fn().then(r => r.data));
+    return from(call<void, MateriaalType[]>('getMateriaalTypes'));
   }
 
   createType(dto: CreateMateriaalTypeRequest): Observable<MateriaalType> {
-    const fn = httpsCallable<CreateMateriaalTypeRequest, MateriaalType>(functions, 'createMateriaalType');
-    return from(fn(dto).then(r => r.data));
+    return from(call<CreateMateriaalTypeRequest, MateriaalType>('createMateriaalType', dto));
   }
 
   updateType(id: string, dto: UpdateMateriaalTypeRequest): Observable<MateriaalType> {
-    const fn = httpsCallable<{ id: string } & UpdateMateriaalTypeRequest, MateriaalType>(functions, 'updateMateriaalType');
-    return from(fn({ id, ...dto }).then(r => r.data));
+    return from(call<{ id: string } & UpdateMateriaalTypeRequest, MateriaalType>('updateMateriaalType', { id, ...dto }));
   }
 
   deleteType(id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ id: string }, { success: boolean }>(functions, 'deleteMateriaalType');
-    return from(fn({ id }).then(r => r.data));
+    return from(call<{ id: string }, { success: boolean }>('deleteMateriaalType', { id }));
   }
 
-  // ── Materialen ───────────────────────────────────────────────────────────
+  // 🔧 Materialen ────────────────────────────────────────────────────────────
 
   createMateriaal(dto: CreateMateriaalRequest): Observable<MateriaalDoc> {
-    const fn = httpsCallable<CreateMateriaalRequest, MateriaalDoc>(functions, 'createMateriaal');
-    return from(fn(dto).then(r => r.data));
+    return from(call<CreateMateriaalRequest, MateriaalDoc>('createMateriaal', dto));
   }
 
   updateMateriaal(_typeId: string, id: string, dto: UpdateMateriaalRequest): Observable<MateriaalDoc> {
-    const fn = httpsCallable<{ id: string } & UpdateMateriaalRequest, MateriaalDoc>(functions, 'updateMateriaal');
-    return from(fn({ id, ...dto }).then(r => r.data));
+    return from(call<{ id: string } & UpdateMateriaalRequest, MateriaalDoc>('updateMateriaal', { id, ...dto }));
   }
 
   deleteMateriaal(_typeId: string, id: string): Observable<{ success: boolean }> {
-    const fn = httpsCallable<{ id: string }, { success: boolean }>(functions, 'deleteMateriaal');
-    return from(fn({ id }).then(r => r.data));
+    return from(call<{ id: string }, { success: boolean }>('deleteMateriaal', { id }));
   }
 }
-
-
