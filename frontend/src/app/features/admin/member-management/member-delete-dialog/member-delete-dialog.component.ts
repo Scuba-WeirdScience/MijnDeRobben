@@ -1,5 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
-import { Member } from '../../../members/models/member.model';
+import { Member } from '../../../members/services/member.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/design-system';
 
 @Component({

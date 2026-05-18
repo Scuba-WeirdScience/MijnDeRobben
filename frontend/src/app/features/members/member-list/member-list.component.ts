@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { MemberService } from '../services/member.service';
-import { Member, PagedResult } from '../models/member.model';
+import { Member, PagedResult } from '../services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { UserDisplayComponent } from '../../../shared/components/user-display/user-display.component';
