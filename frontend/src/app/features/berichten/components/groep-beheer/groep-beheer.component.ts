@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { BerichtenService } from '../../berichten.service';
 import { GroepenService, Groep } from '../../services/groepen.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { MemberService, Member } from '../../../../features/members/services/member.service';
@@ -39,7 +38,6 @@ const _TW_SAFELIST = [
 })
 export class GroepBeheerComponent {
   readonly groepenService = inject(GroepenService);
-  readonly service = inject(BerichtenService);
   private readonly toast = inject(ToastService);
   private readonly memberService = inject(MemberService);
 
