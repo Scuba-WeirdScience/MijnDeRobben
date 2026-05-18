@@ -3,21 +3,19 @@ name: Auto release notes
 # Runs after every push to main (i.e. after a PR merges).
 # Looks at the merged PR for a release label and an optional
 # "## Release notes" section, then bumps ngsw-config.json and
-# prepends an entry to release-notes.json, committing back to main.
+# prepends an entry to release-notes.json.
+#
+# Because main is branch-protected, the bot opens a small PR
+# (chore/release-X.Y.Z) and immediately enables auto-merge so it
+# lands as soon as the two required checks pass (~1 min).
 #
 # PR labels that control the version bump:
 #   release:patch  →  2.6.0 → 2.6.1   (default when no label present)
 #   release:minor  →  2.6.0 → 2.7.0
 #   release:major  →  2.6.0 → 3.0.0
 #
-# Optional PR body section (Dutch bullet list, parsed into release notes):
-#   ## Release notes
-#   - Eerste bullet
-#   - Tweede bullet
-#
-# If no "## Release notes" section is present the PR title is used as the
-# single bullet.  Commits that already contain "[skip release]" or were
-# made by the bot itself are ignored to avoid infinite loops.
+# Commits that already contain "[skip release]" (the release PR title)
+# are ignored to avoid infinite loops.
 
 on:
   push:
@@ -26,12 +24,11 @@ on:
 jobs:
   release-notes:
     runs-on: ubuntu-latest
-    # Skip bot commits (the commit this workflow itself makes)
     if: "!contains(github.event.head_commit.message, '[skip release]')"
 
     permissions:
       contents: write
-      pull-requests: read
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +41,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Find the PR that was just merged into main via this commit
             const sha = context.sha;
             const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner: context.repo.owner,
@@ -86,12 +82,12 @@ jobs:
             }
             core.setOutput('items', JSON.stringify(items));
 
-      - name: Bump version and update release notes
+      - name: Bump version and update release notes files
+        id: bump
         if: steps.pr.outputs.skip == 'false'
         run: |
           node - <<'EOF'
           const fs = require('fs');
-          const path = require('path');
 
           const bump     = process.env.BUMP;
           const itemsRaw = process.env.ITEMS;
@@ -120,19 +116,66 @@ jobs:
           });
           fs.writeFileSync(rnPath, JSON.stringify(entries, null, 2) + '\n');
           console.log(`Prepended release notes for ${newVersion}`);
+
+          // ── 3. Write new version to output file for later steps ─────────
+          fs.writeFileSync(process.env.GITHUB_OUTPUT, `new_version=${newVersion}\n`, { flag: 'a' });
           EOF
         env:
           BUMP:  ${{ steps.pr.outputs.bump }}
           ITEMS: ${{ steps.pr.outputs.items }}
 
-      - name: Commit and push
+      - name: Open release PR and enable auto-merge
         if: steps.pr.outputs.skip == 'false'
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add frontend/ngsw-config.json frontend/src/assets/release-notes.json
-          # Only commit if there are actual changes
-          git diff --cached --quiet && echo "Nothing to commit" && exit 0
-          VERSION=$(node -e "console.log(require('./frontend/ngsw-config.json').appData.version)")
-          git commit -m "chore: release $VERSION [skip release]"
-          git push origin main
+        uses: actions/github-script@v7
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        with:
+          script: |
+            const version   = process.env.NEW_VERSION;
+            const branch    = `chore/release-${version}`;
+            const { execSync } = require('child_process');
+
+            // Configure git
+            execSync('git config user.name "github-actions[bot]"');
+            execSync('git config user.email "github-actions[bot]@users.noreply.github.com"');
+
+            // Create and push the release branch
+            execSync(`git checkout -b ${branch}`);
+            execSync('git add frontend/ngsw-config.json frontend/src/assets/release-notes.json');
+
+            // Check if there's anything to commit
+            try {
+              execSync('git diff --cached --quiet');
+              console.log('Nothing to commit — skipping.');
+              return;
+            } catch (_) {
+              // diff returns exit code 1 when there ARE changes — that's what we want
+            }
+
+            execSync(`git commit -m "chore: release ${version} [skip release]"`);
+            execSync(`git push origin ${branch}`);
+
+            // Open the PR
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              title: `chore: release ${version} [skip release]`,
+              head:  branch,
+              base:  'main',
+              body:  `Automatic version bump to \`${version}\` — triggered by merging PR #${{ steps.pr.outputs.pr_number }}.\n\n_This PR was created by the Auto release notes workflow and will auto-merge once checks pass._`,
+            });
+
+            console.log(`Opened PR #${pr.number}: ${pr.html_url}`);
+
+            // Enable auto-merge (squash)
+            await github.rest.pulls.updateBranch;
+            await github.graphql(`
+              mutation ($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(input: {
+                  pullRequestId: $pullRequestId,
+                  mergeMethod: SQUASH
+                }) { pullRequest { number } }
+              }
+            `, { pullRequestId: pr.node_id });
+
+            console.log(`Auto-merge enabled on PR #${pr.number}`);
