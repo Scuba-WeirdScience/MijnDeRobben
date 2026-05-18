@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.6.0",
+    "date": "2026-05-18",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Kleurschema's: kies uit 5 accentkleuren via het palet-icoontje in de navigatiebalk.",
+          "Changelog: bekijk altijd de volledige versiegeschiedenis via 'Wat is er nieuw?' in het gebruikersmenu."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.5.0",
     "date": "2026-05-15",
     "sections": [
