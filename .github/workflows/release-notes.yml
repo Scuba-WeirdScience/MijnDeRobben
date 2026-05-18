@@ -153,11 +153,10 @@ jobs:
           # Open the PR (gh CLI is pre-installed on GitHub-hosted runners)
           # --no-maintainer-edit keeps the bot as author; || true so reruns don't fail
           # if the PR already exists
+          PR_BODY="Automatic version bump to \`${NEW_VERSION}\` — triggered by merging PR #${PR_NUMBER}. Auto-created by the release-notes workflow."
           PR_URL=$(gh pr create \
             --title "chore: release ${NEW_VERSION} [skip release]" \
-            --body "Automatic version bump to \`${NEW_VERSION}\` — triggered by merging PR #${PR_NUMBER}.
-
-_This PR was created by the Auto release notes workflow and will auto-merge once checks pass._" \
+            --body "${PR_BODY}" \
             --base main \
             --head "${BRANCH}" \
             --label "release:skip" 2>/dev/null || \
