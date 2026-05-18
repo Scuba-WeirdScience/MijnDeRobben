@@ -41,6 +41,8 @@ export {
   getMateriaalStatus,
   getAllLeningen,
   getLeningenVoorLid,
+  getLeningenByMateriaalId,
+  getLeningenByMemberId,
 } from './leningen/leningen.functions';
 
 // ── Berichten ─────────────────────────────────────────────────────────────────
