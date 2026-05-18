@@ -35,6 +35,7 @@
     "!/**/*.*",
     "!/**/*__*",
     "!/**/*__*/**",
+    "!/assets/**",
     "!https://firestore.googleapis.com/**",
     "!https://firebase.googleapis.com/**",
     "!https://identitytoolkit.googleapis.com/**",
