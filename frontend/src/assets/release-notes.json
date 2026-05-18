@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.6.2",
+    "date": "2026-05-18",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "soft-fail if auto-merge not enabled in repo settings"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.1",
     "date": "2026-05-18",
     "sections": [
