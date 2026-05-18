@@ -164,5 +164,6 @@ jobs:
 
           echo "PR: ${PR_URL}"
 
-          # Enable auto-merge so it lands as soon as build checks pass
-          gh pr merge "${BRANCH}" --auto --squash
+          # Enable auto-merge so it lands as soon as build checks pass.
+          # Soft-fail if auto-merge is not enabled in repo settings — PR stays open for manual merge.
+          gh pr merge "${BRANCH}" --auto --squash || echo "::warning::Auto-merge not enabled in repo settings. PR ${PR_URL} is open — merge it manually or enable Settings > General > Allow auto-merge."
