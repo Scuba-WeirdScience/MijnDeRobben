@@ -141,6 +141,40 @@ export const getAllLeningen = onCall({ region: REGION }, async (request) => {
   return snap.docs.map(d => d.data());
 });
 
+// ── getLeningenByMateriaalId (admin) ──────────────────────────────────────
+export const getLeningenByMateriaalId = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const isAdmin = request.auth.token?.['Beheer'] || request.auth.token?.['MateriaalCommissie'];
+  if (!isAdmin) throw new HttpsError('permission-denied', 'Geen toegang.');
+
+  const { materiaalId } = request.data as { materiaalId: string };
+  if (!materiaalId) throw new HttpsError('invalid-argument', 'materiaalId is verplicht.');
+
+  const snap = await db.collection('leningen')
+    .where('materiaalId', '==', materiaalId)
+    .orderBy('createdAt', 'desc')
+    .get();
+
+  return snap.docs.map(d => d.data());
+});
+
+// ── getLeningenByMemberId (admin) ─────────────────────────────────────────
+export const getLeningenByMemberId = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');
+  const isAdmin = request.auth.token?.['Beheer'] || request.auth.token?.['MateriaalCommissie'];
+  if (!isAdmin) throw new HttpsError('permission-denied', 'Geen toegang.');
+
+  const { memberId } = request.data as { memberId: string };
+  if (!memberId) throw new HttpsError('invalid-argument', 'memberId is verplicht.');
+
+  const snap = await db.collection('leningen')
+    .where('memberId', '==', memberId)
+    .orderBy('createdAt', 'desc')
+    .get();
+
+  return snap.docs.map(d => d.data());
+});
+
 // ── getLeningenVoorLid ─────────────────────────────────────────────────────
 export const getLeningenVoorLid = onCall({ region: REGION }, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Not signed in.');

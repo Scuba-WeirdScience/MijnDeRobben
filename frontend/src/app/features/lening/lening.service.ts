@@ -39,13 +39,12 @@ export class LeningService {
 
   /** Returns leningen history for a specific materiaal (all, including returned). */
   getByMateriaalId(materiaalId: string): Observable<LeningDoc[]> {
-    // Filtered client-side from getAll since there's no dedicated backend endpoint yet
-    return from(call<void, LeningDoc[]>('getAllLeningen').then(list => list.filter(l => l.materiaalId === materiaalId)));
+    return from(call<{ materiaalId: string }, LeningDoc[]>('getLeningenByMateriaalId', { materiaalId }));
   }
 
   /** Returns leningen for a specific member (all, including returned). */
   getByMemberId(memberId: string): Observable<LeningDoc[]> {
-    return from(call<void, LeningDoc[]>('getAllLeningen').then(list => list.filter(l => l.memberId === memberId)));
+    return from(call<{ memberId: string }, LeningDoc[]>('getLeningenByMemberId', { memberId }));
   }
 
   /** Verzorger: returns open leningen for a linked child member. */
