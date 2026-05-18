@@ -35,7 +35,7 @@ export const routes: Routes = [
     path: 'mijn-materialen',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/member/mijn-materialen.component').then(m => m.MijnMaterialenComponent)
+      import('./features/profile/mijn-materialen.component').then(m => m.MijnMaterialenComponent)
   },
 
   {
