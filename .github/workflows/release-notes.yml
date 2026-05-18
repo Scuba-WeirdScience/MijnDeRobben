@@ -107,7 +107,7 @@ jobs:
           console.log(`Bumped version: ${maj}.${min}.${pat} → ${newVersion}`);
 
           // ── 2. Prepend entry to release-notes.json ──────────────────────
-          const rnPath = 'frontend/src/assets/release-notes.json';
+          const rnPath = 'frontend/public/assets/release-notes.json';
           const entries = JSON.parse(fs.readFileSync(rnPath, 'utf8'));
           entries.unshift({
             version: newVersion,
@@ -138,7 +138,7 @@ jobs:
 
           # Create branch (or reset it if it already exists from a previous failed run)
           git checkout -B "${BRANCH}"
-          git add frontend/ngsw-config.json frontend/src/assets/release-notes.json
+          git add frontend/ngsw-config.json frontend/public/assets/release-notes.json
 
           # Nothing to commit → skip (should not happen in normal flow)
           if git diff --cached --quiet; then

@@ -3,7 +3,7 @@
  * parse-changelog.ts
  *
  * Parses CHANGELOG.md (Keep a Changelog format) and:
- *   1. Writes frontend/src/assets/release-notes.json
+ *   1. Writes frontend/public/assets/release-notes.json
  *   2. Updates the <meta name="app-version"> in frontend/src/index.html
  *      to match the latest version in the changelog.
  *
@@ -22,7 +22,7 @@ import * as path from 'path';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
 const CHANGELOG_PATH = path.join(REPO_ROOT, 'CHANGELOG.md');
-const OUTPUT_PATH = path.join(REPO_ROOT, 'frontend', 'src', 'assets', 'release-notes.json');
+const OUTPUT_PATH = path.join(REPO_ROOT, 'frontend', 'public', 'assets', 'release-notes.json');
 const INDEX_HTML_PATH = path.join(REPO_ROOT, 'frontend', 'src', 'index.html');
 
 interface ReleaseSection {
