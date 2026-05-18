@@ -41,3 +41,9 @@ functions/firestore-debug.log
 # ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── OpenCode agent skill cache (auto-installed, not project files) ────────────
+.opencode/agents/
+skills-lock.json
+package.json
+pnpm-lock.yaml

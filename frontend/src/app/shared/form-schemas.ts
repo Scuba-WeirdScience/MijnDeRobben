@@ -12,15 +12,22 @@
  */
 import { z } from 'zod';
 
-// ── Specialty Types ────────────────────────────────────────────────────────
+// ── Lookup Types (shared: brevet types, specialty types) ──────────────────
+// Single canonical schema for all "organisatie + naam + volgorde" lookup tables.
+// specialtyTypeSchema and brevetTypeDefFormSchema are kept as aliases for
+// existing consumers while the generic LookupTypeManagementComponent uses this.
 
-export const specialtyTypeSchema = z.object({
+export const lookupTypeFormSchema = z.object({
   organisatie: z.string().min(1, 'Organisatie is verplicht.'),
   naam: z.string().min(1, 'Naam is verplicht.').max(200, 'Max 200 tekens.'),
   volgorde: z.coerce.number().int().min(0, 'Moet >= 0 zijn.'),
 });
 
-export type SpecialtyTypeForm = z.infer<typeof specialtyTypeSchema>;
+export type LookupTypeForm = z.infer<typeof lookupTypeFormSchema>;
+
+/** @deprecated Use lookupTypeFormSchema */
+export const specialtyTypeSchema = lookupTypeFormSchema;
+export type SpecialtyTypeForm = LookupTypeForm;
 
 // ── Materiaal Types ────────────────────────────────────────────────────────
 
@@ -47,13 +54,9 @@ export type MateriaalForm = z.infer<typeof materiaalFormSchema>;
 
 // ── Brevet Type Definitions ────────────────────────────────────────────────
 
-export const brevetTypeDefFormSchema = z.object({
-  organisatie: z.string().min(1, 'Organisatie is verplicht.'),
-  naam: z.string().min(1, 'Naam is verplicht.').max(200, 'Max 200 tekens.'),
-  volgorde: z.coerce.number().int().min(0, 'Moet >= 0 zijn.'),
-});
-
-export type BrevetTypeDefForm = z.infer<typeof brevetTypeDefFormSchema>;
+/** @deprecated Use lookupTypeFormSchema */
+export const brevetTypeDefFormSchema = lookupTypeFormSchema;
+export type BrevetTypeDefForm = LookupTypeForm;
 
 // ── Locatie ────────────────────────────────────────────────────────────────
 
