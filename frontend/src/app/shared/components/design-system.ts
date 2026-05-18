@@ -51,6 +51,3 @@ export { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.com
 
 // ── PWA ────────────────────────────────────────────────────────────────────
 export { ReleaseNotesDialogComponent } from './release-notes-dialog/release-notes-dialog.component';
-
-// ── Berichten features ─────────────────────────────────────────────────────
-export { ActiviteitThreadCardComponent } from '../../features/berichten/components/activiteit-thread-card/activiteit-thread-card.component';
