@@ -7,8 +7,7 @@ import {
   UserDetailPanelComponent,
   UserSummary,
 } from './user-detail-panel/user-detail-panel.component';
-
-const ALL_ROLES = ['Beheer', 'Lid', 'Bestuur', 'MateriaalCommissie', 'InstructieKader'];
+import { ALL_ROLES, Role } from '../../../core/models/role.model';
 
 // Tailwind safelist — classes built via roleBadgeClass() are invisible to the scanner
 const _TW_SAFELIST = [
@@ -38,7 +37,7 @@ export class RoleManagementComponent {
   private readonly toast = inject(ToastService);
 
   readonly loading = signal(true);
-  readonly roles   = signal<string[]>(ALL_ROLES);
+  readonly roles   = signal<Role[]>(ALL_ROLES);
   readonly users   = signal<UserSummary[]>([]);
   readonly selectedUser = signal<UserSummary | null>(null);
 
