@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.6.1",
+    "date": "2026-05-18",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "fix YAML syntax error in release-notes workflow"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.0",
     "date": "2026-05-18",
     "sections": [
