@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.6.3",
+    "date": "2026-05-18",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "exclude release-notes.json from SW asset cache"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.2",
     "date": "2026-05-18",
     "sections": [
