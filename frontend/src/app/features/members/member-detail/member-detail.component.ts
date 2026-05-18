@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MemberService } from '../services/member.service';
-import { Member } from '../models/member.model';
+import { Member } from '../services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { FullNamePipe } from '../../../shared/pipes/full-name.pipe';
