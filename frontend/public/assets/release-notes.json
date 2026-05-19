@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.8.0",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "Thema en kleur kiezen kan nu vanuit één overzichtelijk menu — klik op het gekleurde bolletje rechtsboven"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.7.0",
     "date": "2026-05-19",
     "sections": [

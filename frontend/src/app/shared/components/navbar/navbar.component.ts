@@ -14,6 +14,9 @@ const _TW_SAFELIST = [
   'bg-scuba-50', 'dark:bg-scuba-900/20',
   'text-scuba-700', 'dark:text-scuba-300',
   'ring-2', 'ring-scuba-500', 'ring-white',
+  'ring-1', 'ring-scuba-200', 'dark:ring-scuba-700',
+  'ring-offset-2', 'ring-offset-white', 'dark:ring-offset-gray-900',
+  'hover:bg-gray-100', 'dark:hover:bg-gray-800',
 ];
 
 @Component({
@@ -26,8 +29,7 @@ export class NavbarComponent {
   mobileOpen = false;
   readonly userMenuOpen = signal(false);
   readonly adminMenuOpen = signal(false);
-  readonly themeMenuOpen = signal(false);
-  readonly schemeMenuOpen = signal(false);
+  readonly appearanceMenuOpen = signal(false);
 
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
@@ -58,14 +60,8 @@ export class NavbarComponent {
     this.adminMenuOpen.update(v => !v);
   }
 
-  toggleThemeMenu(): void {
-    this.themeMenuOpen.update(v => !v);
-    this.schemeMenuOpen.set(false);
-  }
-
-  toggleSchemeMenu(): void {
-    this.schemeMenuOpen.update(v => !v);
-    this.themeMenuOpen.set(false);
+  toggleAppearanceMenu(): void {
+    this.appearanceMenuOpen.update(v => !v);
   }
 
   closeUserMenu(): void {
@@ -85,21 +81,17 @@ export class NavbarComponent {
 
   selectTheme(t: ThemeOption): void {
     this.theme.setTheme(t);
-    this.themeMenuOpen.set(false);
+    this.appearanceMenuOpen.set(false);
   }
 
   selectScheme(s: ColorScheme): void {
     this.theme.setColorScheme(s);
-    this.schemeMenuOpen.set(false);
+    this.appearanceMenuOpen.set(false);
   }
 
   openChangelog(): void {
     this.closeUserMenu();
     this.pwa.openChangelog();
-  }
-
-  currentThemeIcon(): string {
-    return this.themeOptions.find(o => o.value === this.theme.theme())?.icon ?? '💻';
   }
 
   /** Close dropdowns when clicking outside */
@@ -112,11 +104,8 @@ export class NavbarComponent {
     if (!target.closest('[data-admin-menu]')) {
       this.adminMenuOpen.set(false);
     }
-    if (!target.closest('[data-theme-menu]')) {
-      this.themeMenuOpen.set(false);
-    }
-    if (!target.closest('[data-scheme-menu]')) {
-      this.schemeMenuOpen.set(false);
+    if (!target.closest('[data-appearance-menu]')) {
+      this.appearanceMenuOpen.set(false);
     }
   }
 }
