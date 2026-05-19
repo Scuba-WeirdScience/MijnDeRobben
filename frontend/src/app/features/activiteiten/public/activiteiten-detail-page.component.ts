@@ -70,7 +70,8 @@ export class ActiviteitenDetailPageComponent implements OnInit {
                   const resolvedDatum = this.occurrence()?.occurrenceDatum ?? datum;
                   const occ = list.find(r =>
                     r.activiteitId === id &&
-                    (!resolvedDatum || r.occurrenceDatum === resolvedDatum)
+                    (!resolvedDatum || r.occurrenceDatum === resolvedDatum) &&
+                    r.status === 'aangemeld'
                   );
                   this.mijnRegistratie.set(occ ?? null);
                 },
@@ -95,7 +96,8 @@ export class ActiviteitenDetailPageComponent implements OnInit {
         const resolvedDatum = this.occurrence()?.occurrenceDatum ?? this.occurrenceDatum();
         const occ = list.find(r =>
           r.activiteitId === id &&
-          (!resolvedDatum || r.occurrenceDatum === resolvedDatum)
+          (!resolvedDatum || r.occurrenceDatum === resolvedDatum) &&
+          r.status === 'aangemeld'
         );
         this.mijnRegistratie.set(occ ?? null);
       },
