@@ -5,6 +5,11 @@ Formaat gebaseerd op [Keep a Changelog](https://keepachangelog.com/nl/1.0.0/).
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-05-19
+
+### Nieuw
+- Lijst van inschrijvingen zichtbaar op de detailpagina van een activiteit.
+
 ## [2.8.1] - 2026-05-19
 
 ### Opgelost
