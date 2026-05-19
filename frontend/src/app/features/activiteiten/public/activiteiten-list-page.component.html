@@ -9,7 +9,7 @@
         class="px-4 py-2 text-sm font-medium transition-colors"
         [ngClass]="{
           'bg-scuba-600 text-white': viewMode() === 'agenda',
-          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700': viewMode() !== 'agenda'
+          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20': viewMode() !== 'agenda'
         }">
         Agenda
       </button>
@@ -18,7 +18,7 @@
         class="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-200 dark:border-gray-700"
         [ngClass]="{
           'bg-scuba-600 text-white': viewMode() === 'kalender',
-          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700': viewMode() !== 'kalender'
+          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20': viewMode() !== 'kalender'
         }">
         Kalender
       </button>

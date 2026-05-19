@@ -69,41 +69,41 @@
                   <div class="absolute left-0 mt-2 w-52 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-50 overflow-hidden">
                     <div class="py-1">
                       <a routerLink="/activiteiten/beheer" (click)="closeAdminMenu()"
-                        class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                         <svg lucideCalendar class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                         Activiteiten
                       </a>
                       <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
                         <a routerLink="/admin/members" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                           <svg lucideUsers class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                           Ledenbeheer
                         </a>
                       </ng-container>
                       <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
                         <a routerLink="/admin/groepen" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                           <svg lucideMessageSquare class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                           Groepenbeheer
                         </a>
                       </ng-container>
                       <ng-container *ngIf="auth.hasAnyRole(['Beheer'])">
                         <a routerLink="/admin/roles" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                           <svg lucideShieldCheck class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                           Gebruikersbeheer
                         </a>
                       </ng-container>
                       <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
                         <a routerLink="/admin/brevet-types" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                           <svg lucideClipboardCheck class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                           Brevet types
                         </a>
                       </ng-container>
                       <ng-container *ngIf="auth.hasAnyRole(['MateriaalCommissie', 'Bestuur', 'Beheer'])">
                         <a routerLink="/admin/materialen" (click)="closeAdminMenu()"
-                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                           <span class="text-base leading-none w-4 text-center">🤿</span>
                           Materiaal
                         </a>
@@ -120,7 +120,7 @@
             <!-- Theme dropdown -->
             <div class="relative" data-theme-menu>
               <button (click)="toggleThemeMenu()"
-                      class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
                       [title]="'Thema: ' + theme.theme()">
                 <span>{{ currentThemeIcon() }}</span>
               </button>
@@ -132,7 +132,7 @@
                       class="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left transition-colors"
                       [ngClass]="theme.theme() === opt.value
                         ? 'bg-scuba-50 dark:bg-scuba-900/20 text-scuba-700 dark:text-scuba-300 font-medium'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20'"
                     >
                       <span>{{ opt.icon }}</span>
                       <span>{{ opt.label }}</span>
@@ -145,7 +145,7 @@
             <!-- Colour scheme picker -->
             <div class="relative" data-scheme-menu>
               <button (click)="toggleSchemeMenu()"
-                      class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
                       title="Kleurschema">
                 <span class="block w-4 h-4 rounded-full ring-2 ring-white dark:ring-gray-700"
                       [style.background-color]="theme.schemeAccentColor()"></span>
@@ -190,7 +190,7 @@
                 <!-- Dropdown trigger button -->
                 <button
                   (click)="toggleUserMenu()"
-                  class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-scuba-500 p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-scuba-500 p-0.5 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
                   [title]="auth.currentUser()?.email ?? 'Gebruiker'">
                   @if (avatarState.avatarUrl()) {
                     <img
@@ -221,17 +221,17 @@
                     <!-- Menu items -->
                     <div class="py-1">
                       <a routerLink="/profile" (click)="closeUserMenu()"
-                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                          <svg lucideUser class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                          Mijn profiel
                        </a>
                       <a routerLink="/profile/brevetten" (click)="closeUserMenu()"
-                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                          <svg lucideAward class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                          Mijn brevetten &amp; specialiteiten
                        </a>
                        <a routerLink="/mijn-materialen" (click)="closeUserMenu()"
-                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                           <span class="text-base leading-none">🤿</span>
                           Mijn materialen
                         </a>
@@ -239,7 +239,7 @@
                      <!-- Changelog + Logout -->
                      <div class="border-t border-gray-100 dark:border-gray-700 py-1">
                        <button (click)="openChangelog()"
-                               class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                               class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                          <svg lucideFileText class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
                          Wat is er nieuw?
                        </button>
@@ -259,7 +259,7 @@
 
             <!-- Mobile hamburger -->
             <button (click)="mobileOpen = !mobileOpen"
-                    class="md:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    class="md:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
               <svg lucideMenu class="w-6 h-6"></svg>
             </button>
           </div>
@@ -270,19 +270,19 @@
           <div class="md:hidden pb-4 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
             @if (auth.isAuthenticated()) {
               <a routerLink="/members" (click)="mobileOpen=false"
-                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                 Leden
               </a>
 
               <a routerLink="/activiteiten" (click)="mobileOpen=false"
-                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                 Activiteiten
               </a>
             }
 
             @if (auth.isAuthenticated()) {
               <a routerLink="/berichten" (click)="mobileOpen=false"
-                 class="flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                 class="flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                 <span>Berichten</span>
                 @if (berichten.unreadCount() > 0) {
                   <span class="inline-flex items-center justify-center min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-scuba-600 text-white text-[0.6rem] font-bold leading-none">
@@ -297,7 +297,7 @@
               <div data-admin-menu>
                 <!-- Toggle button -->
                 <button (click)="toggleAdminMenu()"
-                  class="w-full flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  class="w-full flex items-center justify-between px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors">
                   <span class="font-medium">Beheer</span>
                   <svg lucideChevronDown class="w-4 h-4 transition-transform" [class.rotate-180]="adminMenuOpen()"></svg>
                 </button>
@@ -306,36 +306,36 @@
                 @if (adminMenuOpen()) {
                   <div class="pl-4 space-y-1">
                     <a routerLink="/activiteiten/beheer" (click)="closeAdminMenu()"
-                      class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                      class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                       Activiteiten
                     </a>
                     <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
                       <a routerLink="/admin/members" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                         Ledenbeheer
                       </a>
                     </ng-container>
                     <ng-container *ngIf="auth.hasAnyRole(['Beheer', 'Bestuur'])">
                       <a routerLink="/admin/groepen" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                         Groepenbeheer
                       </a>
                     </ng-container>
                     <ng-container *ngIf="auth.hasAnyRole(['Beheer'])">
                       <a routerLink="/admin/roles" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                          Gebruikersbeheer
                       </a>
                     </ng-container>
                     <ng-container *ngIf="auth.hasAnyRole(['InstructieKader', 'Bestuur', 'Beheer'])">
                       <a routerLink="/admin/brevet-types" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                         Brevet types
                       </a>
                     </ng-container>
                     <ng-container *ngIf="auth.hasAnyRole(['MateriaalCommissie', 'Bestuur', 'Beheer'])">
                       <a routerLink="/admin/materialen" (click)="closeAdminMenu()"
-                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        class="block px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                         Materiaal
                       </a>
                     </ng-container>
@@ -345,11 +345,11 @@
             }
 
             <a routerLink="/profile" (click)="mobileOpen=false"
-               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+               class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
               Mijn profiel
             </a>
             <button (click)="openChangelog(); mobileOpen=false"
-                    class="flex items-center gap-2 w-full px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-left">
+                    class="flex items-center gap-2 w-full px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 text-left">
               <svg lucideFileText class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
               Wat is er nieuw?
             </button>

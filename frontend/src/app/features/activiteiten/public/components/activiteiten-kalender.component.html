@@ -11,9 +11,9 @@
   <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
 
     <!-- Dag-headers -->
-    <div class="grid grid-cols-7 bg-gray-50 dark:bg-gray-800">
+    <div class="grid grid-cols-7 bg-scuba-50 dark:bg-scuba-900/20">
       @for (dag of dagNamen; track dag) {
-        <div class="py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">{{ dag }}</div>
+        <div class="py-2 text-center text-xs font-medium text-scuba-700 dark:text-scuba-300">{{ dag }}</div>
       }
     </div>
 
@@ -21,7 +21,7 @@
     <div class="grid grid-cols-7 divide-x divide-y divide-gray-100 dark:divide-gray-700">
       @for (dag of kalenderDagen(); track $index) {
         @if (dag === null) {
-          <div class="h-14 bg-gray-50 dark:bg-gray-800/50"></div>
+          <div class="h-14 bg-scuba-50/50 dark:bg-scuba-900/10"></div>
         } @else {
           <button
             type="button"

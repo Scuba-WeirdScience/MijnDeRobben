@@ -40,8 +40,8 @@ export interface LookupTypeConfig {
 const _TW_SAFELIST = [
   'px-3', 'py-1.5', 'rounded-full', 'text-sm', 'font-medium',
   'bg-scuba-600', 'text-white', 'transition-colors',
-  'bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300',
-  'hover:bg-gray-200', 'dark:hover:bg-gray-600',
+  'bg-scuba-100', 'dark:bg-scuba-900/20', 'text-scuba-700', 'dark:text-scuba-300',
+  'hover:bg-scuba-200', 'dark:hover:bg-scuba-800/30',
 ];
 
 @Component({
@@ -106,7 +106,7 @@ export class LookupTypeManagementComponent implements OnInit {
     const active = this.selectedOrg() === org;
     return active
       ? 'px-3 py-1.5 rounded-full text-sm font-medium bg-scuba-600 text-white transition-colors'
-      : 'px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors';
+      : 'px-3 py-1.5 rounded-full text-sm font-medium bg-scuba-100 dark:bg-scuba-900/20 text-scuba-700 dark:text-scuba-300 hover:bg-scuba-200 dark:hover:bg-scuba-800/30 transition-colors';
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

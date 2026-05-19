@@ -173,6 +173,6 @@ export class MemberFormComponent implements OnInit {
     const active = this.activeTab() === tab;
     return active
       ? 'px-5 py-3 text-sm font-semibold text-scuba-600 dark:text-scuba-400 border-b-2 border-scuba-600 dark:border-scuba-400 -mb-px transition-colors'
-      : 'px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 border-b-2 border-transparent -mb-px transition-colors';
+      : 'px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-scuba-600 dark:hover:text-scuba-400 border-b-2 border-transparent -mb-px transition-colors';
   }
 }

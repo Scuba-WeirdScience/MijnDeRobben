@@ -8,9 +8,9 @@ const _TW_SAFELIST = [
   'focus:ring-scuba-500', 'focus:ring-red-500',
   'py-1.5', 'py-2.5', 'gap-1.5',
   'disabled:opacity-50', 'disabled:cursor-not-allowed',
-  'hover:bg-scuba-700', 'hover:bg-scuba-50', 'hover:bg-red-700', 'hover:bg-gray-50',
+  'hover:bg-scuba-700', 'hover:bg-scuba-50', 'hover:bg-red-700',
   'dark:bg-scuba-600', 'dark:hover:bg-scuba-500', 'dark:bg-scuba-900/20',
-  'dark:text-scuba-400', 'dark:hover:bg-gray-700', 'dark:hover:bg-red-600',
+  'dark:text-scuba-400', 'dark:hover:bg-scuba-900/20', 'dark:hover:bg-red-600',
   'dark:bg-red-700', 'text-scuba-600', 'bg-scuba-600',
 ];
 
@@ -37,7 +37,7 @@ export class ButtonComponent {
     };
     const variants: Record<string, string> = {
       primary:   'bg-scuba-600 text-white hover:bg-scuba-700 focus:ring-scuba-500 dark:bg-scuba-600 dark:hover:bg-scuba-500',
-      secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-scuba-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700',
+      secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-scuba-50 focus:ring-scuba-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-scuba-900/20',
       danger:    'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-600',
       ghost:     'bg-transparent text-scuba-600 hover:bg-scuba-50 focus:ring-scuba-500 dark:text-scuba-400 dark:hover:bg-scuba-900/20',
     };
