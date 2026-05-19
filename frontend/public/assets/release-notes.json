@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.7.0",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Kies uit 5 accentkleuren via het palet-icoontje in de navigatiebalk."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.3",
     "date": "2026-05-18",
     "sections": [
