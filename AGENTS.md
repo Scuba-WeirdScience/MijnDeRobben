@@ -365,3 +365,16 @@ Use the `gh-worktree` skill to start work on a GitHub Issue:
 3. Implement, then push: `git push -u origin feature/[issue-number]-[sanitized-title]`
 4. Open a PR: `gh pr create --title "..." --body "Closes #[issue-number]"`
 5. PR requires: `build-frontend` + `build-functions` checks passing + 1 approval
+
+### One PR per logical change — CRITICAL
+
+**Every distinct change must be its own PR.** Never add unrelated commits to an open branch.
+
+- If you are working on feature A and realise a fix or improvement B is also needed, stop — commit A, open PR for A, then start a fresh branch for B.
+- If a commit was accidentally added to the wrong branch, cherry-pick it to a new branch, revert it from the original branch, and open a separate PR.
+- "Logical change" means one cohesive unit: one bug fix, one feature, one refactor, one CI/docs update. When in doubt, split.
+
+This rule exists because:
+- PRs that were already approved or merged cannot retroactively include new commits
+- Commits pushed after a PR is merged are silently orphaned and never land in `main`
+- Reviewers approve what they see — surprise commits after approval undermine that
