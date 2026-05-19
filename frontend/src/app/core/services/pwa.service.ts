@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, interval } from 'rxjs';
+import { ThemeService } from './theme.service';
 
 /** Poll for SW updates every 2 minutes */
 const UPDATE_POLL_INTERVAL_MS = 2 * 60 * 1000;
@@ -30,6 +31,7 @@ export class PwaService {
   private readonly swUpdate = inject(SwUpdate);
   private readonly destroyRef = inject(DestroyRef);
   private readonly http = inject(HttpClient);
+  private readonly theme = inject(ThemeService);
 
   /** True when NGSW has detected a new version ready to activate */
   readonly updateAvailable = signal(false);
@@ -139,7 +141,13 @@ export class PwaService {
           const entry = entries.find((e) => e.version === currentVersion) ?? null;
           if (entry) {
             this.releaseNotes.set(entry);
-            this.showReleaseNotes.set(true);
+            // Only show the dialog if the user has not disabled it
+            if (this.theme.showChangelogUponNewVersion()) {
+              this.showReleaseNotes.set(true);
+            } else {
+              // Silently mark as seen — user opted out of the dialog
+              localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
+            }
           } else {
             // No notes for this version — silently mark as seen
             localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
