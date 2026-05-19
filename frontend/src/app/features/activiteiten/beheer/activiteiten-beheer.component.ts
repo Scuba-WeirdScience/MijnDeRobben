@@ -115,18 +115,14 @@ export class ActiviteitenBeheerComponent implements OnInit {
       startWith(null),
     ).subscribe(() => {
       const id = this.route.firstChild?.snapshot.params['activiteitId'];
-      if (id) {
-        // Wait for the list to be populated before selecting
-        const trySelect = () => {
-          const found = this.activiteiten().find(a => a.id === id);
-          if (found) {
-            this.selectActiviteit(found);
-          }
-        };
-        // If list already loaded, select immediately; else it will be picked up
-        // by the loadAll() subscription which calls trySelect after setting activiteiten.
-        trySelect();
-        this._pendingSelectId = id;
+      if (id && id !== this.selectedActiviteit()?.id) {
+        // If list already loaded, select immediately; else defer to loadAll().
+        const found = this.activiteiten().find(a => a.id === id);
+        if (found) {
+          this.selectActiviteit(found);
+        } else {
+          this._pendingSelectId = id;
+        }
       }
     });
   }
