@@ -37,10 +37,19 @@ export class ActiviteitenDetailPageComponent implements OnInit {
 
   readonly resetting = signal(false);
   readonly confirmReset = signal(false);
+  readonly loadingRegistraties = signal(false);
 
   readonly isAdminOfOrganisator = computed(() =>
     this.auth.hasAnyRole(['Beheer', 'Bestuur'])
   );
+
+  readonly registratiesZichtbaar = computed(() => {
+    const occ = this.occurrence();
+    if (!occ || !this.auth.isAuthenticated()) return false;
+    const zichtbaar = occ.registratiesZichtbaar;
+    if (zichtbaar === 'beheer') return this.isAdminOfOrganisator();
+    return true; // 'iedereen' | 'aangemeld'
+  });
 
   readonly occurrence = computed((): ResolvedOccurrence | null => {
     const a = this.activiteit();
@@ -78,6 +87,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 error: () => {},
               });
+              this.loadRegistraties(id);
             }
           },
           error: () => this.loading.set(false),
@@ -104,10 +114,26 @@ export class ActiviteitenDetailPageComponent implements OnInit {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
+    this.loadRegistraties(id);
   }
 
   onGeannuleerd(): void {
     this.mijnRegistratie.set(null);
+    const id = this.activiteit()?.id;
+    if (id) this.loadRegistraties(id);
+  }
+
+  private loadRegistraties(activiteitId: string): void {
+    const resolvedDatum = this.occurrence()?.occurrenceDatum;
+    if (!resolvedDatum) return;
+    this.loadingRegistraties.set(true);
+    this.service.getRegistraties(activiteitId, resolvedDatum).subscribe({
+      next: list => {
+        this.registraties.set(list.filter(r => r.status === 'aangemeld'));
+        this.loadingRegistraties.set(false);
+      },
+      error: () => this.loadingRegistraties.set(false),
+    });
   }
 
   resetInschrijvingenConfirmed(): void {
