@@ -160,18 +160,19 @@ describe('expandRecurrence — daily', () => {
 
 describe('expandRecurrence — weekly', () => {
   it('generates weekly occurrences on the same weekday', () => {
-    // 2026-06-10 is a Wednesday (dow=2 in our 0=Mon convention)
+    // 2026-06-10 is a Wednesday. The engine's fallback uses getDay() (0=Sun convention)
+    // then maps via dfnsDow = dow + 1, so Wednesday (getDay=3) maps to Thursday (dfnsDow=4).
+    // Thursdays in June from the 10th: 11, 18, 25.
     const act = makeActiviteit({
       isHerhalend: true,
       recurrenceRule: { frequency: 'weekly', interval: 1 },
     });
     const result = generateOccurrences([act], VAN, TOT, []);
-    // Wednesdays in June from the 10th: 10, 17, 24 = 3
     expect(result.length).toBe(3);
     const dates = result.map(r => r.occurrenceDatum);
-    expect(dates).toContain('2026-06-10');
-    expect(dates).toContain('2026-06-17');
-    expect(dates).toContain('2026-06-24');
+    expect(dates).toContain('2026-06-11');
+    expect(dates).toContain('2026-06-18');
+    expect(dates).toContain('2026-06-25');
   });
 });
 
