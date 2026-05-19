@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { VerzorgerContextService } from '../../core/services/verzorger-context.service';
 import { MemberService, Member } from '../members/services/member.service';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-profile',
@@ -20,6 +21,7 @@ export class ProfileComponent implements OnInit {
   private readonly avatarState = inject(AvatarStateService);
   readonly auth = inject(AuthService);
   readonly verzorgerCtx = inject(VerzorgerContextService);
+  readonly theme = inject(ThemeService);
 
   readonly loading = signal(true);
   readonly uploading = signal(false);

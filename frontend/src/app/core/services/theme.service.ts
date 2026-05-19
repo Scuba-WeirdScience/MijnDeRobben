@@ -15,10 +15,13 @@ export const COLOR_SCHEMES: { value: ColorScheme; label: string; accent: string 
 interface UserSettings {
   theme?: ThemeOption;
   colorScheme?: ColorScheme;
+  /** When false: suppress the automatic changelog dialog on new version (default: true) */
+  showChangelogUponNewVersion?: boolean;
 }
 
 const LS_KEY_THEME = 'theme';
 const LS_KEY_SCHEME = 'colorScheme';
+const LS_KEY_CHANGELOG = 'showChangelogUponNewVersion';
 const DEFAULT_SCHEME: ColorScheme = 'ocean';
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +34,9 @@ export class ThemeService {
 
   /** The chosen colour scheme */
   readonly colorScheme = signal<ColorScheme>(this._loadInitialScheme());
+
+  /** When false, the changelog dialog is suppressed on new-version boot (default: true) */
+  readonly showChangelogUponNewVersion = signal<boolean>(this._loadInitialChangelog());
 
   /** The accent hex for the current scheme — used for the swatch button in the navbar */
   readonly schemeAccentColor = computed(() =>
@@ -73,6 +79,12 @@ export class ThemeService {
     this._saveToFirestore({ colorScheme: s });
   }
 
+  setShowChangelogUponNewVersion(value: boolean): void {
+    this.showChangelogUponNewVersion.set(value);
+    localStorage.setItem(LS_KEY_CHANGELOG, String(value));
+    this._saveToFirestore({ showChangelogUponNewVersion: value });
+  }
+
   /** Called after login — loads the persisted settings from Firestore. */
   async loadFromFirestore(): Promise<void> {
     try {
@@ -82,6 +94,11 @@ export class ThemeService {
       }
       if (result?.colorScheme && result.colorScheme !== this.colorScheme()) {
         this.colorScheme.set(result.colorScheme);
+      }
+      if (result?.showChangelogUponNewVersion !== undefined &&
+          result.showChangelogUponNewVersion !== this.showChangelogUponNewVersion()) {
+        this.showChangelogUponNewVersion.set(result.showChangelogUponNewVersion);
+        localStorage.setItem(LS_KEY_CHANGELOG, String(result.showChangelogUponNewVersion));
       }
     } catch {
       // Not logged in or network error — stay with local value.
@@ -101,6 +118,12 @@ export class ThemeService {
     const saved = localStorage.getItem(LS_KEY_SCHEME) as ColorScheme | null;
     const valid: ColorScheme[] = COLOR_SCHEMES.map(s => s.value);
     return saved && valid.includes(saved) ? saved : DEFAULT_SCHEME;
+  }
+
+  private _loadInitialChangelog(): boolean {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem(LS_KEY_CHANGELOG);
+    return saved === null ? true : saved !== 'false';
   }
 
   private _resolve(t: ThemeOption): boolean {
