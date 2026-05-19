@@ -1,5 +1,9 @@
 # De Robben — Scuba Club Membership Management System
 
+[![Latest Release](https://img.shields.io/github/v/release/Scuba-WeirdScience/MijnDeRobben?label=release&color=blue)](https://github.com/Scuba-WeirdScience/MijnDeRobben/releases/latest)
+[![Deploy to Firebase](https://github.com/Scuba-WeirdScience/MijnDeRobben/actions/workflows/deploy.yml/badge.svg)](https://github.com/Scuba-WeirdScience/MijnDeRobben/actions/workflows/deploy.yml)
+[![Build check](https://github.com/Scuba-WeirdScience/MijnDeRobben/actions/workflows/build-check.yml/badge.svg)](https://github.com/Scuba-WeirdScience/MijnDeRobben/actions/workflows/build-check.yml)
+
 A full-stack membership management system for the De Robben scuba diving club, built on Firebase + Angular.
 
 ## Architecture
