@@ -146,6 +146,32 @@
         { "fieldPath": "authorUid", "order": "ASCENDING" },
         { "fieldPath": "updatedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "activiteitRegistraties",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "memberUid",      "order": "ASCENDING" },
+        { "fieldPath": "occurrenceDatum","order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activiteitRegistraties",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "activiteitId",   "order": "ASCENDING" },
+        { "fieldPath": "occurrenceDatum","order": "ASCENDING" },
+        { "fieldPath": "createdAt",      "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activiteitRegistraties",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "activiteitId",   "order": "ASCENDING" },
+        { "fieldPath": "occurrenceDatum","order": "ASCENDING" },
+        { "fieldPath": "status",         "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
