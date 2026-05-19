@@ -52,7 +52,7 @@ export const appConfig: ApplicationConfig = {
     provideSignalFormsConfig({ classes: {} }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
-      registrationStrategy: 'registerImmediately',
+      registrationStrategy: 'registerWhenStable:30000',
     }),
     {
       provide: APP_INITIALIZER,
