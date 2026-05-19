@@ -1,12 +1,24 @@
 [
   {
+    "version": "2.8.1",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "Inschrijving voor een activiteit bleef correct bewaard na het herladen van de pagina."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.8.0",
     "date": "2026-05-19",
     "sections": [
       {
         "heading": "Verbeterd",
         "items": [
-          "Thema en kleur kiezen kan nu vanuit één overzichtelijk menu — klik op het gekleurde bolletje rechtsboven"
+          "Thema en kleur kiezen kan nu vanuit één overzichtelijk menu — klik op het gekleurde bolletje rechtsboven."
         ]
       }
     ]
@@ -18,68 +30,33 @@
       {
         "heading": "Nieuw",
         "items": [
-          "Versienummer zichtbaar in de navigatiebalk en het gebruikersmenu"
-        ]
-      }
-    ]
-  },
-  {
-    "version": "2.6.4",
-    "date": "2026-05-19",
-    "sections": [
-      {
-        "heading": "Nieuw",
-        "items": [
-          "Clublogo nu zichtbaar als app-icoon bij installatie op telefoon of computer"
+          "App toont nu een melding wanneer er een update beschikbaar is."
         ]
       }
     ]
   },
   {
     "version": "2.6.3",
-    "date": "2026-05-18",
+    "date": "2026-05-17",
     "sections": [
       {
-        "heading": "Nieuw",
+        "heading": "Verbeterd",
         "items": [
-          "sync app-version meta tag with ngsw version"
-        ]
-      }
-    ]
-  },
-  {
-    "version": "2.6.2",
-    "date": "2026-05-18",
-    "sections": [
-      {
-        "heading": "Verbeteringen",
-        "items": [
-          "Verbeteringen en bugfixes."
-        ]
-      }
-    ]
-  },
-  {
-    "version": "2.6.1",
-    "date": "2026-05-18",
-    "sections": [
-      {
-        "heading": "Verbeteringen",
-        "items": [
-          "Verbeteringen en bugfixes."
+          "Versienummer zichtbaar in het navigatiemenu en gebruikersmenu.",
+          "Releasenotes zijn nu te bekijken via het menu."
         ]
       }
     ]
   },
   {
     "version": "2.6.0",
-    "date": "2026-05-18",
+    "date": "2026-05-16",
     "sections": [
       {
         "heading": "Nieuw",
         "items": [
-          "Kleurschema's: kies uit 5 accentkleuren via het palet-icoontje in de navigatiebalk.",
-          "Changelog: bekijk altijd de volledige versiegeschiedenis via 'Wat is er nieuw?' in het gebruikersmenu."
+          "Scuba kleurschema toegepast op de volledige interface.",
+          "Eigen clubkleuren en logo in de app."
         ]
       }
     ]

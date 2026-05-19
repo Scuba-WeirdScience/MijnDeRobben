@@ -5,11 +5,32 @@ Formaat gebaseerd op [Keep a Changelog](https://keepachangelog.com/nl/1.0.0/).
 
 ## [Unreleased]
 
-### Gewijzigd
-- Pakketbeheer migratie van npm naar pnpm (frontend en functions).
-- Alle afhankelijkheden bijgewerkt naar de laatste versies.
-- `functions/tsconfig.json`: `rootDir` expliciet ingesteld op `src` (vereist door TypeScript 6).
-- Ongebruikte eslint-devDependencies verwijderd uit `functions/`.
+## [2.8.1] - 2026-05-19
+
+### Opgelost
+- Inschrijving voor een activiteit bleef correct bewaard na het herladen van de pagina.
+
+## [2.8.0] - 2026-05-19
+
+### Verbeterd
+- Thema en kleur kiezen kan nu vanuit één overzichtelijk menu — klik op het gekleurde bolletje rechtsboven.
+
+## [2.7.0] - 2026-05-19
+
+### Nieuw
+- App toont nu een melding wanneer er een update beschikbaar is.
+
+## [2.6.3] - 2026-05-17
+
+### Verbeterd
+- Versienummer zichtbaar in het navigatiemenu en gebruikersmenu.
+- Releasenotes zijn nu te bekijken via het menu.
+
+## [2.6.0] - 2026-05-16
+
+### Nieuw
+- Scuba kleurschema toegepast op de volledige interface.
+- Eigen clubkleuren en logo in de app.
 
 ## [2.5.0] - 2026-05-15
 
@@ -21,3 +42,4 @@ Formaat gebaseerd op [Keep a Changelog](https://keepachangelog.com/nl/1.0.0/).
 ### Nieuw
 - Eerste versie van het materiaalbeheersysteem.
 - Uitleenregistratie voor duikmateriaal.
+
