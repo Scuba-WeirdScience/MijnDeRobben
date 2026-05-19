@@ -62,23 +62,28 @@ export class ActiviteitenDetailPageComponent implements OnInit {
           next: overrides => {
             this.overrides.set(overrides);
             this.loading.set(false);
+            // Load registratie after occurrence() is fully resolved so the
+            // datum match is reliable (occurrence depends on overrides).
+            if (this.auth.isAuthenticated()) {
+              this.service.getMijnRegistraties().subscribe({
+                next: list => {
+                  const resolvedDatum = this.occurrence()?.occurrenceDatum ?? datum;
+                  const occ = list.find(r =>
+                    r.activiteitId === id &&
+                    (!resolvedDatum || r.occurrenceDatum === resolvedDatum)
+                  );
+                  this.mijnRegistratie.set(occ ?? null);
+                },
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                error: () => {},
+              });
+            }
           },
           error: () => this.loading.set(false),
         });
       },
       error: () => this.loading.set(false),
     });
-
-    if (this.auth.isAuthenticated()) {
-      this.service.getMijnRegistraties().subscribe({
-        next: list => {
-          const occ = list.find(r => r.activiteitId === id && (!datum || r.occurrenceDatum === datum));
-          this.mijnRegistratie.set(occ ?? null);
-        },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        error: () => {},
-      });
-    }
   }
 
   onGeregistreerd(): void {
@@ -87,8 +92,11 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     if (!id) return;
     this.service.getMijnRegistraties().subscribe({
       next: list => {
-        const datum = this.occurrenceDatum();
-        const occ = list.find(r => r.activiteitId === id && (!datum || r.occurrenceDatum === datum));
+        const resolvedDatum = this.occurrence()?.occurrenceDatum ?? this.occurrenceDatum();
+        const occ = list.find(r =>
+          r.activiteitId === id &&
+          (!resolvedDatum || r.occurrenceDatum === resolvedDatum)
+        );
         this.mijnRegistratie.set(occ ?? null);
       },
       // eslint-disable-next-line @typescript-eslint/no-empty-function
