@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.9.1",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "Registraties worden nu correct getoond in het beheerscherm voor activiteiten waarvan de datum in het verleden ligt."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.9.0",
     "date": "2026-05-19",
     "sections": [

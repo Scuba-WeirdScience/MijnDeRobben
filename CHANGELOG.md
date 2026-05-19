@@ -5,6 +5,11 @@ Formaat gebaseerd op [Keep a Changelog](https://keepachangelog.com/nl/1.0.0/).
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-05-19
+
+### Opgelost
+- Registraties worden nu correct getoond in het beheerscherm voor activiteiten waarvan de datum in het verleden ligt.
+
 ## [2.9.0] - 2026-05-19
 
 ### Nieuw
