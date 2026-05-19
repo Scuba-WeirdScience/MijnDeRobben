@@ -43,3 +43,34 @@ jobs:
         run: npx -y firebase-tools@latest deploy --only hosting,functions --force
         env:
           FIREBASE_DEPLOY_AGENT: github-actions-${{ github.run_id }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Read top entry from release-notes.json
+          VERSION=$(node -e "const r=require('./frontend/public/assets/release-notes.json'); console.log(r[0].version)")
+          TAG="v${VERSION}"
+
+          # Skip if tag already exists
+          if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+            echo "Tag ${TAG} already exists — skipping release."
+            exit 0
+          fi
+
+          # Build release body from sections + items
+          BODY=$(node -e "
+            const r=require('./frontend/public/assets/release-notes.json')[0];
+            const lines=[];
+            for (const s of r.sections) {
+              lines.push('### ' + s.heading);
+              for (const i of s.items) lines.push('- ' + i);
+              lines.push('');
+            }
+            process.stdout.write(lines.join('\n'));
+          ")
+
+          gh release create "${TAG}" \
+            --title "${TAG}" \
+            --notes "${BODY}" \
+            --target main
