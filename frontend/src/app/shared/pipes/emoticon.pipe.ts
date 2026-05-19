@@ -25,7 +25,7 @@ const EMOTICON_MAP: [RegExp, string][] = [
   [/8-\)/g,  '😎'],
   [/O:-\)/g, '😇'],
   [/>:-\(/g, '😠'],
-  [/:'[\(\)]/g, '😢'],
+  [/:'[()]/g, '😢'],
 ];
 
 // ── Build a synchronous shortcode → native emoji map from @emoji-mart/data ──

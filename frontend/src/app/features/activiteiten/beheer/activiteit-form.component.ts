@@ -19,7 +19,6 @@ import { activiteitFormSchema, type ActiviteitForm } from '../../../shared/form-
 import { ActiviteitRecurrenceFormComponent } from './activiteit-recurrence-form.component';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { firestore } from '@fire';
-import { from } from 'rxjs';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [

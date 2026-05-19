@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { from, Observable } from 'rxjs';
 import { call } from '../../core/firebase/callable';
 import {
-  RecurrenceFrequency, RecurrenceRule, RegistratiesZichtbaar,
-  LocatieDoc, ActiviteitDoc, OccurrenceStatus,
+  RegistratiesZichtbaar,
+  LocatieDoc, ActiviteitDoc,
   ActiviteitOccurrenceDoc, ActiviteitRegistratieDoc
 } from '../../core/models/firestore-types';
 

@@ -3,7 +3,15 @@
   "version": "0.0.0",
   "packageManager": "pnpm@10.33.2",
   "pnpm": {
-    "onlyBuiltDependencies": ["@firebase/util", "@parcel/watcher", "esbuild", "lmdb", "msgpackr-extract", "protobufjs", "sharp"]
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "@parcel/watcher",
+      "esbuild",
+      "lmdb",
+      "msgpackr-extract",
+      "protobufjs",
+      "sharp"
+    ]
   },
   "scripts": {
     "ng": "ng",
@@ -17,7 +25,8 @@
     "e2e:headed": "playwright test --headed",
     "e2e:report": "playwright show-report",
     "generate:icons": "node scripts/generate-icons.mjs",
-    "generate:release-notes": "node --experimental-strip-types ../scripts/parse-changelog.ts"
+    "generate:release-notes": "node --experimental-strip-types ../scripts/parse-changelog.ts",
+    "lint": "ng lint"
   },
   "prettier": {
     "printWidth": 100,
@@ -56,14 +65,18 @@
     "zone.js": "~0.16.2"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "21.4.0",
     "@angular/build": "21.2.7",
     "@angular/cli": "21.2.7",
     "@angular/compiler-cli": "21.2.7",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/jasmine": "~6.0.0",
     "@types/qrcode": "^1.5.6",
+    "angular-eslint": "21.4.0",
+    "eslint": "^10.3.0",
     "jasmine-core": "~6.2.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
@@ -74,6 +87,7 @@
     "postcss": "^8.5.14",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "8.59.2"
   }
 }

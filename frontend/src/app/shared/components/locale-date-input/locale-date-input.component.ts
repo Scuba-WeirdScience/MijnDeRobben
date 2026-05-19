@@ -97,6 +97,7 @@ export class LocaleDateInputComponent {
   readonly valueChange = output<string>();
 
   /** Emits when the input loses focus (so parent can mark the field as touched). */
+  // eslint-disable-next-line @angular-eslint/no-output-native
   readonly blur = output<void>();
 
   readonly placeholder  = PLACEHOLDER;

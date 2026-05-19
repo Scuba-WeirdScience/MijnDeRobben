@@ -16,7 +16,6 @@ import {
   isValid,
   startOfDay,
   getDay,
-  getDate,
   setDay,
   startOfMonth,
   endOfMonth,

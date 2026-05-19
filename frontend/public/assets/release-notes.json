@@ -4,9 +4,9 @@
     "date": "2026-05-18",
     "sections": [
       {
-        "heading": "Nieuw",
+        "heading": "Verbeteringen",
         "items": [
-          "soft-fail if auto-merge not enabled in repo settings"
+          "Verbeteringen en bugfixes."
         ]
       }
     ]
@@ -16,9 +16,9 @@
     "date": "2026-05-18",
     "sections": [
       {
-        "heading": "Nieuw",
+        "heading": "Verbeteringen",
         "items": [
-          "fix YAML syntax error in release-notes workflow"
+          "Verbeteringen en bugfixes."
         ]
       }
     ]

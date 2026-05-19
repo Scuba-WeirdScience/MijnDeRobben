@@ -77,8 +77,8 @@ jobs:
                 .filter(Boolean);
             }
             if (items.length === 0) {
-              // Fall back to PR title, stripping conventional commit prefix
-              items = [merged.title.replace(/^(feat|fix|refactor|chore|docs|style|test|perf|ci|build|revert)(\([^)]*\))?[!]?:\s*/i, '')];
+              // Fall back to a generic user-facing message — PR titles are for developers, not users
+              items = ['Verbeteringen en bugfixes'];
             }
             core.setOutput('items', JSON.stringify(items));
 

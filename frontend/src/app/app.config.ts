@@ -19,11 +19,11 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { ThemeService } from './core/services/theme.service';
 import { PwaService } from './core/services/pwa.service';
 
-function initTheme(theme: ThemeService) {
+function initTheme(_theme: ThemeService) {
   return () => {};
 }
 
-function initPwa(pwa: PwaService) {
+function initPwa(_pwa: PwaService) {
   return () => {};
 }
 

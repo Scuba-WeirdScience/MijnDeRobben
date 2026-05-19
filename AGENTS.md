@@ -192,20 +192,36 @@ After merge, the bot will:
 
 ### Release notes content
 
-By default the PR title is used as the single bullet. To customise, add a section to the PR body:
+Release notes are **end-user facing** and displayed in the app. Write them in plain Dutch,
+as if explaining the change to a club member — not a developer. Avoid technical terms,
+file names, component names, and internal jargon.
+
+**Good:** "Verbeterde weergave van ledengegevens"  
+**Bad:** "Fixed null pointer in member-form.component when avatarUrl is null"
+
+If no `## Release notes` section is present in the PR body, the workflow falls back to a
+generic improvements message ("Verbeteringen en bugfixes"). **Do not rely on the PR title
+as release notes** — it is written for developers, not users.
+
+When the PR contains meaningful user-visible changes, add a section to the PR body:
 
 ```markdown
 ## Release notes
-- Eerste bullet
-- Tweede bullet
+- Eerste bullet in gewone taal
+- Tweede bullet in gewone taal
 ```
+
+For purely internal changes (CI, refactors, dependency bumps, migrations) that have no
+visible effect for users, omit the `## Release notes` section entirely — the generic
+fallback message is appropriate.
 
 ### PR flow for agents
 
 1. Create branch + PR as normal
 2. Add the appropriate `release:*` label to the PR
-3. Optionally add a `## Release notes` section to the PR body
-4. Merge — the bot handles everything else
+3. For user-visible changes: add a `## Release notes` section in plain Dutch
+4. For internal-only changes: omit the section (generic fallback applies)
+5. Merge — the bot handles everything else
 
 ---
 
