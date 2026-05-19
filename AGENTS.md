@@ -361,7 +361,10 @@ Use the `gh-worktree` skill to start work on a GitHub Issue:
 ### PR flow
 
 1. Create a GitHub Issue for the work item (if one doesn't exist)
-2. Run `gh-worktree` to create a worktree + branch
-3. Implement, then push: `git push -u origin feature/[issue-number]-[sanitized-title]`
-4. Open a PR: `gh pr create --title "..." --body "Closes #[issue-number]"`
-5. PR requires: `build-frontend` + `build-functions` checks passing + 1 approval
+2. Pull the latest `main`: `git checkout main && git pull origin main`
+3. Run `gh-worktree` to create a worktree + branch (it bases off the freshly pulled `main`)
+4. Implement, then push: `git push -u origin feature/[issue-number]-[sanitized-title]`
+5. Open a PR: `gh pr create --title "..." --body "Closes #[issue-number]"`
+6. PR requires: `build-frontend` + `build-functions` checks passing + 1 approval
+
+**Always start from the latest `main`.** Never branch off a stale local `main` or an existing feature branch. Branching off outdated code causes unnecessary merge conflicts and may include commits that have already been reverted or superseded.
