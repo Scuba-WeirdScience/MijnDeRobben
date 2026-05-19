@@ -25,17 +25,17 @@
       } @else {
         <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-100 dark:bg-gray-800">
+            <thead class="bg-scuba-50 dark:bg-scuba-900/20">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Omschrijving</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leden</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Naam</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Omschrijving</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Leden</th>
                 <th class="px-6 py-3 w-px whitespace-nowrap"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               @for (groep of filteredGroepen(); track groep.id) {
-                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <tr class="hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors">
                   <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                     {{ groep.name }}
                   </td>

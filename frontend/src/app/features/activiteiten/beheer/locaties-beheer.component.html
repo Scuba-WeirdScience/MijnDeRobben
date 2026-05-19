@@ -23,16 +23,16 @@
       } @else {
         <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-800 text-left">
+            <thead class="bg-scuba-50 dark:bg-scuba-900/20 text-left">
               <tr>
-                <th class="px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Naam</th>
-                <th class="px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Adres</th>
+                <th class="px-4 py-3 font-medium text-scuba-700 dark:text-scuba-300">Naam</th>
+                <th class="px-4 py-3 font-medium text-scuba-700 dark:text-scuba-300">Adres</th>
                 <th class="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
               @for (locatie of locaties(); track locatie.id) {
-                <tr class="bg-white dark:bg-gray-900">
+                <tr class="bg-white dark:bg-gray-900 hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors">
                   <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ locatie.naam }}</td>
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ locatie.adres ?? '—' }}</td>
                   <td class="px-4 py-3 text-right whitespace-nowrap">

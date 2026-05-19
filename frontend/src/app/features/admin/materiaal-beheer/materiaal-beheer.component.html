@@ -66,17 +66,17 @@
               } @else {
                 <div class="overflow-x-auto">
                   <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-100 dark:bg-gray-700">
+                    <thead class="bg-scuba-50 dark:bg-scuba-900/20">
                       <tr>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Materiaal</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lid</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uitgeleend op</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Materiaal</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Type</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Lid</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Uitgeleend op</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                       @for (l of openLeningen(); track l.id) {
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+                        <tr class="hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors">
                           <td class="px-5 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{{ l.materiaalNaam }}</td>
                           <td class="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">{{ l.materiaalTypeNaam }}</td>
                           <td class="px-5 py-3 text-sm text-gray-600 dark:text-gray-400">{{ l.memberNaam }}</td>
@@ -118,24 +118,24 @@
               } @else {
                 <div class="overflow-x-auto">
                   <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-100 dark:bg-gray-700">
+                    <thead class="bg-scuba-50 dark:bg-scuba-900/20">
                       <tr>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-10">
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider w-10">
                           <span title="Status">Status</span>
                         </th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Naam</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Serienummer</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Naam</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Serienummer</th>
                         @for (field of selectedType()!.customProperties; track field.key) {
-                          <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ field.label }}</th>
+                          <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">{{ field.label }}</th>
                         }
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aankoopdatum</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Notities</th>
-                        <th class="px-5 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acties</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Aankoopdatum</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Notities</th>
+                        <th class="px-5 py-3 text-right text-xs font-medium text-scuba-700 dark:text-scuba-300 uppercase tracking-wider">Acties</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                       @for (m of selectedType()!.materialen; track m.id) {
-                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-700/40 transition-colors">
+                        <tr class="hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors">
                           <td class="px-5 py-3 text-center">
                             @if (m.actief) {
                               <app-badge variant="info" [pulse]="true" size="sm">Uitgeleend</app-badge>
