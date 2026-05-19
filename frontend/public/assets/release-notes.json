@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.6.4",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Clublogo nu zichtbaar als app-icoon bij installatie op telefoon of computer"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.3",
     "date": "2026-05-18",
     "sections": [
