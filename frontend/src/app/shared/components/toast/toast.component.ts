@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { ToastService, Toast, ToastType } from './toast.service';
+import { ToastService, ToastType } from './toast.service';
 
 const TOAST_CLASSES: Record<ToastType, string> = {
   success: 'bg-green-600 text-white',

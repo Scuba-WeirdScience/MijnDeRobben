@@ -126,10 +126,38 @@
             ],
             "styles": [
               "src/styles.css"
+            ],
+            "browsers": [
+              "ChromeHeadless"
+            ],
+            "watch": false,
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/generated/**",
+              "src/app/app.ts",
+              "src/app/app.config.ts",
+              "src/app/app.routes.ts",
+              "src/main.ts",
+              "**/*.spec.ts"
+            ],
+            "karmaConfig": "karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
             ]
           }
         }
       }
     }
+  },
+  "cli": {
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }

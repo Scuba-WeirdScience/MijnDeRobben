@@ -1,23 +1,38 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { ServiceWorkerModule } from '@angular/service-worker';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [
+        App,
+        // Disable the service worker in tests
+        ServiceWorkerModule.register('', { enabled: false }),
+      ],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
   });
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render title', () => {
+  it('should have isFullscreen false on a non-berichten route', () => {
     const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+    expect(fixture.componentInstance.isFullscreen()).toBeFalse();
+  });
+
+  it('should have isNavigating false initially', () => {
+    const fixture = TestBed.createComponent(App);
+    expect(fixture.componentInstance.isNavigating()).toBeFalse();
   });
 });

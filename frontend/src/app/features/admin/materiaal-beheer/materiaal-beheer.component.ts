@@ -7,7 +7,6 @@ import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent, EmptyStateCo
 import {
   MateriaalTypeWithMaterialen,
   Materiaal,
-  CustomPropertyDef,
 } from '../../../../generated/api-schemas';
 import * as QRCode from 'qrcode';
 import { MateriaalTypeFormComponent } from './materiaal-type-form.component';

@@ -1,0 +1,6 @@
+cd frontend
+echo "▶ ng lint..."
+npx ng lint || { echo "✖ Lint failed — commit aborted."; exit 1; }
+
+echo "▶ ng test..."
+npx ng test --watch=false --browsers=ChromeHeadless || { echo "✖ Tests failed — commit aborted."; exit 1; }

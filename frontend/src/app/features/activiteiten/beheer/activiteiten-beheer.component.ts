@@ -5,7 +5,6 @@ import { ActivatedRoute, Router, NavigationEnd, RouterOutlet } from '@angular/ro
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { filter, startWith, map } from 'rxjs';
 import { addMonths, format, parseISO } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import {
   ButtonComponent,
   SpinnerComponent,
