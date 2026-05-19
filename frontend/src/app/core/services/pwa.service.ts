@@ -97,11 +97,13 @@ export class PwaService {
       });
 
     // Check after a short delay to ensure the SW is registered before calling
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     setTimeout(() => this.swUpdate.checkForUpdate().catch(() => {}), 2000);
 
     // Then keep polling every 2 minutes for long-running sessions
     interval(UPDATE_POLL_INTERVAL_MS)
       .pipe(takeUntilDestroyed(this.destroyRef))
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       .subscribe(() => this.swUpdate.checkForUpdate().catch(() => {}));
   }
 

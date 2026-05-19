@@ -202,6 +202,7 @@ export class MessageComposeComponent implements OnDestroy {
     try {
       const { SearchIndex } = await import('emoji-mart');
       const results = await SearchIndex.search(query);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const suggestions: EmojiSuggestion[] = (results ?? []).slice(0, 8).map((e: any) => ({
         id: e.id,
         native: e.skins[0].native,
@@ -226,6 +227,7 @@ export class MessageComposeComponent implements OnDestroy {
 
     this.quill.deleteText(deleteFrom, deleteCount, 'user');
     this.quill.insertText(deleteFrom, chosen.native, 'user');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.quill.setSelection(deleteFrom + (chosen.native.length as any), 0);
 
     this.clearEmojiSuggestions();

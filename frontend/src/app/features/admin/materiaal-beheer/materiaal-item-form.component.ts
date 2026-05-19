@@ -69,6 +69,7 @@ export class MateriaalItemFormComponent {
   // ── Lifecycle ───────────────────────────────────────────────────────────
   constructor() {
     // form() calls inject() internally — must be called in injection context (constructor)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.materiaalFormState = form<MateriaalForm>(this.formModel, materiaalFormSchema as any);
 
     // Watch input and populate form when materiaal changes

@@ -82,6 +82,7 @@ export class LookupTypeManagementComponent implements OnInit {
   readonly formState: FieldTree<LookupTypeForm>;
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.formState = form<LookupTypeForm>(this.formModel, lookupTypeFormSchema as any);
   }
 

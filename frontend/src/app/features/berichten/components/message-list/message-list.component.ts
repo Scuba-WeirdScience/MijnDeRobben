@@ -1,7 +1,7 @@
 import { Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesService, Message } from '../../services/messages.service';
 import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -98,7 +98,7 @@ export class MessageListComponent implements OnDestroy {
     this.observedMessageIds.clear();
   }
 
-  private _setupReadObserver(msgs: any[], threadId: string, groepId: string | null): void {
+  private _setupReadObserver(msgs: Message[], threadId: string, groepId: string | null): void {
     if (!groepId) return;
 
     // Create observer once (or reuse if already exists for this thread)
@@ -139,6 +139,7 @@ export class MessageListComponent implements OnDestroy {
     if (!hasUnreadFromOthers && msgs.length > 0) {
       const anyMsg = msgs.find(m => !m.deletedAt);
       if (anyMsg) {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         this.messagesService.markMessageRead(anyMsg.id, threadId, groepId).catch(() => {});
       }
     }
@@ -174,19 +175,19 @@ export class MessageListComponent implements OnDestroy {
     }
   }
 
-  isOwnMessage(message: any): boolean {
+  isOwnMessage(message: Message): boolean {
     return message.authorUid === this.auth.currentUser()?.uid;
   }
 
-  getReaderCount(message: any): number {
+  getReaderCount(message: Message): number {
     return this.messagesService.messageReaderCounts()[message.id] ?? 0;
   }
 
-  canDelete(message: any): boolean {
+  canDelete(message: Message): boolean {
     return this.isOwnMessage(message) || this.isAdmin();
   }
 
-  isRead(message: any): boolean {
+  isRead(message: Message): boolean {
     return this.messagesService.readMessageIds().has(message.id);
   }
 
@@ -194,7 +195,7 @@ export class MessageListComponent implements OnDestroy {
     return name ? name.charAt(0).toUpperCase() : '?';
   }
 
-  async togglePin(message: any): Promise<void> {
+  async togglePin(message: Message): Promise<void> {
     try {
       await this.auth.refreshUser();
       await this.messagesService.pinMessage(message.id);
@@ -203,7 +204,7 @@ export class MessageListComponent implements OnDestroy {
     }
   }
 
-  async deleteMessage(message: any): Promise<void> {
+  async deleteMessage(message: Message): Promise<void> {
     this.deletingId.set(message.id);
     try {
       await this.messagesService.deleteMessage(message.id);
@@ -240,7 +241,7 @@ export class MessageListComponent implements OnDestroy {
     }
   }
 
-  getReplyParent(message: any): any | null {
+  getReplyParent(message: Message): Message | null {
     if (!message.replyToId) return null;
     return this.messagesService.messages().find(m => m.id === message.replyToId) ?? null;
   }

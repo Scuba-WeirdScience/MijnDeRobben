@@ -161,7 +161,7 @@
 @if (threadToDelete() && !showActiviteitConfirm()) {
   <app-confirm-dialog
     [title]="'Thread verwijderen'"
-    [message]="'Weet je zeker dat je de thread \'' + threadToDelete().title + '\' en alle berichten wilt verwijderen?'"
+    [message]="'Weet je zeker dat je de thread \'' + threadToDelete()!.title + '\' en alle berichten wilt verwijderen?'"
     confirmLabel="Verwijderen"
     confirmVariant="danger"
     [loading]="deleting()"

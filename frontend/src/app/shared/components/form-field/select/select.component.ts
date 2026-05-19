@@ -38,5 +38,6 @@ export class SelectComponent {
   );
 
   onChange(e: Event): void { this.value.set((e.target as HTMLSelectElement).value); }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   onBlur(): void {}
 }

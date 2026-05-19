@@ -60,6 +60,7 @@ export class ActiviteitOccurrenceEditComponent {
   readonly formState: FieldTree<OccurrenceEditForm>;
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.formState = form<OccurrenceEditForm>(this.formModel, occurrenceEditFormSchema as any);
 
     effect(() => {

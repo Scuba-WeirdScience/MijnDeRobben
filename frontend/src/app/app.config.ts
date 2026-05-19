@@ -20,10 +20,12 @@ import { ThemeService } from './core/services/theme.service';
 import { PwaService } from './core/services/pwa.service';
 
 function initTheme(_theme: ThemeService) {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return () => {};
 }
 
 function initPwa(_pwa: PwaService) {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return () => {};
 }
 

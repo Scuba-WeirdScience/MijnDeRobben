@@ -161,10 +161,12 @@ export class ActiviteitenBeheerComponent implements OnInit {
     });
     this.service.getAllOccurrenceOverrides().subscribe({
       next: list => this.overrides.set(list),
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
     this.service.getLocaties().subscribe({
       next: list => this.locaties.set(list),
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
   }

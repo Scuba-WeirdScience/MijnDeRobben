@@ -35,7 +35,7 @@
             </div>
           </div>
           <!-- Actions -->
-          <div class="flex gap-3 mt-2 justify-end" (click)="$event.stopPropagation()">
+          <div class="flex gap-3 mt-2 justify-end" role="presentation" (click)="$event.stopPropagation()">
             <button (click)="publishThreadConcept(item.concept.id, $event)" class="text-xs text-scuba-600 dark:text-scuba-400 hover:underline">Publiceer</button>
             <button (click)="deleteThreadConcept(item.concept.id, $event)" class="text-xs text-red-500 hover:underline">Verwijder</button>
           </div>
@@ -56,7 +56,7 @@
             </div>
           </div>
           <!-- Actions -->
-          <div class="flex gap-3 mt-2 justify-end" (click)="$event.stopPropagation()">
+          <div class="flex gap-3 mt-2 justify-end" role="presentation" (click)="$event.stopPropagation()">
             <button (click)="publishMessageConcept(item.concept.id, $event)" class="text-xs text-scuba-600 dark:text-scuba-400 hover:underline">Publiceer</button>
             <button (click)="deleteMessageConcept(item.concept.id, $event)" class="text-xs text-red-500 hover:underline">Verwijder</button>
           </div>
