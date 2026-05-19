@@ -34,6 +34,9 @@ export const saveUserSettings = onCall({ region: REGION }, async (request) => {
   if (incoming.colorScheme !== undefined && !ALLOWED_SCHEMES.includes(incoming.colorScheme)) {
     throw new HttpsError('invalid-argument', 'Ongeldig kleurenschema.');
   }
+  if (incoming.showChangelogUponNewVersion !== undefined && typeof incoming.showChangelogUponNewVersion !== 'boolean') {
+    throw new HttpsError('invalid-argument', 'showChangelogUponNewVersion moet een boolean zijn.');
+  }
 
   const docRef = db.collection('users').doc(request.auth.uid);
   const snap = await docRef.get();

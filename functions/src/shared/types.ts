@@ -23,6 +23,8 @@ export interface UserDoc {
 export interface UserSettings {
   theme?: 'light' | 'dark' | 'system';
   colorScheme?: 'ocean' | 'forest' | 'sunset' | 'slate' | 'rose';
+  /** When false: suppress the automatic changelog dialog on new version (default: true) */
+  showChangelogUponNewVersion?: boolean;
 }
 
 export interface MemberDoc {
