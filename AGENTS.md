@@ -172,25 +172,42 @@ you must update ALL of these locations in the same change:**
 
 ## PWA deployment — CRITICAL
 
-**Do NOT manually bump `frontend/ngsw-config.json` or edit `frontend/src/assets/release-notes.json`.**
-The `release-notes.yml` workflow does this automatically on every merge to `main`.
+The version bump and release notes **must be committed in the PR branch** before merging.
+There is no post-merge bot. The deploy runs once on merge — whatever is in the branch is what gets deployed.
 
-### How it works
+### Version bump
 
-Add one of these labels to the PR before merging:
+Bump `appData.version` in `frontend/ngsw-config.json` and the `content` attribute in
+`frontend/src/index.html` (`<meta name="app-version">`). Use semver:
 
-| Label | Bump | Example |
-|-------|------|---------|
-| `release:patch` | Bug fixes (default) | `2.6.0` → `2.6.1` |
-| `release:minor` | New features | `2.6.0` → `2.7.0` |
-| `release:major` | Breaking changes | `2.6.0` → `3.0.0` |
+| Change type | Bump | Example |
+|-------------|------|---------|
+| Bug fixes / internal | patch | `2.6.0` → `2.6.1` |
+| New user-visible features | minor | `2.6.0` → `2.7.0` |
+| Breaking / major rework | major | `2.6.0` → `3.0.0` |
 
-After merge, the bot will:
-1. Bump `appData.version` in `ngsw-config.json`
-2. Prepend an entry to `release-notes.json`
-3. Commit back to `main` with `[skip release]` (triggering the deploy workflow)
+For purely internal changes (CI, refactors, dependency bumps) that have no visible effect
+for users, a version bump is optional — skip it if the PWA does not need to notify users.
 
-### Release notes content
+### Release notes
+
+Prepend an entry to `frontend/public/assets/release-notes.json`:
+
+```json
+{
+  "version": "2.6.1",
+  "date": "2026-05-19",
+  "sections": [
+    {
+      "heading": "Nieuw",
+      "items": [
+        "Eerste bullet in gewone taal",
+        "Tweede bullet in gewone taal"
+      ]
+    }
+  ]
+}
+```
 
 Release notes are **end-user facing** and displayed in the app. Write them in plain Dutch,
 as if explaining the change to a club member — not a developer. Avoid technical terms,
@@ -199,29 +216,12 @@ file names, component names, and internal jargon.
 **Good:** "Verbeterde weergave van ledengegevens"  
 **Bad:** "Fixed null pointer in member-form.component when avatarUrl is null"
 
-If no `## Release notes` section is present in the PR body, the workflow falls back to a
-generic improvements message ("Verbeteringen en bugfixes"). **Do not rely on the PR title
-as release notes** — it is written for developers, not users.
-
-When the PR contains meaningful user-visible changes, add a section to the PR body:
-
-```markdown
-## Release notes
-- Eerste bullet in gewone taal
-- Tweede bullet in gewone taal
-```
-
-For purely internal changes (CI, refactors, dependency bumps, migrations) that have no
-visible effect for users, omit the `## Release notes` section entirely — the generic
-fallback message is appropriate.
-
 ### PR flow for agents
 
 1. Create branch + PR as normal
-2. Add the appropriate `release:*` label to the PR
-3. For user-visible changes: add a `## Release notes` section in plain Dutch
-4. For internal-only changes: omit the section (generic fallback applies)
-5. Merge — the bot handles everything else
+2. Bump version in `ngsw-config.json` and `index.html`
+3. Prepend entry to `release-notes.json` (plain Dutch, end-user language)
+4. Merge — the deploy runs automatically on merge to `main`
 
 ---
 
