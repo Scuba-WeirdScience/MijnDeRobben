@@ -33,5 +33,6 @@ export class TextareaComponent {
   );
 
   onInput(e: Event): void { this.value.set((e.target as HTMLTextAreaElement).value); }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   onBlur(): void {}
 }

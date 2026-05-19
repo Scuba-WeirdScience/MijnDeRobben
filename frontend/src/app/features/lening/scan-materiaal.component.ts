@@ -63,6 +63,7 @@ export class ScanMateriaalComponent implements OnInit {
         this.taking.set(false);
         this.loadStatus();
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: (err: any) => {
         this.error.set(err?.error?.error || 'Lenen mislukt. Probeer opnieuw.');
         this.taking.set(false);
@@ -86,6 +87,7 @@ export class ScanMateriaalComponent implements OnInit {
         this.returnNotities = '';
         this.loadStatus();
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: (err: any) => {
         this.error.set(err?.error?.error || 'Retournneren mislukt. Probeer opnieuw.');
         this.returning.set(false);

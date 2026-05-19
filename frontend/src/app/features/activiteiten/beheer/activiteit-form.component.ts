@@ -152,6 +152,7 @@ export class ActiviteitFormComponent {
   }
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.formState = form<ActiviteitForm>(this.formModel, activiteitFormSchema as any);
 
     // Laad alle threads voor alle groepen eenmalig

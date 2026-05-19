@@ -75,6 +75,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
           const occ = list.find(r => r.activiteitId === id && (!datum || r.occurrenceDatum === datum));
           this.mijnRegistratie.set(occ ?? null);
         },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         error: () => {},
       });
     }
@@ -90,6 +91,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
         const occ = list.find(r => r.activiteitId === id && (!datum || r.occurrenceDatum === datum));
         this.mijnRegistratie.set(occ ?? null);
       },
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
   }

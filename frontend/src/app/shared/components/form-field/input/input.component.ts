@@ -47,5 +47,6 @@ export class InputComponent {
   );
 
   onInput(e: Event): void { this.value.set((e.target as HTMLInputElement).value); }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   onBlur(): void {}
 }

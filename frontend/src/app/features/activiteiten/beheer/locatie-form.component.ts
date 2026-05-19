@@ -42,6 +42,7 @@ export class LocatieFormComponent {
   }
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.formState = form<LocatieForm>(this.formModel, locatieFormSchema as any);
 
     effect(() => {

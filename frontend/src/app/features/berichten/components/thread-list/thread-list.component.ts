@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GroepenService } from '../../services/groepen.service';
-import { ThreadsService, ThreadConcept } from '../../services/threads.service';
+import { ThreadsService, ThreadConcept, Thread } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePlus, LucideHash, LucidePin, LucideTrash2, LucideFileText } from '../../../../shared/lucide-icons';
@@ -42,7 +42,7 @@ export class ThreadListComponent {
     this.auth.hasAnyRole(['Beheer', 'Bestuur'])
   );
 
-  canDeleteThread(thread: any): boolean {
+  canDeleteThread(thread: Thread): boolean {
     return this.isAdmin() || thread.authorUid === this.auth.currentUser()?.uid;
   }
 
@@ -58,7 +58,7 @@ export class ThreadListComponent {
 
   // ── Delete-thread confirmation state ──────────────────────────────────────
   /** Thread pending confirmation — opens the first dialog */
-  threadToDelete = signal<any | null>(null);
+  threadToDelete = signal<Thread | null>(null);
   /** Linked activiteit found for the thread pending deletion (null = none) */
   linkedActiviteit = signal<ActiviteitDoc | null>(null);
   /** After thread is confirmed: ask whether to also delete the activiteit */
@@ -84,7 +84,7 @@ export class ThreadListComponent {
     this.threadSelected.emit(threadId);
   }
 
-  getThreadUnread(thread: any): number {
+  getThreadUnread(thread: Thread): number {
     const uid = this.auth.currentUser()?.uid;
     if (!uid) return 0;
     return thread.unreadPerUser?.[uid] ?? 0;
@@ -192,7 +192,7 @@ export class ThreadListComponent {
   // ── Delete thread flow ─────────────────────────────────────────────────────
 
   /** Step 1: user clicks the trash icon — look up linked activiteit, open first dialog. */
-  initiateDeleteThread(thread: any): void {
+  initiateDeleteThread(thread: Thread): void {
     this.threadToDelete.set(thread);
     this.linkedActiviteit.set(null);
     // Look up linked activiteit in the background; dialog is already open
