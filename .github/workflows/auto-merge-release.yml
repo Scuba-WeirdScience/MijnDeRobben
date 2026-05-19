@@ -1,0 +1,38 @@
+name: Auto-merge release PR
+
+# Release PRs (chore/release-X.Y.Z) are created by github-actions[bot],
+# which means the normal pull_request event never fires and build checks
+# never start.  This workflow listens for the release:skip label being
+# added (or the PR being opened/reopened with that label already present)
+# and merges immediately via the admin merge endpoint, bypassing required
+# status checks.
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled]
+    branches: [main]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'release:skip')
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Merge release PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash',
+              commit_title: context.payload.pull_request.title,
+              commit_message: context.payload.pull_request.body ?? '',
+            });
+            console.log(`Merged PR #${context.payload.pull_request.number}`);

@@ -26,8 +26,8 @@ export class ThemeService {
   /** The user's explicit light/dark/system choice */
   readonly theme = signal<ThemeOption>(this._loadInitialTheme());
 
-  /** Resolved dark flag */
-  readonly isDark = signal<boolean>(this._resolve(this._loadInitialTheme()));
+  /** Resolved dark flag — derived from theme so it updates synchronously */
+  readonly isDark = computed(() => this._resolve(this.theme()));
 
   /** The chosen colour scheme */
   readonly colorScheme = signal<ColorScheme>(this._loadInitialScheme());
@@ -46,7 +46,6 @@ export class ThemeService {
     effect(() => {
       const t = this.theme();
       localStorage.setItem(LS_KEY_THEME, t);
-      this.isDark.set(this._resolve(t));
       document.documentElement.classList.toggle('dark', this.isDark());
     });
 
@@ -59,7 +58,6 @@ export class ThemeService {
     // Listen for OS-level dark mode changes (relevant when theme === 'system').
     this._mediaQuery.addEventListener('change', () => {
       if (this.theme() === 'system') {
-        this.isDark.set(this._mediaQuery.matches);
         document.documentElement.classList.toggle('dark', this._mediaQuery.matches);
       }
     });
