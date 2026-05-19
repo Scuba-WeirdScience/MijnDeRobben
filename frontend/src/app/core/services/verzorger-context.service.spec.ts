@@ -10,12 +10,13 @@ const mockMember = (id: string): Member => ({
   lastName: 'Lid',
   dateOfBirth: '2010-01-01',
   joinDate: '2020-01-01',
-  isActive: true,
-  roles: ['Lid'],
   endOfMembership: null,
-  kinderenIds: [],
-  verzorgerIds: [],
+  isActive: true,
+  isValidated: true,
   avatarUrl: null,
+  verzorgerIds: [],
+  createdAt: '2020-01-01T00:00:00Z',
+  updatedAt: null,
 });
 
 describe('VerzorgerContextService', () => {

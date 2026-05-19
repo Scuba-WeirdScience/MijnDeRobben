@@ -1,4 +1,4 @@
-import { generateOccurrences, expandRecurrence } from './recurrence';
+import { generateOccurrences } from './recurrence';
 import { ActiviteitDoc, ActiviteitOccurrenceDoc } from './activiteiten.service';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ function makeActiviteit(overrides: Partial<ActiviteitDoc> = {}): ActiviteitDoc {
     organisatorGroepId: null,
     inschrijvingenActief: false,
     maxDeelnemers: null,
-    registratiesZichtbaar: 'niemand',
+    registratiesZichtbaar: 'iedereen',
     gasten: false,
     maxGastenPerInschrijving: null,
     gastKosten: null,
