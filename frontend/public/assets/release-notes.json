@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.7.0",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Versienummer zichtbaar in de navigatiebalk en het gebruikersmenu"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.4",
     "date": "2026-05-19",
     "sections": [

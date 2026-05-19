@@ -22,6 +22,9 @@
             <span class="font-bold text-lg text-scuba-900 dark:text-scuba-100 hidden sm:block">
               Duikclub De Robben
             </span>
+            @if (pwa.appVersion) {
+              <span class="text-xs text-gray-400 dark:text-gray-500 font-mono hidden sm:block">v{{ pwa.appVersion }}</span>
+            }
           </div>
 
           <!-- Desktop nav links -->
@@ -217,6 +220,9 @@
                       <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {{ auth.currentUser()?.email }}
                       </p>
+                      @if (pwa.appVersion) {
+                        <p class="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">v{{ pwa.appVersion }}</p>
+                      }
                     </div>
                     <!-- Menu items -->
                     <div class="py-1">
@@ -353,6 +359,9 @@
               <svg lucideFileText class="w-4 h-4 text-gray-400 dark:text-gray-500"></svg>
               Wat is er nieuw?
             </button>
+            @if (pwa.appVersion) {
+              <p class="px-3 pt-1 text-xs text-gray-400 dark:text-gray-500 font-mono">v{{ pwa.appVersion }}</p>
+            }
           </div>
         }
       </div>

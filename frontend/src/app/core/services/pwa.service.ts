@@ -49,6 +49,10 @@ export class PwaService {
     return window.matchMedia('(display-mode: standalone)').matches;
   }
 
+  /** Current app version read from the meta tag injected by the build */
+  readonly appVersion: string =
+    document.querySelector<HTMLMetaElement>('meta[name="app-version"]')?.content ?? '';
+
   /**
    * Release notes for the current version, if available and not yet seen.
    * Non-null triggers the release notes dialog.
