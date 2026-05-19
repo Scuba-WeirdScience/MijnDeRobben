@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.6.5",
+    "date": "2026-05-19",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Verbeteringen en bugfixes"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.6.4",
     "date": "2026-05-19",
     "sections": [
