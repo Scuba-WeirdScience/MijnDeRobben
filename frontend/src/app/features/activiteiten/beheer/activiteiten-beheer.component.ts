@@ -120,10 +120,7 @@ export class ActiviteitenBeheerComponent implements OnInit {
         const trySelect = () => {
           const found = this.activiteiten().find(a => a.id === id);
           if (found) {
-            this.selectedActiviteit.set(found);
-            this.selectedOccurrenceDatum.set(null);
-            this.registraties.set([]);
-            this.mobileView.set('detail');
+            this.selectActiviteit(found);
           }
         };
         // If list already loaded, select immediately; else it will be picked up
@@ -146,10 +143,7 @@ export class ActiviteitenBeheerComponent implements OnInit {
         if (this._pendingSelectId) {
           const found = this.activiteiten().find(a => a.id === this._pendingSelectId);
           if (found) {
-            this.selectedActiviteit.set(found);
-            this.selectedOccurrenceDatum.set(null);
-            this.registraties.set([]);
-            this.mobileView.set('detail');
+            this.selectActiviteit(found);
           }
           this._pendingSelectId = null;
         }
@@ -177,6 +171,23 @@ export class ActiviteitenBeheerComponent implements OnInit {
     this.registraties.set([]);
     this.mobileView.set('detail');
     this.router.navigate(['/activiteiten/beheer', a.id]);
+    // Voor niet-herhalende activiteiten: laad registraties direct, want er zijn
+    // geen aankomende occurrence-rijen om op te klikken als de datum in het verleden ligt.
+    if (!a.isHerhalend && a.inschrijvingenActief) {
+      const occurrenceDatum = a.startDatumTijd.substring(0, 10);
+      this.selectedOccurrenceDatum.set(occurrenceDatum);
+      this.loadingRegistraties.set(true);
+      this.service.getRegistraties(a.id, occurrenceDatum).subscribe({
+        next: list => {
+          this.registraties.set(list);
+          this.loadingRegistraties.set(false);
+        },
+        error: () => {
+          this.loadingRegistraties.set(false);
+          this.toast.error('Registraties konden niet worden geladen.');
+        },
+      });
+    }
   }
 
   selectOccurrence(occ: ResolvedOccurrence): void {
