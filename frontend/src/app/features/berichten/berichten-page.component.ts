@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { ActivatedRoute, Router, NavigationEnd, RouterOutlet } from '@angular/router';
-import { map, filter, startWith } from 'rxjs';
+import { map, filter, merge, of } from 'rxjs';
 import { MessagesService } from './services/messages.service';
 import { ThreadsService, ThreadConcept } from './services/threads.service';
 import { GroepenService } from './services/groepen.service';
@@ -112,14 +112,24 @@ export class BerichtenPageComponent {
     this.auth.refreshUser();
 
     // ── Sync route params → service signals ─────────────────────────────────
-    // After every navigation, read params from the active child route.
+    // Walk the full child route tree on every NavigationEnd.
+    // On a deep link the NavigationEnd fires before this component is created,
+    // so startWith(null) would read firstChild before it is populated.
+    // Using merge(of(null), ...) defers the initial read to a microtask so
+    // that Angular has finished activating child routes by the time we run.
     const childParams = toSignal(
-      this.router.events.pipe(
-        filter(e => e instanceof NavigationEnd),
-        startWith(null),
+      merge(
+        of(null),
+        this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+      ).pipe(
         map(() => {
-          const child = this.route.firstChild;
-          return child?.snapshot.params ?? {};
+          let route = this.route.firstChild;
+          const params: Record<string, string> = {};
+          while (route) {
+            Object.assign(params, route.snapshot.params);
+            route = route.firstChild;
+          }
+          return params;
         })
       ),
       { initialValue: {} }
