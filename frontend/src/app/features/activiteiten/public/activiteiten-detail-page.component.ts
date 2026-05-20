@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent } from '../../../shared/components/design-system';
 import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
@@ -9,6 +10,7 @@ import {
   ActiviteitDoc,
   ActiviteitOccurrenceDoc,
   ActiviteitRegistratieDoc,
+  LocatieDoc,
   ResolvedOccurrence,
   generateOccurrences,
 } from '../activiteiten.service';
@@ -25,6 +27,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(ActiviteitenService);
   private readonly memberService = inject(MemberService);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
 
@@ -34,6 +37,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   readonly mijnRegistratie = signal<ActiviteitRegistratieDoc | null>(null);
   readonly registraties = signal<ActiviteitRegistratieDoc[]>([]);
   readonly kinderen = signal<Member[]>([]);
+  readonly locatie = signal<LocatieDoc | null>(null);
 
   readonly occurrenceDatum = signal<string | null>(null);
 
@@ -44,6 +48,30 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   readonly isAdminOfOrganisator = computed(() =>
     this.auth.hasAnyRole(['Beheer', 'Bestuur'])
   );
+
+  /** Geeft de externe kaart-URL terug (opent Google Maps in nieuw tabblad). Prioriteit:
+   *  1. LocatieDoc.kaartLink (expliciet ingesteld door beheer)
+   *  2. Google Maps zoeklink op adres (als adres bekend)
+   *  3. Google Maps zoeklink op naam (als alleen naam bekend)
+   *  4. null (geen kaartknop tonen)
+   */
+  readonly kaartUrl = computed((): string | null => {
+    const loc = this.locatie();
+    if (loc?.kaartLink) return loc.kaartLink;
+    const zoekterm = loc?.adres || this.occurrence()?.locatieNaam || this.occurrence()?.locatieVrij;
+    if (zoekterm) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(zoekterm)}`;
+    return null;
+  });
+
+  /** Geeft de embed-URL terug voor de ingesloten kaart (Google Maps iframe). */
+  readonly kaartEmbedUrl = computed((): SafeResourceUrl | null => {
+    const loc = this.locatie();
+    const zoekterm = loc?.adres || this.occurrence()?.locatieNaam || this.occurrence()?.locatieVrij;
+    if (!zoekterm) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://maps.google.com/maps?q=${encodeURIComponent(zoekterm)}&output=embed`
+    );
+  });
 
   readonly registratiesZichtbaar = computed(() => {
     const occ = this.occurrence();
@@ -80,6 +108,14 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     this.service.getActiviteit(id).subscribe({
       next: a => {
         this.activiteit.set(a);
+        // Laad locatiedetails als de activiteit een gekoppelde locatie heeft
+        if (a.locatieId) {
+          this.service.getLocaties().subscribe({
+            next: locaties => this.locatie.set(locaties.find(l => l.id === a.locatieId) ?? null),
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            error: () => {},
+          });
+        }
         this.service.getOccurrenceOverrides(id).subscribe({
           next: overrides => {
             this.overrides.set(overrides);

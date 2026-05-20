@@ -6,19 +6,7 @@
       {
         "heading": "Nieuw",
         "items": [
-          "Als verzorger kan je nu ook je gekoppelde leden inschrijven voor activiteiten"
-        ]
-      }
-    ]
-  },
-  {
-    "version": "2.9.3",
-    "date": "2026-05-20",
-    "sections": [
-      {
-        "heading": "Verbeterd",
-        "items": [
-          "De activiteitenlijst toont enkel activiteiten van vandaag of later."
+          "De locatie van een activiteit toont nu een 'Bekijk op kaart' link die rechtstreeks naar Google Maps verwijst."
         ]
       }
     ]
