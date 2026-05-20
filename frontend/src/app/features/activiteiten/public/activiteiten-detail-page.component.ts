@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent } from '../../../shared/components/design-system';
 import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
@@ -26,6 +27,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(ActiviteitenService);
   private readonly memberService = inject(MemberService);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
 
@@ -59,6 +61,16 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const zoekterm = loc?.adres || this.occurrence()?.locatieNaam || this.occurrence()?.locatieVrij;
     if (zoekterm) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(zoekterm)}`;
     return null;
+  });
+
+  /** Geeft de embed-URL terug voor de ingesloten kaart (Google Maps iframe). */
+  readonly kaartEmbedUrl = computed((): SafeResourceUrl | null => {
+    const loc = this.locatie();
+    const zoekterm = loc?.adres || this.occurrence()?.locatieNaam || this.occurrence()?.locatieVrij;
+    if (!zoekterm) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://maps.google.com/maps?q=${encodeURIComponent(zoekterm)}&output=embed`
+    );
   });
 
   readonly registratiesZichtbaar = computed(() => {
