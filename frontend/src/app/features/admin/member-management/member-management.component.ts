@@ -8,7 +8,7 @@ import { FullNamePipe } from '../../../shared/pipes/full-name.pipe';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { MemberFormComponent } from './member-form/member-form.component';
 import { MemberDeleteDialogComponent } from './member-delete-dialog/member-delete-dialog.component';
-import { DatePipe } from '@angular/common';
+import { LocaleDatePipe } from '../../../shared/pipes/locale-date.pipe';
 import { PageContainerComponent } from '../../../shared/components/design-system';
 
 @Component({
@@ -22,7 +22,7 @@ import { PageContainerComponent } from '../../../shared/components/design-system
     MemberFormComponent,
     MemberDeleteDialogComponent,
     PageContainerComponent,
-    DatePipe
+    LocaleDatePipe
   ],
   templateUrl: './member-management.component.html',
 })

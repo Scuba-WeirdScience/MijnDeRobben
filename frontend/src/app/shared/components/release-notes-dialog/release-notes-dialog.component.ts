@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ButtonComponent } from '../button/button.component';
 import { PwaService } from '../../../core/services/pwa.service';
+import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 
 // In-file safelist so Tailwind scanner picks up dynamic classes — do NOT remove
 const _TW_SAFELIST = [
@@ -24,7 +25,7 @@ const _TW_SAFELIST = [
 @Component({
   selector: 'app-release-notes-dialog',
   standalone: true,
-  imports: [ButtonComponent],
+  imports: [ButtonComponent, LocaleDatePipe],
   templateUrl: './release-notes-dialog.component.html',
   host: { style: 'display: block' },
 })

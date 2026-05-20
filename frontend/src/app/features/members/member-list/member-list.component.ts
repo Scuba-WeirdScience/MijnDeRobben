@@ -1,11 +1,11 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { MemberService } from '../services/member.service';
 import { Member, PagedResult } from '../services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
+import { LocaleDatePipe } from '../../../shared/pipes/locale-date.pipe';
 import { UserDisplayComponent } from '../../../shared/components/user-display/user-display.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PageContainerComponent } from '../../../shared/components/design-system';
@@ -14,7 +14,7 @@ import { ADMIN_ROLES } from '../../../core/models/role.model';
 @Component({
   selector: 'app-member-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, SpinnerComponent, MemberStatusPipe, UserDisplayComponent, DatePipe, PageContainerComponent],
+  imports: [RouterLink, FormsModule, SpinnerComponent, MemberStatusPipe, UserDisplayComponent, LocaleDatePipe, PageContainerComponent],
   templateUrl: './member-list.component.html',
 })
 export class MemberListComponent {

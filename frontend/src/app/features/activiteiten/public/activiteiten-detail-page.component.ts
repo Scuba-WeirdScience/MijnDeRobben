@@ -1,8 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { format, parseISO } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent } from '../../../shared/components/design-system';
+import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import {
@@ -18,7 +17,7 @@ import { ActiviteitInschrijvingComponent } from './components/activiteit-inschri
 @Component({
   selector: 'app-activiteiten-detail-page',
   standalone: true,
-  imports: [RouterLink, SpinnerComponent, ButtonComponent, ConfirmDialogComponent, ActiviteitInschrijvingComponent],
+  imports: [RouterLink, SpinnerComponent, ButtonComponent, ConfirmDialogComponent, ActiviteitInschrijvingComponent, LocaleDateTimePipe],
   templateUrl: './activiteiten-detail-page.component.html',
 })
 export class ActiviteitenDetailPageComponent implements OnInit {
@@ -153,12 +152,5 @@ export class ActiviteitenDetailPageComponent implements OnInit {
       },
     });
   }
-
-  formatDatum(iso: string): string {
-    try {
-      return format(parseISO(iso), 'dd MMMM yyyy \'om\' HH:mm', { locale: nl });
-    } catch {
-      return iso;
-    }
-  }
 }
+

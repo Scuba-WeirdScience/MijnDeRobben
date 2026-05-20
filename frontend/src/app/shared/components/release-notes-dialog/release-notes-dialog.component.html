@@ -30,7 +30,7 @@
             <div>
               <div class="flex items-baseline gap-2 mb-3">
                 <span class="text-sm font-semibold text-scuba-600 dark:text-scuba-400">v{{ entry.version }}</span>
-                <span class="text-xs text-gray-400 dark:text-gray-500">{{ entry.date }}</span>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ entry.date | localeDate }}</span>
               </div>
               @for (section of entry.sections; track section.heading) {
                 <div class="mb-2">

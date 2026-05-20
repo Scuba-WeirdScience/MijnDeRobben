@@ -34,7 +34,7 @@
             class="w-full text-left px-4 py-3 hover:bg-scuba-50 dark:hover:bg-scuba-900/10 transition-colors"
             [ngClass]="{ 'bg-scuba-50 dark:bg-scuba-900/20': selectedActiviteit()?.id === a.id }">
             <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ a.titel }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ formatDatum(a.startDatumTijd) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ a.startDatumTijd | localeDateTime }}</p>
             @if (a.isHerhalend) {
               <span class="text-xs text-scuba-600 dark:text-scuba-400">↺ Herhalend</span>
             }
@@ -80,7 +80,7 @@
           <div>
             <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedActiviteit()!.titel }}</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {{ formatDatum(selectedActiviteit()!.startDatumTijd) }}
+              {{ selectedActiviteit()!.startDatumTijd | localeDateTime }}
               @if (selectedActiviteit()!.locatieNaam) {
                 · {{ selectedActiviteit()!.locatieNaam }}
               }
@@ -120,7 +120,7 @@
                     <tr class="bg-white dark:bg-gray-900"
                         [ngClass]="{ 'bg-scuba-50 dark:bg-scuba-900/20': selectedOccurrenceDatum() === occ.occurrenceDatum }">
                       <td class="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {{ formatDatum(occ.startDatumTijd) }}
+                        {{ occ.startDatumTijd | localeDateTime }}
                       </td>
                       <td class="px-4 py-2 text-gray-900 dark:text-white">
                         {{ occ.titel }}
@@ -161,7 +161,7 @@
         @if (selectedOccurrenceDatum()) {
           <section>
             <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-              Registraties voor {{ selectedOccurrenceDatum() }}
+              Registraties voor {{ selectedOccurrenceDatum() | localeDate }}
             </h2>
 
             @if (loadingRegistraties()) {

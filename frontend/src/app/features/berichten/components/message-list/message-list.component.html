@@ -35,7 +35,7 @@
             {{ act.titel }}
           </p>
           <p class="text-xs text-scuba-600 dark:text-scuba-300 mt-0.5 flex items-center gap-2">
-            <span>{{ act.startDatumTijd | date:'EEEE d MMMM, HH:mm':'':'nl' }}</span>
+            <span>{{ act.startDatumTijd | localeDateTime }}</span>
             @if (act.locatieNaam || act.locatieVrij) {
               <span class="opacity-50">·</span>
               <span class="truncate">{{ act.locatieNaam ?? act.locatieVrij }}</span>

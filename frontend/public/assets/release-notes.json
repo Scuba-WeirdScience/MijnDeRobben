@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.9.2",
+    "date": "2026-05-20",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "Datums worden nu overal in de app weergegeven in het formaat van jouw regio."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.9.1",
     "date": "2026-05-19",
     "sections": [

@@ -8,11 +8,12 @@ import { VerzorgerContextService } from '../../core/services/verzorger-context.s
 import { MemberService, Member } from '../members/services/member.service';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { ThemeService } from '../../core/services/theme.service';
+import { LocaleDatePipe } from '../../shared/pipes/locale-date.pipe';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, SpinnerComponent],
+  imports: [CommonModule, RouterLink, SpinnerComponent, LocaleDatePipe],
   templateUrl: './profile.component.html',
 })
 export class ProfileComponent implements OnInit {

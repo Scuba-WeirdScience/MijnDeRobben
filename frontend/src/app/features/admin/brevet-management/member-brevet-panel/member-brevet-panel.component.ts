@@ -8,6 +8,7 @@ import { LookupTypeDoc } from '../../lookup-type-management/lookup-type-manageme
 import { call } from '../../../../core/firebase/callable';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { LocaleDatePipe } from '../../../../shared/pipes/locale-date.pipe';
 import { BrevetDoc as Brevet } from '../../../profile/brevet.service';
 import {
   ORGANISATIES_MET_LOGBOEK, Organisatie,
@@ -36,7 +37,7 @@ interface OrgBrevetGroup {
 @Component({
   selector: 'app-member-brevet-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, SpinnerComponent],
+  imports: [CommonModule, FormsModule, SpinnerComponent, LocaleDatePipe],
   templateUrl: './member-brevet-panel.component.html',
 })
 export class MemberBrevetPanelComponent {

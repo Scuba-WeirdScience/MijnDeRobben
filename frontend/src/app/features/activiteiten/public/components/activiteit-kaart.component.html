@@ -7,7 +7,7 @@
 
   <div class="p-4 space-y-2">
     <p class="text-xs text-scuba-600 dark:text-scuba-400 font-medium">
-      {{ formatDatum(occurrence().startDatumTijd) }}
+      {{ occurrence().startDatumTijd | localeDateTime }}
     </p>
 
     <h3 class="text-base font-semibold text-gray-900 dark:text-white leading-snug">

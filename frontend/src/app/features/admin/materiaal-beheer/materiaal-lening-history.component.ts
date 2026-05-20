@@ -3,11 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, switchMap, of, catchError } from 'rxjs';
 import { LeningService, LeningDoc } from '../../lening/lening.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
+import { LocaleDatePipe } from '../../../shared/pipes/locale-date.pipe';
 
 @Component({
   selector: 'app-materiaal-lening-history',
   standalone: true,
-  imports: [SpinnerComponent],
+  imports: [SpinnerComponent, LocaleDatePipe],
   templateUrl: './materiaal-lening-history.component.html',
 })
 export class MateriaalLeningHistoryComponent {
