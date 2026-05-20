@@ -139,6 +139,15 @@ export class ActiviteitenService {
     ));
   }
 
+  updateGasten(payload: {
+    activiteitId: string;
+    occurrenceDatum: string;
+    aantalGasten: number;
+    opmerking?: string | null;
+  }): Observable<{ success: boolean }> {
+    return from(call<typeof payload, { success: boolean }>('updateRegistratieGasten', payload));
+  }
+
   getRegistraties(activiteitId: string, occurrenceDatum: string): Observable<ActiviteitRegistratieDoc[]> {
     return from(call<{ activiteitId: string; occurrenceDatum: string }, ActiviteitRegistratieDoc[]>(
       'getRegistratiesVoorOccurrence', { activiteitId, occurrenceDatum }
