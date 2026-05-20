@@ -13,6 +13,7 @@ import {
   generateOccurrences,
 } from '../activiteiten.service';
 import { ActiviteitInschrijvingComponent } from './components/activiteit-inschrijving.component';
+import { MemberService, Member } from '../../members/services/member.service';
 
 @Component({
   selector: 'app-activiteiten-detail-page',
@@ -23,6 +24,7 @@ import { ActiviteitInschrijvingComponent } from './components/activiteit-inschri
 export class ActiviteitenDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(ActiviteitenService);
+  private readonly memberService = inject(MemberService);
   readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
 
@@ -31,6 +33,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   readonly overrides = signal<ActiviteitOccurrenceDoc[]>([]);
   readonly mijnRegistratie = signal<ActiviteitRegistratieDoc | null>(null);
   readonly registraties = signal<ActiviteitRegistratieDoc[]>([]);
+  readonly kinderen = signal<Member[]>([]);
 
   readonly occurrenceDatum = signal<string | null>(null);
 
@@ -56,6 +59,17 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const datum = this.occurrenceDatum() ?? a.startDatumTijd.substring(0, 10);
     const results = generateOccurrences([a], new Date(datum + 'T00:00:00'), new Date(datum + 'T23:59:59'), this.overrides());
     return results[0] ?? null;
+  });
+
+  /** Registratiestatus per kind (memberId → registratie of null) */
+  readonly kinderenRegistraties = computed((): Map<string, ActiviteitRegistratieDoc | null> => {
+    const map = new Map<string, ActiviteitRegistratieDoc | null>();
+    const alleReg = this.registraties();
+    for (const kind of this.kinderen()) {
+      const reg = alleReg.find(r => r.memberId === kind.id && r.status === 'aangemeld') ?? null;
+      map.set(kind.id, reg);
+    }
+    return map;
   });
 
   ngOnInit(): void {
@@ -87,6 +101,12 @@ export class ActiviteitenDetailPageComponent implements OnInit {
                 error: () => {},
               });
               this.loadRegistraties(id);
+              // Kinderen laden voor verzorger-context
+              this.memberService.getMijnKinderen().subscribe({
+                next: kids => this.kinderen.set(kids),
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                error: () => {},
+              });
             }
           },
           error: () => this.loading.set(false),
@@ -153,4 +173,3 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     });
   }
 }
-

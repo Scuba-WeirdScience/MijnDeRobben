@@ -91,7 +91,7 @@ export interface ActiviteitRegistratieDoc {
   activiteitId: string;
   occurrenceDatum: string;
   memberId: string;
-  memberUid: string;
+  memberUid: string | null;
   memberNaam: string;
   aantalGasten: number;
   opmerking: string | null;

@@ -139,6 +139,31 @@ export class ActiviteitenService {
     ));
   }
 
+  updateGasten(payload: {
+    activiteitId: string;
+    occurrenceDatum: string;
+    aantalGasten: number;
+    opmerking?: string | null;
+  }): Observable<{ success: boolean }> {
+    return from(call<typeof payload, { success: boolean }>('updateRegistratieGasten', payload));
+  }
+
+  registreerNamens(payload: {
+    activiteitId: string;
+    occurrenceDatum: string;
+    namensLidId: string;
+    aantalGasten?: number;
+    opmerking?: string | null;
+  }): Observable<ActiviteitRegistratieDoc> {
+    return from(call<typeof payload, ActiviteitRegistratieDoc>('registreerNamensLid', payload));
+  }
+
+  annuleerNamens(activiteitId: string, occurrenceDatum: string, namensLidId: string): Observable<{ success: boolean }> {
+    return from(call<{ activiteitId: string; occurrenceDatum: string; namensLidId: string }, { success: boolean }>(
+      'annuleerNamensLid', { activiteitId, occurrenceDatum, namensLidId }
+    ));
+  }
+
   getRegistraties(activiteitId: string, occurrenceDatum: string): Observable<ActiviteitRegistratieDoc[]> {
     return from(call<{ activiteitId: string; occurrenceDatum: string }, ActiviteitRegistratieDoc[]>(
       'getRegistratiesVoorOccurrence', { activiteitId, occurrenceDatum }
