@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.9.3",
+    "date": "2026-05-20",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "De activiteitenlijst toont enkel activiteiten van vandaag of later."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.9.2",
     "date": "2026-05-20",
     "sections": [

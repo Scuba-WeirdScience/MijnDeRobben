@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { startOfMonth, subMonths, addMonths } from 'date-fns';
+import { startOfMonth, startOfDay, addMonths } from 'date-fns';
 import { SpinnerComponent } from '../../../shared/components/design-system';
 import { ActiviteitenService, ActiviteitDoc, ActiviteitOccurrenceDoc, ResolvedOccurrence, generateOccurrences } from '../activiteiten.service';
 import { ActiviteitenAgendaComponent } from './components/activiteiten-agenda.component';
@@ -31,7 +31,7 @@ export class ActiviteitenListPageComponent implements OnInit {
     const today = new Date();
     let van: Date, tot: Date;
     if (mode === 'agenda') {
-      van = subMonths(today, 1);
+      van = startOfDay(today);
       tot = addMonths(today, 6);
     } else {
       van = this.kalenderMaand();
