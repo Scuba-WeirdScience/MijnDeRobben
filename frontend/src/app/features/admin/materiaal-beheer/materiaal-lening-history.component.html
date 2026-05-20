@@ -35,10 +35,10 @@
                 <span class="text-sm text-gray-900 dark:text-white">{{ l.memberNaam }}</span>
               </td>
               <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
-                {{ l.uitgeleendDatum }}
+                {{ l.uitgeleendDatum | localeDate }}
               </td>
               <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
-                {{ l.retourdatum ?? '—' }}
+                {{ l.retourdatum ? (l.retourdatum | localeDate) : '—' }}
               </td>
               <td class="px-4 py-3">
                 @if (l.retourdatum) {

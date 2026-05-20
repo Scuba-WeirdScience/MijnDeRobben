@@ -42,7 +42,7 @@
               </td>
               @if (isAdmin()) {
                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
-                  {{ member.joinDate | date:'dd/MM/yyyy' }}
+                  {{ member.joinDate | localeDate }}
                 </td>
                 <td class="px-6 py-4">
                   <span

@@ -5,13 +5,14 @@ import { Member } from '../services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { FullNamePipe } from '../../../shared/pipes/full-name.pipe';
-import { DatePipe } from '@angular/common';
+import { LocaleDatePipe } from '../../../shared/pipes/locale-date.pipe';
+import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-member-detail',
   standalone: true,
-  imports: [RouterLink, SpinnerComponent, MemberStatusPipe, FullNamePipe, DatePipe],
+  imports: [RouterLink, SpinnerComponent, MemberStatusPipe, FullNamePipe, LocaleDatePipe, LocaleDateTimePipe],
   templateUrl: './member-detail.component.html',
 })
 export class MemberDetailComponent {

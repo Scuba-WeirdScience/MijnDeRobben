@@ -35,15 +35,15 @@
             </div>
             <div class="grid grid-cols-3 gap-4 px-6 py-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-300">Geboortedatum</dt>
-              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.dateOfBirth | date:'dd/MM/yyyy' }}</dd>
+              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.dateOfBirth | localeDate }}</dd>
             </div>
             <div class="grid grid-cols-3 gap-4 px-6 py-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-300">Lid sinds</dt>
-              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.joinDate | date:'dd/MM/yyyy' }}</dd>
+              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.joinDate | localeDate }}</dd>
             </div>
             <div class="grid grid-cols-3 gap-4 px-6 py-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-300">Aangemaakt op</dt>
-              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd>
+              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.createdAt | localeDateTime }}</dd>
             </div>
           </dl>
         </div>

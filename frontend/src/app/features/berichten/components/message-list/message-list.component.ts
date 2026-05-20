@@ -8,6 +8,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucidePin, LucidePinOff, LucideTrash2, LucideReply, LucideHash, LucideCalendar, LucideChevronRight } from '../../../../shared/lucide-icons';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
+import { LocaleDateTimePipe } from '../../../../shared/pipes/locale-datetime.pipe';
 import { ThreadLezingenComponent } from '../thread-lezingen/thread-lezingen.component';
 import { ActiviteitThreadCardComponent } from '../activiteit-thread-card/activiteit-thread-card.component';
 import { SkeletonRowsComponent } from '../../../../shared/components/design-system';
@@ -37,6 +38,7 @@ const _TW_SAFELIST = [
     ThreadLezingenComponent,
     ActiviteitThreadCardComponent,
     SkeletonRowsComponent,
+    LocaleDateTimePipe,
   ],
 })
 export class MessageListComponent implements OnDestroy {

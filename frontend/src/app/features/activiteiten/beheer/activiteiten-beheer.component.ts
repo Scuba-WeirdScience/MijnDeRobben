@@ -4,7 +4,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { filter, startWith, map } from 'rxjs';
-import { addMonths, format, parseISO } from 'date-fns';
+import { addMonths } from 'date-fns';
+import { LocaleDatePipe } from '../../../shared/pipes/locale-date.pipe';
+import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
 import {
   ButtonComponent,
   SpinnerComponent,
@@ -43,6 +45,8 @@ import { ActiviteitOccurrenceDialogComponent } from './activiteit-occurrence-dia
     ActiviteitOccurrenceEditComponent,
     LocatiesBeheerComponent,
     ActiviteitOccurrenceDialogComponent,
+    LocaleDatePipe,
+    LocaleDateTimePipe,
   ],
   templateUrl: './activiteiten-beheer.component.html',
 })
@@ -318,13 +322,5 @@ export class ActiviteitenBeheerComponent implements OnInit {
         this.toast.error('Reset mislukt.');
       },
     });
-  }
-
-  formatDatum(iso: string): string {
-    try {
-      return format(parseISO(iso), 'dd/MM/yyyy HH:mm');
-    } catch {
-      return iso;
-    }
   }
 }
