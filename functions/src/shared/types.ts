@@ -329,7 +329,7 @@ export interface ActiviteitRegistratieDoc {
   activiteitId: string;
   occurrenceDatum: string;          // yyyy-MM-dd
   memberId: string;
-  memberUid: string;
+  memberUid: string | null;
   memberNaam: string;
   aantalGasten: number;
   opmerking: string | null;
