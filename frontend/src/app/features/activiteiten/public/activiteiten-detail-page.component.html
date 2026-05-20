@@ -32,6 +32,23 @@
         @if (occurrence()!.locatieNaam) {
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
             📍 {{ occurrence()!.locatieNaam }}
+            @if (kaartUrl()) {
+              <a [href]="kaartUrl()!" target="_blank" rel="noopener noreferrer"
+                 class="ml-2 text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium underline">
+                Bekijk op kaart →
+              </a>
+            }
+          </p>
+        }
+        @if (!occurrence()!.locatieNaam && occurrence()!.locatieVrij) {
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            📍 {{ occurrence()!.locatieVrij }}
+            @if (kaartUrl()) {
+              <a [href]="kaartUrl()!" target="_blank" rel="noopener noreferrer"
+                 class="ml-2 text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium underline">
+                Bekijk op kaart →
+              </a>
+            }
           </p>
         }
         @if (occurrence()!.organisatorNaam) {
