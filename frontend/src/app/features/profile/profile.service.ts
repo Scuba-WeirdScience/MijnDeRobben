@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable } from 'rxjs';
+import { from, Observable, throwError } from 'rxjs';
 import { call } from '../../core/firebase/callable';
 import { Member } from '../members/services/member.service';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -15,9 +15,11 @@ export class ProfileService {
   /** Uploads a new avatar to Firebase Storage and returns the updated member. */
   uploadAvatar(file: File): Observable<Member> {
     const uid = auth.currentUser?.uid;
-    if (!uid) throw new Error('Not authenticated');
+    if (!uid) return throwError(() => new Error('Not authenticated'));
 
-    const ext = file.name.split('.').pop() ?? 'jpg';
+    // Normalise to lowercase so Storage rules (jpg|jpeg|png) match files
+    // with uppercase extensions (e.g. IMG_1234.JPG from iOS/Android cameras).
+    const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase();
     const storageRef = ref(storage, `avatars/${uid}.${ext}`);
 
     return from(
