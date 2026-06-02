@@ -128,6 +128,7 @@ export {
   getAllOccurrenceOverrides,
   registreerVoorActiviteit,
   annuleerRegistratie,
+  updateRegistratieGasten,
   registreerNamensLid,
   annuleerNamensLid,
   getRegistratiesVoorOccurrence,

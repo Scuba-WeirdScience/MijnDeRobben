@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.11.0",
+    "date": "2026-05-20",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "Je kan nu het aantal gasten bij een activiteit aanpassen nadat je al ingeschreven bent"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.10.0",
     "date": "2026-05-20",
     "sections": [

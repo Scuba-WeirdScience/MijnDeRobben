@@ -350,6 +350,38 @@ export const annuleerRegistratie = onCall({ region: REGION }, async (request) =>
   return { success: true };
 });
 
+export const updateRegistratieGasten = onCall({ region: REGION }, async (request) => {
+  const auth = requireAuth(request);
+  const { activiteitId, occurrenceDatum, aantalGasten, opmerking } = request.data as {
+    activiteitId: string;
+    occurrenceDatum: string;
+    aantalGasten: number;
+    opmerking?: string | null;
+  };
+
+  const memberSnap = await db.collection('members').where('userId', '==', auth.uid).limit(1).get();
+  if (memberSnap.empty) throw new HttpsError('not-found', 'Lid niet gevonden.');
+  const memberId = memberSnap.docs[0].data()['id'] as string;
+
+  const docId = `${activiteitId}_${occurrenceDatum}_${memberId}`;
+  const ref = db.collection('activiteitRegistraties').doc(docId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Registratie niet gevonden.');
+
+  const data = snap.data() as { status: string };
+  if (data.status !== 'aangemeld') {
+    throw new HttpsError('failed-precondition', 'Registratie is niet actief.');
+  }
+
+  await ref.update({
+    aantalGasten: aantalGasten ?? 0,
+    opmerking: opmerking ?? null,
+    updatedAt: new Date().toISOString(),
+  });
+
+  return { success: true };
+});
+
 export const registreerNamensLid = onCall({ region: REGION }, async (request) => {
   const auth = requireAuth(request);
   const { activiteitId, occurrenceDatum, namensLidId, aantalGasten, opmerking } = request.data as {

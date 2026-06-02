@@ -31,10 +31,11 @@ export class ActiviteitInschrijvingComponent {
   readonly bewerkAantalGasten = signal(0);
   readonly bewerkOpmerking = signal('');
 
-  // Saving state per kind (memberId → boolean)
+  // Saving state per kind (memberId  boolean)
   readonly kindSaving = signal<Map<string, boolean>>(new Map());
 
   constructor() {
+    // Initialiseer bewerkwaarden zodra mijnRegistratie beschikbaar is
     effect(() => {
       const reg = this.mijnRegistratie();
       if (reg) {
