@@ -77,7 +77,7 @@
       @if (occurrence()!.threadId) {
         <div class="rounded-lg bg-scuba-50 dark:bg-scuba-900/20 border border-scuba-200 dark:border-scuba-700 p-4">
           <p class="text-sm text-scuba-700 dark:text-scuba-300">
-            💬 Er is een discussithread voor deze activiteit.
+            💬 Er is een bericht/thread voor deze activiteit.
             @if (occurrence()!.groepId) {
               <a [routerLink]="['/berichten']"
                  [queryParams]="{ groepId: occurrence()!.groepId, threadId: occurrence()!.threadId }"
