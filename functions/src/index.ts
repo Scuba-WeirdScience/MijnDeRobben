@@ -129,6 +129,8 @@ export {
   registreerVoorActiviteit,
   annuleerRegistratie,
   updateRegistratieGasten,
+  registreerNamensLid,
+  annuleerNamensLid,
   getRegistratiesVoorOccurrence,
   getMijnRegistraties,
   updateRegistratieStatus,

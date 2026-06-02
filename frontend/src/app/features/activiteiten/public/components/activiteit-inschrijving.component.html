@@ -128,4 +128,40 @@
     </div>
   }
 
+  <!-- Gekoppelde leden (kinderen van verzorger) -->
+  @if (kinderen().length > 0) {
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+      <p class="text-sm font-semibold text-gray-900 dark:text-white">Gekoppelde leden</p>
+
+      @for (kind of kinderen(); track kind.id) {
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-700 dark:text-gray-300">
+            {{ kind.firstName }} {{ kind.lastName }}
+          </p>
+
+          @if (kindIsIngeschreven(kind.id)) {
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-medium text-green-700 dark:text-green-400">Ingeschreven</span>
+              <app-button
+                variant="danger"
+                size="sm"
+                [loading]="isKindSaving(kind.id)"
+                (click)="onKindAnnuleren(kind)">
+                Annuleren
+              </app-button>
+            </div>
+          } @else {
+            <app-button
+              variant="secondary"
+              size="sm"
+              [loading]="isKindSaving(kind.id)"
+              (click)="onKindInschrijven(kind)">
+              Inschrijven
+            </app-button>
+          }
+        </div>
+      }
+    </div>
+  }
+
 </div>

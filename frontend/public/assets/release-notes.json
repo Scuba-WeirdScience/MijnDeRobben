@@ -1,6 +1,6 @@
 [
   {
-    "version": "2.9.4",
+    "version": "2.11.0",
     "date": "2026-05-20",
     "sections": [
       {
@@ -12,13 +12,13 @@
     ]
   },
   {
-    "version": "2.9.3",
+    "version": "2.10.0",
     "date": "2026-05-20",
     "sections": [
       {
-        "heading": "Verbeterd",
+        "heading": "Nieuw",
         "items": [
-          "De activiteitenlijst toont enkel activiteiten van vandaag of later."
+          "De locatie van een activiteit toont nu een 'Bekijk op kaart' link die rechtstreeks naar Google Maps verwijst."
         ]
       }
     ]

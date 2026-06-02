@@ -1,0 +1,139 @@
+name: Auto version bump on merge
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Get merged PR info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              base: 'main',
+              per_page: 10,
+              sort: 'updated',
+              direction: 'desc',
+            });
+
+            // Find the PR that matches the merge commit
+            const mergeCommitSha = context.sha;
+            const merged = pulls.find(pr => pr.merge_commit_sha === mergeCommitSha);
+
+            if (!merged) {
+              console.log('No merged PR found for this push — skipping.');
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            core.setOutput('skip', 'false');
+            core.setOutput('pr_number', String(merged.number));
+            core.setOutput('pr_body', merged.body || '');
+
+            const labels = merged.labels.map(l => l.name);
+            core.setOutput('labels', labels.join(','));
+
+            let bump = 'patch';
+            if (labels.includes('bump:major')) bump = 'major';
+            else if (labels.includes('bump:minor')) bump = 'minor';
+            core.setOutput('bump', bump);
+
+      - name: Extract release notes block
+        if: steps.pr.outputs.skip == 'false'
+        id: notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `${{ steps.pr.outputs.pr_body }}`;
+            const match = body.match(/```release-notes\r?\n([\s\S]*?)```/);
+            if (!match) {
+              console.log('No release-notes block found — skipping version bump.');
+              core.setOutput('has_notes', 'false');
+              return;
+            }
+            core.setOutput('has_notes', 'true');
+            // Each non-empty line becomes a bullet
+            const lines = match[1]
+              .split('\n')
+              .map(l => l.trim())
+              .filter(Boolean);
+            core.setOutput('notes_json', JSON.stringify(lines));
+
+      - name: Bump version and update release notes
+        if: steps.pr.outputs.skip == 'false' && steps.notes.outputs.has_notes == 'true'
+        run: |
+          set -e
+
+          BUMP="${{ steps.pr.outputs.bump }}"
+          NOTES='${{ steps.notes.outputs.notes_json }}'
+          TODAY=$(date -u +%Y-%m-%d)
+
+          # --- Read current version ---
+          CURRENT=$(node -e "const f=require('./frontend/ngsw-config.json'); console.log(f.appData.version);")
+          echo "Current version: $CURRENT"
+
+          # --- Compute new version ---
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          if [ "$BUMP" = "major" ]; then
+            NEW_VERSION="$((MAJOR+1)).0.0"
+          elif [ "$BUMP" = "minor" ]; then
+            NEW_VERSION="${MAJOR}.$((MINOR+1)).0"
+          else
+            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))"
+          fi
+          echo "New version: $NEW_VERSION"
+
+          # --- Update ngsw-config.json ---
+          node -e "
+            const fs = require('fs');
+            const f = JSON.parse(fs.readFileSync('./frontend/ngsw-config.json', 'utf8'));
+            f.appData.version = '$NEW_VERSION';
+            fs.writeFileSync('./frontend/ngsw-config.json', JSON.stringify(f, null, 2) + '\n');
+          "
+
+          # --- Update index.html meta tag ---
+          sed -i "s|<meta name=\"app-version\" content=\"[^\"]*\">|<meta name=\"app-version\" content=\"$NEW_VERSION\">|" frontend/src/index.html
+
+          # --- Prepend to release-notes.json ---
+          node -e "
+            const fs = require('fs');
+            const notes = JSON.parse('$NOTES');
+            const entry = {
+              version: '$NEW_VERSION',
+              date: '$TODAY',
+              sections: [{ heading: 'Verbeterd', items: notes }]
+            };
+            const existing = JSON.parse(fs.readFileSync('./frontend/public/assets/release-notes.json', 'utf8'));
+            existing.unshift(entry);
+            fs.writeFileSync('./frontend/public/assets/release-notes.json', JSON.stringify(existing, null, 2) + '\n');
+          "
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        id: bump_step
+
+      - name: Commit and push version bump
+        if: steps.pr.outputs.skip == 'false' && steps.notes.outputs.has_notes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend/ngsw-config.json frontend/src/index.html frontend/public/assets/release-notes.json
+          git commit -m "chore: bump version to ${{ steps.bump_step.outputs.new_version }} [skip ci]"
+          git push origin main

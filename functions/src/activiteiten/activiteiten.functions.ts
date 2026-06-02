@@ -382,6 +382,91 @@ export const updateRegistratieGasten = onCall({ region: REGION }, async (request
   return { success: true };
 });
 
+export const registreerNamensLid = onCall({ region: REGION }, async (request) => {
+  const auth = requireAuth(request);
+  const { activiteitId, occurrenceDatum, namensLidId, aantalGasten, opmerking } = request.data as {
+    activiteitId: string;
+    occurrenceDatum: string;
+    namensLidId: string;
+    aantalGasten?: number;
+    opmerking?: string | null;
+  };
+
+  // Haal het kind-lid op en verifieer dat de aanroeper verzorger is
+  const kindSnap = await db.collection('members').doc(namensLidId).get();
+  if (!kindSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+  const kind = kindSnap.data() as { verzorgerIds?: string[]; firstName: string; lastName: string; id: string };
+  if (!kind.verzorgerIds?.includes(auth.uid)) {
+    throw new HttpsError('permission-denied', 'Je bent geen verzorger van dit lid.');
+  }
+
+  // Check activiteit bestaat + inschrijvingen active
+  const activiteitSnap = await db.collection('activiteiten').doc(activiteitId).get();
+  if (!activiteitSnap.exists) throw new HttpsError('not-found', 'Activiteit niet gevonden.');
+  const activiteit = activiteitSnap.data() as ActiviteitDoc;
+  if (!activiteit.inschrijvingenActief) {
+    throw new HttpsError('failed-precondition', 'Inschrijvingen zijn niet actief voor deze activiteit.');
+  }
+
+  // Check max deelnemers
+  if (activiteit.maxDeelnemers !== null) {
+    const countSnap = await db
+      .collection('activiteitRegistraties')
+      .where('activiteitId', '==', activiteitId)
+      .where('occurrenceDatum', '==', occurrenceDatum)
+      .where('status', '==', 'aangemeld')
+      .get();
+    if (countSnap.size >= activiteit.maxDeelnemers) {
+      throw new HttpsError('resource-exhausted', 'Maximum aantal deelnemers bereikt.');
+    }
+  }
+
+  const now = new Date().toISOString();
+  const docId = `${activiteitId}_${occurrenceDatum}_${kind.id}`;
+  const ref = db.collection('activiteitRegistraties').doc(docId);
+
+  const doc: ActiviteitRegistratieDoc = {
+    id: docId,
+    activiteitId,
+    occurrenceDatum,
+    memberId: kind.id,
+    memberUid: null,
+    memberNaam: `${kind.firstName} ${kind.lastName}`,
+    aantalGasten: aantalGasten ?? 0,
+    opmerking: opmerking ?? null,
+    status: 'aangemeld',
+    createdAt: now,
+    updatedAt: null,
+  };
+  await ref.set(doc);
+  return doc;
+});
+
+export const annuleerNamensLid = onCall({ region: REGION }, async (request) => {
+  const auth = requireAuth(request);
+  const { activiteitId, occurrenceDatum, namensLidId } = request.data as {
+    activiteitId: string;
+    occurrenceDatum: string;
+    namensLidId: string;
+  };
+
+  // Verifieer verzorger
+  const kindSnap = await db.collection('members').doc(namensLidId).get();
+  if (!kindSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+  const kind = kindSnap.data() as { verzorgerIds?: string[]; id: string };
+  if (!kind.verzorgerIds?.includes(auth.uid)) {
+    throw new HttpsError('permission-denied', 'Je bent geen verzorger van dit lid.');
+  }
+
+  const docId = `${activiteitId}_${occurrenceDatum}_${kind.id}`;
+  const ref = db.collection('activiteitRegistraties').doc(docId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Registratie niet gevonden.');
+
+  await ref.update({ status: 'afgemeld', updatedAt: new Date().toISOString() });
+  return { success: true };
+});
+
 export const getRegistratiesVoorOccurrence = onCall({ region: REGION }, async (request) => {
   requireAuth(request);
   const { activiteitId, occurrenceDatum } = request.data as {

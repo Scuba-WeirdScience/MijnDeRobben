@@ -3,6 +3,7 @@ import { ButtonComponent } from '../../../../shared/components/design-system';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { inject } from '@angular/core';
 import { ActiviteitenService, ResolvedOccurrence, ActiviteitRegistratieDoc } from '../../activiteiten.service';
+import { Member } from '../../../members/services/member.service';
 
 @Component({
   selector: 'app-activiteit-inschrijving',
@@ -16,6 +17,8 @@ export class ActiviteitInschrijvingComponent {
 
   readonly occurrence = input.required<ResolvedOccurrence>();
   readonly mijnRegistratie = input<ActiviteitRegistratieDoc | null>(null);
+  readonly kinderen = input<Member[]>([]);
+  readonly kinderenRegistraties = input<Map<string, ActiviteitRegistratieDoc | null>>(new Map());
   readonly geregistreerd = output<void>();
   readonly geannuleerd = output<void>();
 
@@ -27,6 +30,9 @@ export class ActiviteitInschrijvingComponent {
   readonly bewerkGasten = signal(false);
   readonly bewerkAantalGasten = signal(0);
   readonly bewerkOpmerking = signal('');
+
+  // Saving state per kind (memberId  boolean)
+  readonly kindSaving = signal<Map<string, boolean>>(new Map());
 
   constructor() {
     // Initialiseer bewerkwaarden zodra mijnRegistratie beschikbaar is
@@ -94,6 +100,56 @@ export class ActiviteitInschrijvingComponent {
       error: () => {
         this.saving.set(false);
         this.toast.error('Opslaan mislukt. Probeer opnieuw.');
+      },
+    });
+  }
+
+  isKindSaving(kindId: string): boolean {
+    return this.kindSaving().get(kindId) ?? false;
+  }
+
+  setKindSaving(kindId: string, value: boolean): void {
+    const map = new Map(this.kindSaving());
+    map.set(kindId, value);
+    this.kindSaving.set(map);
+  }
+
+  kindIsIngeschreven(kindId: string): boolean {
+    return (this.kinderenRegistraties().get(kindId) ?? null) !== null;
+  }
+
+  onKindInschrijven(kind: Member): void {
+    const occ = this.occurrence();
+    this.setKindSaving(kind.id, true);
+    this.service.registreerNamens({
+      activiteitId: occ.activiteitId,
+      occurrenceDatum: occ.occurrenceDatum,
+      namensLidId: kind.id,
+    }).subscribe({
+      next: () => {
+        this.setKindSaving(kind.id, false);
+        this.toast.success(`${kind.firstName} is ingeschreven.`);
+        this.geregistreerd.emit();
+      },
+      error: () => {
+        this.setKindSaving(kind.id, false);
+        this.toast.error(`Inschrijven van ${kind.firstName} mislukt.`);
+      },
+    });
+  }
+
+  onKindAnnuleren(kind: Member): void {
+    const occ = this.occurrence();
+    this.setKindSaving(kind.id, true);
+    this.service.annuleerNamens(occ.activiteitId, occ.occurrenceDatum, kind.id).subscribe({
+      next: () => {
+        this.setKindSaving(kind.id, false);
+        this.toast.success(`Inschrijving van ${kind.firstName} geannuleerd.`);
+        this.geannuleerd.emit();
+      },
+      error: () => {
+        this.setKindSaving(kind.id, false);
+        this.toast.error(`Annuleren van ${kind.firstName} mislukt.`);
       },
     });
   }
