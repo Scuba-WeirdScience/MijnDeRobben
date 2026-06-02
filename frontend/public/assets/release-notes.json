@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.11.1",
+    "date": "2026-06-02",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "Profielfoto uploaden werkt nu ook voor foto's gemaakt met een smartphone (bestanden met een hoofdletter-extensie zoals .JPG)."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.11.0",
     "date": "2026-05-20",
     "sections": [
