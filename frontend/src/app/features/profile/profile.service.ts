@@ -26,7 +26,7 @@ export class ProfileService {
       uploadBytes(storageRef, file)
         .then(() => getDownloadURL(storageRef))
         .then(avatarUrl =>
-          call<{ memberId: string; avatarUrl: string }, Member>('updateMember', { memberId: uid, avatarUrl })
+          call<{ avatarUrl: string }, Member>('updateMijnAvatarUrl', { avatarUrl })
         )
     );
   }

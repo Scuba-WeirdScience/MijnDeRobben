@@ -111,3 +111,27 @@ export const deleteAvatar = onCall({ region: REGION }, async (request) => {
 
   return { success: true };
 });
+
+// ── updateMijnAvatarUrl ────────────────────────────────────────────────────
+// Allows any authenticated member to update their own avatarUrl.
+// Kept separate from updateMember (which is Beheer-only and doesn't
+// include avatarUrl in its allowed-fields list).
+export const updateMijnAvatarUrl = onCall({ region: REGION }, async (request) => {
+  const authCtx = requireAuth(request);
+  const uid = authCtx.uid;
+  const { avatarUrl } = request.data as { avatarUrl: string };
+
+  if (typeof avatarUrl !== 'string' || !avatarUrl.startsWith('https://')) {
+    throw new HttpsError('invalid-argument', 'Ongeldige avatarUrl.');
+  }
+
+  const now = new Date().toISOString();
+  const memberRef = db.collection('members').doc(uid);
+  const memberSnap = await memberRef.get();
+  if (!memberSnap.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+
+  await memberRef.update({ avatarUrl, updatedAt: now });
+  await db.collection('users').doc(uid).update({ avatarUrl, updatedAt: now });
+
+  return { ...(memberSnap.data() as object), avatarUrl, updatedAt: now };
+});
