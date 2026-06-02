@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.11.2",
+    "date": "2026-06-02",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "Profielfoto wordt nu correct opgeslagen en getoond na het uploaden."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.11.1",
     "date": "2026-06-02",
     "sections": [

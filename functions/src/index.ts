@@ -31,6 +31,7 @@ export {
   updateUser,
   resetPassword,
   deleteAvatar,
+  updateMijnAvatarUrl,
 } from './roles/roles.functions';
 
 // ── Leningen ──────────────────────────────────────────────────────────────────
