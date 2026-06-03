@@ -177,6 +177,131 @@ export const getMijnKinderen = onCall({ region: REGION }, async (request) => {
   return snap.docs.map(d => d.data());
 });
 
+// ── getVerzorgers ──────────────────────────────────────────────────────────
+export const getVerzorgers = onCall({ region: REGION }, async (request) => {
+  requireRole(request, 'Beheer');
+
+  const { memberId } = request.data as { memberId: string };
+  const doc = await db.collection('members').doc(memberId).get();
+  if (!doc.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+
+  const member = doc.data() as MemberDoc;
+  const ids: string[] = member.verzorgerIds ?? [];
+  if (ids.length === 0) return [];
+
+  const userDocs = await Promise.all(
+    ids.map(uid => db.collection('users').doc(uid).get())
+  );
+
+  return userDocs
+    .filter(d => d.exists)
+    .map(d => {
+      const u = d.data() as { uid: string; email: string; firstName: string; lastName: string };
+      return { uid: u.uid, email: u.email, firstName: u.firstName, lastName: u.lastName };
+    });
+});
+
+// ── addVerzorger ───────────────────────────────────────────────────────────
+export const addVerzorger = onCall({ region: REGION }, async (request) => {
+  requireRole(request, 'Beheer');
+
+  const { memberId, verzorgerId } = request.data as { memberId: string; verzorgerId: string };
+  const memberRef = db.collection('members').doc(memberId);
+  const doc = await memberRef.get();
+  if (!doc.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+
+  const member = doc.data() as MemberDoc;
+  if ((member.verzorgerIds ?? []).includes(verzorgerId)) {
+    throw new HttpsError('already-exists', 'Deze verzorger is al gekoppeld aan dit lid.');
+  }
+
+  await memberRef.update({
+    verzorgerIds: admin.firestore.FieldValue.arrayUnion(verzorgerId),
+    updatedAt: new Date().toISOString(),
+  });
+
+  return { success: true };
+});
+
+// ── removeVerzorger ────────────────────────────────────────────────────────
+export const removeVerzorger = onCall({ region: REGION }, async (request) => {
+  requireRole(request, 'Beheer');
+
+  const { memberId, verzorgerId } = request.data as { memberId: string; verzorgerId: string };
+  const memberRef = db.collection('members').doc(memberId);
+  const doc = await memberRef.get();
+  if (!doc.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+
+  await memberRef.update({
+    verzorgerIds: admin.firestore.FieldValue.arrayRemove(verzorgerId),
+    updatedAt: new Date().toISOString(),
+  });
+
+  return { success: true };
+});
+
+// ── createVerzorgerUser ────────────────────────────────────────────────────
+export const createVerzorgerUser = onCall({ region: REGION }, async (request) => {
+  requireRole(request, 'Beheer');
+
+  const { memberId, email, firstName, lastName } = request.data as {
+    memberId: string; email: string; firstName: string; lastName: string;
+  };
+
+  const memberRef = db.collection('members').doc(memberId);
+  const doc = await memberRef.get();
+  if (!doc.exists) throw new HttpsError('not-found', 'Lid niet gevonden.');
+
+  let uid: string;
+  try {
+    const userRecord = await admin.auth().createUser({ email });
+    uid = userRecord.uid;
+  } catch (err: unknown) {
+    const firebaseErr = err as { code?: string };
+    if (firebaseErr.code === 'auth/email-already-exists') {
+      throw new HttpsError('already-exists', 'Dit e-mailadres is al in gebruik.');
+    }
+    throw new HttpsError('internal', 'Aanmaken account mislukt.');
+  }
+
+  await admin.auth().setCustomUserClaims(uid, { Lid: true });
+
+  const now = new Date().toISOString();
+  const today = now.split('T')[0];
+
+  const userDoc = {
+    uid, email, firstName, lastName,
+    dateOfBirth: null,
+    joinDate: today,
+    endOfMembership: null,
+    isActive: true,
+    isValidated: false,
+    avatarUrl: null,
+    unreadCount: 0,
+    unreadPerGroep: {},
+    settings: null,
+    createdAt: now,
+    updatedAt: null,
+  };
+
+  const batch = db.batch();
+  batch.set(db.collection('users').doc(uid), userDoc);
+  batch.update(memberRef, {
+    verzorgerIds: admin.firestore.FieldValue.arrayUnion(uid),
+    updatedAt: now,
+  });
+  await batch.commit();
+
+  try {
+    await sendPasswordResetEmail(email);
+    console.info(`[createVerzorgerUser] Uitnodiging verzonden naar ${email}`);
+  } catch (err) {
+    console.warn(`[createVerzorgerUser] Kon geen uitnodiging sturen naar ${email}:`, err);
+  }
+
+  return { uid, email, firstName, lastName };
+});
+
 // ── deleteMember ───────────────────────────────────────────────────────────
 export const deleteMember = onCall({ region: REGION }, async (request) => {
   requireRole(request, 'Beheer');
