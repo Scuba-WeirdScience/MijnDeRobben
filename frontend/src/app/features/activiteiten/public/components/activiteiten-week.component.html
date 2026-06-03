@@ -1,0 +1,59 @@
+<div class="space-y-4">
+
+  <!-- Header: week navigatie -->
+  <div class="flex items-center justify-between">
+    <app-button variant="secondary" (click)="vorigeWeek()">‹ Vorige</app-button>
+    <h2 class="text-base font-semibold text-gray-900 dark:text-white capitalize">{{ weekLabel() }}</h2>
+    <app-button variant="secondary" (click)="volgendeWeek()">Volgende ›</app-button>
+  </div>
+
+  <!-- Week grid -->
+  <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+    <div class="grid grid-cols-7 min-w-[560px]">
+
+      <!-- Dag-headers -->
+      @for (dag of weekDagen(); track dag.toISOString()) {
+        <div
+          class="py-2 px-1 text-center border-b border-gray-200 dark:border-gray-700"
+          [ngClass]="isDagVandaag(dag)
+            ? 'bg-scuba-50 dark:bg-scuba-900/20'
+            : 'bg-gray-50 dark:bg-gray-800/50'">
+          <div class="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{{ dagNaam(dag) }}</div>
+          <div
+            class="mx-auto mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold"
+            [ngClass]="isDagVandaag(dag)
+              ? 'bg-scuba-600 text-white'
+              : 'text-gray-900 dark:text-white'">
+            {{ dagNummer(dag) }}
+          </div>
+        </div>
+      }
+
+      <!-- Dag-cellen -->
+      @for (dag of weekDagen(); track dag.toISOString()) {
+        <div
+          class="min-h-24 p-1 border-r border-gray-100 dark:border-gray-700 last:border-r-0 align-top"
+          [ngClass]="isDagVandaag(dag)
+            ? 'bg-scuba-50/40 dark:bg-scuba-900/10'
+            : 'bg-white dark:bg-gray-900'">
+          <div class="flex flex-col gap-0.5">
+            @for (occ of occurrencesVoorDag(dag); track occ.activiteitId + occ.occurrenceDatum) {
+              <a
+                [routerLink]="detailUrl(occ)"
+                [queryParams]="queryParams(occ)"
+                class="block rounded px-1 py-0.5 text-xs leading-tight truncate bg-scuba-100 text-scuba-700 dark:bg-scuba-900/40 dark:text-scuba-300 hover:bg-scuba-200 dark:hover:bg-scuba-800/40 transition-colors">
+                <span class="font-medium">{{ tijdLabel(occ) }}</span>
+                <span class="ml-1">{{ occ.titel }}</span>
+              </a>
+            }
+            @if (occurrencesVoorDag(dag).length === 0) {
+              <span class="block h-full"></span>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+
+</div>

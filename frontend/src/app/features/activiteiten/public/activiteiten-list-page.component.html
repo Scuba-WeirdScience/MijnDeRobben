@@ -14,13 +14,22 @@
         Agenda
       </button>
       <button type="button"
-        (click)="setViewMode('kalender')"
+        (click)="setViewMode('week')"
         class="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-200 dark:border-gray-700"
         [ngClass]="{
-          'bg-scuba-600 text-white': viewMode() === 'kalender',
-          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20': viewMode() !== 'kalender'
+          'bg-scuba-600 text-white': viewMode() === 'week',
+          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20': viewMode() !== 'week'
         }">
-        Kalender
+        Week
+      </button>
+      <button type="button"
+        (click)="setViewMode('maand')"
+        class="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-200 dark:border-gray-700"
+        [ngClass]="{
+          'bg-scuba-600 text-white': viewMode() === 'maand',
+          'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20': viewMode() !== 'maand'
+        }">
+        Maand
       </button>
     </div>
   </div>
@@ -31,6 +40,12 @@
     </div>
   } @else if (viewMode() === 'agenda') {
     <app-activiteiten-agenda [occurrences]="occurrences()" />
+  } @else if (viewMode() === 'week') {
+    <app-activiteiten-week
+      [occurrences]="occurrences()"
+      [week]="kalenderWeek()"
+      (weekGewijzigd)="onWeekGewijzigd($event)"
+    />
   } @else {
     <app-activiteiten-kalender
       [occurrences]="occurrences()"

@@ -1,10 +1,11 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { startOfMonth, startOfDay, addMonths } from 'date-fns';
+import { startOfMonth, startOfDay, startOfWeek, addMonths, addWeeks } from 'date-fns';
 import { SpinnerComponent } from '../../../shared/components/design-system';
 import { ActiviteitenService, ActiviteitDoc, ActiviteitOccurrenceDoc, ResolvedOccurrence, generateOccurrences } from '../activiteiten.service';
 import { ActiviteitenAgendaComponent } from './components/activiteiten-agenda.component';
 import { ActiviteitenKalenderComponent } from './components/activiteiten-kalender.component';
+import { ActiviteitenWeekComponent } from './components/activiteiten-week.component';
 
 @Component({
   selector: 'app-activiteiten-list-page',
@@ -14,14 +15,16 @@ import { ActiviteitenKalenderComponent } from './components/activiteiten-kalende
     SpinnerComponent,
     ActiviteitenAgendaComponent,
     ActiviteitenKalenderComponent,
+    ActiviteitenWeekComponent,
   ],
   templateUrl: './activiteiten-list-page.component.html',
 })
 export class ActiviteitenListPageComponent implements OnInit {
   private readonly service = inject(ActiviteitenService);
 
-  readonly viewMode = signal<'agenda' | 'kalender'>('agenda');
+  readonly viewMode = signal<'agenda' | 'maand' | 'week'>('agenda');
   readonly kalenderMaand = signal(startOfMonth(new Date()));
+  readonly kalenderWeek = signal(startOfWeek(new Date(), { weekStartsOn: 1 }));
   readonly activiteiten = signal<ActiviteitDoc[]>([]);
   readonly overrides = signal<ActiviteitOccurrenceDoc[]>([]);
   readonly loading = signal(false);
@@ -33,6 +36,9 @@ export class ActiviteitenListPageComponent implements OnInit {
     if (mode === 'agenda') {
       van = startOfDay(today);
       tot = addMonths(today, 6);
+    } else if (mode === 'week') {
+      van = this.kalenderWeek();
+      tot = addWeeks(this.kalenderWeek(), 1);
     } else {
       van = this.kalenderMaand();
       tot = addMonths(this.kalenderMaand(), 1);
@@ -62,11 +68,15 @@ export class ActiviteitenListPageComponent implements OnInit {
     });
   }
 
-  setViewMode(mode: 'agenda' | 'kalender'): void {
+  setViewMode(mode: 'agenda' | 'maand' | 'week'): void {
     this.viewMode.set(mode);
   }
 
   onMaandGewijzigd(maand: Date): void {
     this.kalenderMaand.set(maand);
+  }
+
+  onWeekGewijzigd(week: Date): void {
+    this.kalenderWeek.set(week);
   }
 }

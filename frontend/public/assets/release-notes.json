@@ -1,5 +1,19 @@
 [
   {
+    "version": "2.13.0",
+    "date": "2026-06-03",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "De activiteitenkalender toont nu de naam van elke activiteit rechtstreeks in de dag — geen stipjes meer",
+          "Nieuw weekoverzicht: blader per week door alle activiteiten",
+          "Bij meerdere activiteiten op één dag zie je hoeveel er nog meer zijn"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.12.1",
     "date": "2026-06-03",
     "sections": [
