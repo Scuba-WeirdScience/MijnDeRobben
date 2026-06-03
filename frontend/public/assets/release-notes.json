@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.13.1",
+    "date": "2026-06-03",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "Activiteiten met een maximumaantal deelnemers tonen nu 'Vol' wanneer alle plaatsen bezet zijn — inschrijven is dan niet meer mogelijk",
+          "Het aantal bezette plaatsen is zichtbaar in de inschrijvingslijst (bijv. 8/10)"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.13.0",
     "date": "2026-06-03",
     "sections": [

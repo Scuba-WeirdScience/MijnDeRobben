@@ -19,6 +19,8 @@ export class ActiviteitInschrijvingComponent {
   readonly mijnRegistratie = input<ActiviteitRegistratieDoc | null>(null);
   readonly kinderen = input<Member[]>([]);
   readonly kinderenRegistraties = input<Map<string, ActiviteitRegistratieDoc | null>>(new Map());
+  readonly isVol = input<boolean>(false);
+  readonly aantalDeelnemers = input<number>(0);
   readonly geregistreerd = output<void>();
   readonly geannuleerd = output<void>();
 
