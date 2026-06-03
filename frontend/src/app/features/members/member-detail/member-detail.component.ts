@@ -7,7 +7,6 @@ import { MemberStatusPipe } from '../../../shared/pipes/member-status.pipe';
 import { FullNamePipe } from '../../../shared/pipes/full-name.pipe';
 import { LocaleDatePipe } from '../../../shared/pipes/locale-date.pipe';
 import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
-import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-member-detail',
@@ -18,7 +17,6 @@ import { AuthService } from '../../../core/auth/auth.service';
 export class MemberDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly memberService = inject(MemberService);
-  readonly auth = inject(AuthService);
 
   readonly member = signal<Member | null>(null);
   readonly loading = signal(false);

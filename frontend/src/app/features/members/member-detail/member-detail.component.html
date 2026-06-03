@@ -31,7 +31,7 @@
           <dl class="divide-y divide-gray-200 dark:divide-gray-700">
             <div class="grid grid-cols-3 gap-4 px-6 py-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-300">E-mail</dt>
-              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ auth.currentUser()?.email ?? '—' }}</dd>
+              <dd class="col-span-2 text-sm text-gray-800 dark:text-white">{{ member()!.email }}</dd>
             </div>
             <div class="grid grid-cols-3 gap-4 px-6 py-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-300">Geboortedatum</dt>
