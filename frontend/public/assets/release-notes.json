@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.13.2",
+    "date": "2026-06-03",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "Inschrijvingen worden nu correct meegenomen wanneer een herhalende activiteit wordt bewerkt of verwijderd voor 'dit en toekomstige' afspraken",
+          "Het maximumaantal deelnemers wordt nu correct berekend wanneer een deelnemer ook gasten meebrengt"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.13.1",
     "date": "2026-06-03",
     "sections": [
