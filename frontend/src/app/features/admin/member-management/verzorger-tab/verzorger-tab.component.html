@@ -1,0 +1,157 @@
+<!-- ── Lijst van huidige verzorgers ──────────────────────────────────────── -->
+@if (view() === 'list') {
+  @if (loading()) {
+    <app-spinner size="sm" />
+  } @else {
+    <div class="space-y-3">
+      @if (verzorgers().length === 0) {
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+          Geen verzorgers gekoppeld aan dit lid.
+        </p>
+      } @else {
+        @for (v of verzorgers(); track v.uid) {
+          <div class="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">
+                {{ v.firstName }} {{ v.lastName }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ v.email }}</p>
+            </div>
+            <button
+              type="button"
+              (click)="unlink(v)"
+              class="text-sm text-red-600 dark:text-red-400 hover:underline"
+            >Ontkoppelen</button>
+          </div>
+        }
+      }
+
+      <div class="pt-2 flex flex-col gap-2 sm:flex-row">
+        <app-button type="button" variant="secondary" (click)="showAddExisting()">
+          Bestaand lid koppelen
+        </app-button>
+        <app-button type="button" variant="secondary" (click)="showAddNew()">
+          Nieuwe verzorger aanmaken
+        </app-button>
+      </div>
+    </div>
+  }
+}
+
+<!-- ── Bestaand lid koppelen ──────────────────────────────────────────────── -->
+@if (view() === 'add-existing') {
+  <div class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Zoek op naam
+      </label>
+      <input
+        type="text"
+        [value]="searchTerm()"
+        (input)="onSearchInput($any($event.target).value)"
+        placeholder="Voornaam of achternaam..."
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm
+               text-gray-900 dark:text-white bg-white dark:bg-gray-800
+               focus:outline-none focus:ring-2 focus:ring-scuba-500"
+      />
+    </div>
+
+    @if (searching()) {
+      <app-spinner size="sm" />
+    } @else if (searchResults().length > 0) {
+      <div class="space-y-2">
+        @for (m of searchResults(); track m.id) {
+          <div class="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2.5">
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">
+                {{ m.firstName }} {{ m.lastName }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ m.email }}</p>
+            </div>
+            <button
+              type="button"
+              [disabled]="saving()"
+              (click)="linkMember(m)"
+              class="text-sm text-scuba-600 dark:text-scuba-400 hover:underline disabled:opacity-50"
+            >Koppelen</button>
+          </div>
+        }
+      </div>
+    } @else if (searchTerm().length > 0) {
+      <p class="text-sm text-gray-500 dark:text-gray-400 italic">Geen leden gevonden.</p>
+    }
+
+    @if (error()) {
+      <p class="text-sm text-red-600 dark:text-red-400">{{ error() }}</p>
+    }
+
+    <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+      <app-button type="button" variant="secondary" (click)="backToList()">Annuleren</app-button>
+    </div>
+  </div>
+}
+
+<!-- ── Nieuwe verzorger aanmaken ───────────────────────────────────────────── -->
+@if (view() === 'add-new') {
+  <div class="space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Voornaam *
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="newFirstName"
+          placeholder="Voornaam"
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm
+                 text-gray-900 dark:text-white bg-white dark:bg-gray-800
+                 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Achternaam *
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="newLastName"
+          placeholder="Achternaam"
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm
+                 text-gray-900 dark:text-white bg-white dark:bg-gray-800
+                 focus:outline-none focus:ring-2 focus:ring-scuba-500"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        E-mailadres *
+      </label>
+      <input
+        type="email"
+        [(ngModel)]="newEmail"
+        placeholder="naam@voorbeeld.nl"
+        autocomplete="off"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm
+               text-gray-900 dark:text-white bg-white dark:bg-gray-800
+               focus:outline-none focus:ring-2 focus:ring-scuba-500"
+      />
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        De verzorger ontvangt een uitnodigingsmail om in te loggen.
+      </p>
+    </div>
+
+    @if (newFormError()) {
+      <div class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+        {{ newFormError() }}
+      </div>
+    }
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+      <app-button type="button" variant="secondary" (click)="backToList()">Annuleren</app-button>
+      <app-button type="button" variant="primary" [loading]="saving()" (click)="createAndLink()">
+        Aanmaken en koppelen
+      </app-button>
+    </div>
+  </div>
+}

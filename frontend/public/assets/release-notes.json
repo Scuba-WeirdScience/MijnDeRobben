@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.12.0",
+    "date": "2026-06-03",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Bij het bewerken van een lid kan je nu verzorgers (ouders/voogden) koppelen via het tabblad 'Verzorger'",
+          "Koppel een bestaand lid als verzorger, of maak een nieuw verzorgersaccount aan — de verzorger ontvangt automatisch een uitnodigingsmail"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.11.4",
     "date": "2026-06-03",
     "sections": [

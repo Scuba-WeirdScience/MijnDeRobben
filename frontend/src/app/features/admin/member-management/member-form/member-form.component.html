@@ -21,6 +21,10 @@
           [class]="tabClass('leningen')"
         >Leningen</button>
       }
+      <button
+        (click)="activeTab.set('verzorger')"
+        [class]="tabClass('verzorger')"
+      >Verzorger</button>
     </div>
   }
 
@@ -200,6 +204,10 @@
         </div>
       }
     </div>
+  }
+  <!-- ── Verzorger tab ────────────────────────────────────────────────────── -->
+  @if (activeTab() === 'verzorger' && member()) {
+    <app-verzorger-tab [memberId]="member()!.id" />
   }
 
 </app-side-panel>

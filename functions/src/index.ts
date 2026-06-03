@@ -20,6 +20,10 @@ export {
   getMijnKinderen,
   resendUitnodiging,
   scheduledMembershipExpiry,
+  getVerzorgers,
+  addVerzorger,
+  removeVerzorger,
+  createVerzorgerUser,
 } from './members/members.functions';
 
 // ── Roles / Admin ─────────────────────────────────────────────────────────────

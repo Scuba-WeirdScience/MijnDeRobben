@@ -11,6 +11,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { MemberBrevetPanelComponent } from '../../brevet-management/member-brevet-panel/member-brevet-panel.component';
 import { LeningService, LeningDoc } from '../../../lening/lening.service';
 import { LucideTriangleAlert } from '../../../../shared/lucide-icons';
+import { VerzorgerTabComponent } from '../verzorger-tab/verzorger-tab.component';
 
 // ── Local form schema ──────────────────────────────────────────────────────
 // Uses email for create (instead of userId — the backend creates the Auth account).
@@ -42,7 +43,7 @@ const MemberFormSchema = z.object({
 
 type MemberFormValue = z.infer<typeof MemberFormSchema>;
 type TextField = 'email' | 'firstName' | 'lastName' | 'dateOfBirth' | 'joinDate' | 'endOfMembership';
-type Tab = 'gegevens' | 'brevetten' | 'leningen';
+type Tab = 'gegevens' | 'brevetten' | 'leningen' | 'verzorger';
 
 const EMPTY: MemberFormValue = {
   email:       '',
@@ -63,7 +64,7 @@ const _TW_SAFELIST = [
 @Component({
   selector: 'app-member-form',
   standalone: true,
-  imports: [FormsModule, LocaleDateInputComponent, SidePanelComponent, ButtonComponent, SpinnerComponent, MemberBrevetPanelComponent, LucideTriangleAlert, FormFieldComponent],
+  imports: [FormsModule, LocaleDateInputComponent, SidePanelComponent, ButtonComponent, SpinnerComponent, MemberBrevetPanelComponent, LucideTriangleAlert, FormFieldComponent, VerzorgerTabComponent],
   templateUrl: './member-form.component.html',
 })
 export class MemberFormComponent implements OnInit {
