@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.11.4",
+    "date": "2026-06-03",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "E-mailadres op de ledenpagina toont nu het correcte adres van het betreffende lid."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.11.3",
     "date": "2026-06-03",
     "sections": [
