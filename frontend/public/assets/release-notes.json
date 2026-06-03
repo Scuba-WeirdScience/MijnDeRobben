@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.11.3",
+    "date": "2026-06-03",
+    "sections": [
+      {
+        "heading": "Opgelost",
+        "items": [
+          "Scrollen werkt nu correct op mobiel en op Windows.",
+          "De app past zich nu correct aan op kleinere schermen."
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.11.2",
     "date": "2026-06-02",
     "sections": [
