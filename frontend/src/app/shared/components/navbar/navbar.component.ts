@@ -24,6 +24,7 @@ const _TW_SAFELIST = [
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, ...LUCIDE_ICONS],
   templateUrl: './navbar.component.html',
+  host: { class: 'flex-shrink-0' },
 })
 export class NavbarComponent {
   mobileOpen = false;
