@@ -47,6 +47,7 @@ export const routes: Routes = [
 
   {
     path: 'activiteiten',
+    canActivate: [authGuard],
     loadChildren: () =>
       import('./features/activiteiten/activiteiten.routes').then(m => m.activiteitenRoutes)
   },
