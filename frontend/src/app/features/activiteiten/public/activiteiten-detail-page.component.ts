@@ -49,6 +49,17 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     this.auth.hasAnyRole(['Beheer', 'Bestuur'])
   );
 
+  /** Totaal aantal bezette plaatsen: 1 per registratie + aantal gasten */
+  readonly aantalDeelnemers = computed((): number =>
+    this.registraties().reduce((sum, r) => sum + 1 + (r.aantalGasten ?? 0), 0)
+  );
+
+  /** True wanneer maxDeelnemers bereikt of overschreden is */
+  readonly isVol = computed((): boolean => {
+    const max = this.occurrence()?.maxDeelnemers;
+    return max != null && this.aantalDeelnemers() >= max;
+  });
+
   /** Geeft de externe kaart-URL terug (opent Google Maps in nieuw tabblad). Prioriteit:
    *  1. LocatieDoc.kaartLink (expliciet ingesteld door beheer)
    *  2. Google Maps zoeklink op adres (als adres bekend)
