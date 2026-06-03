@@ -173,6 +173,48 @@ export const updateActiviteit = onCall({ region: REGION }, async (request) => {
       newDoc.recurrenceRule = { ...newDoc.recurrenceRule, endsOn: master.recurrenceRule?.endsOn ?? null };
     }
     await newRef.set(newDoc);
+
+    // Migrate registrations that belong to occurrences >= occurrenceDatum from old id to new id.
+    // Firestore doc IDs are composite (activiteitId_occurrenceDatum_memberId), so we must
+    // delete the old docs and create new ones with the updated activiteitId.
+    const orphanedSnap = await db
+      .collection('activiteitRegistraties')
+      .where('activiteitId', '==', id)
+      .where('occurrenceDatum', '>=', occurrenceDatum)
+      .get();
+
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < orphanedSnap.docs.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      orphanedSnap.docs.slice(i, i + BATCH_SIZE).forEach(d => {
+        const old = d.data() as ActiviteitRegistratieDoc;
+        const newId = `${newRef.id}_${old.occurrenceDatum}_${old.memberId}`;
+        const newRegRef = db.collection('activiteitRegistraties').doc(newId);
+        batch.set(newRegRef, { ...old, id: newId, activiteitId: newRef.id });
+        batch.delete(d.ref);
+      });
+      await batch.commit();
+    }
+
+    // Also migrate occurrence overrides for occurrences >= occurrenceDatum
+    const orphanedOverridesSnap = await db
+      .collection('activiteitOccurrences')
+      .where('activiteitId', '==', id)
+      .where('occurrenceDatum', '>=', occurrenceDatum)
+      .get();
+
+    for (let i = 0; i < orphanedOverridesSnap.docs.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      orphanedOverridesSnap.docs.slice(i, i + BATCH_SIZE).forEach(d => {
+        const old = d.data() as ActiviteitOccurrenceDoc;
+        const newId = `${newRef.id}_${old.occurrenceDatum}`;
+        const newOccRef = db.collection('activiteitOccurrences').doc(newId);
+        batch.set(newOccRef, { ...old, id: newId, activiteitId: newRef.id });
+        batch.delete(d.ref);
+      });
+      await batch.commit();
+    }
+
     return newDoc;
   }
 
@@ -237,6 +279,34 @@ export const deleteActiviteit = onCall({ region: REGION }, async (request) => {
       ? { ...master.recurrenceRule, endsOn: occurrenceDatum }
       : null;
     await ref.update({ recurrenceRule: updatedRule, updatedAt: now });
+
+    // Delete registrations for occurrences that are now truncated (>= occurrenceDatum)
+    const truncatedRegsSnap = await db
+      .collection('activiteitRegistraties')
+      .where('activiteitId', '==', id)
+      .where('occurrenceDatum', '>=', occurrenceDatum)
+      .get();
+
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < truncatedRegsSnap.docs.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      truncatedRegsSnap.docs.slice(i, i + BATCH_SIZE).forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+
+    // Delete occurrence overrides for truncated occurrences
+    const truncatedOverridesSnap = await db
+      .collection('activiteitOccurrences')
+      .where('activiteitId', '==', id)
+      .where('occurrenceDatum', '>=', occurrenceDatum)
+      .get();
+
+    for (let i = 0; i < truncatedOverridesSnap.docs.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      truncatedOverridesSnap.docs.slice(i, i + BATCH_SIZE).forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+
     return { success: true };
   }
 
@@ -296,7 +366,7 @@ export const registreerVoorActiviteit = onCall({ region: REGION }, async (reques
     throw new HttpsError('failed-precondition', 'Inschrijvingen zijn niet actief voor deze activiteit.');
   }
 
-  // Check max deelnemers
+  // Check max deelnemers (count 1 per registratie + aantalGasten)
   if (activiteit.maxDeelnemers !== null) {
     const countSnap = await db
       .collection('activiteitRegistraties')
@@ -304,7 +374,11 @@ export const registreerVoorActiviteit = onCall({ region: REGION }, async (reques
       .where('occurrenceDatum', '==', occurrenceDatum)
       .where('status', '==', 'aangemeld')
       .get();
-    if (countSnap.size >= activiteit.maxDeelnemers) {
+    const totalDeelnemers = countSnap.docs.reduce(
+      (sum, d) => sum + 1 + ((d.data() as ActiviteitRegistratieDoc).aantalGasten ?? 0),
+      0
+    );
+    if (totalDeelnemers >= activiteit.maxDeelnemers) {
       throw new HttpsError('resource-exhausted', 'Maximum aantal deelnemers bereikt.');
     }
   }
@@ -408,7 +482,7 @@ export const registreerNamensLid = onCall({ region: REGION }, async (request) =>
     throw new HttpsError('failed-precondition', 'Inschrijvingen zijn niet actief voor deze activiteit.');
   }
 
-  // Check max deelnemers
+  // Check max deelnemers (count 1 per registratie + aantalGasten)
   if (activiteit.maxDeelnemers !== null) {
     const countSnap = await db
       .collection('activiteitRegistraties')
@@ -416,7 +490,11 @@ export const registreerNamensLid = onCall({ region: REGION }, async (request) =>
       .where('occurrenceDatum', '==', occurrenceDatum)
       .where('status', '==', 'aangemeld')
       .get();
-    if (countSnap.size >= activiteit.maxDeelnemers) {
+    const totalDeelnemers = countSnap.docs.reduce(
+      (sum, d) => sum + 1 + ((d.data() as ActiviteitRegistratieDoc).aantalGasten ?? 0),
+      0
+    );
+    if (totalDeelnemers >= activiteit.maxDeelnemers) {
       throw new HttpsError('resource-exhausted', 'Maximum aantal deelnemers bereikt.');
     }
   }
