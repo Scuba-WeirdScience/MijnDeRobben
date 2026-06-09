@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.14.0",
+    "date": "2026-06-09",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Nieuw dashboard met een overzicht van je geleende materialen en aankomende activiteiten",
+          "Het dashboard is nu de standaard startpagina na het aanmelden"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.13.2",
     "date": "2026-06-03",
     "sections": [

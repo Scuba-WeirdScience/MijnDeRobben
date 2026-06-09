@@ -30,6 +30,11 @@
           <!-- Desktop nav links -->
           <div class="hidden md:flex items-center gap-6">
             @if (auth.isAuthenticated()) {
+              <a routerLink="/dashboard" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
+                 class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
+                Dashboard
+              </a>
+
               <a routerLink="/members" routerLinkActive="text-scuba-600 dark:text-scuba-400 font-semibold"
                  class="text-gray-600 dark:text-gray-300 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors">
                 Leden
@@ -284,6 +289,11 @@
         @if (mobileOpen) {
           <div class="md:hidden pb-4 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
             @if (auth.isAuthenticated()) {
+              <a routerLink="/dashboard" (click)="mobileOpen=false"
+                 class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
+                Dashboard
+              </a>
+
               <a routerLink="/members" (click)="mobileOpen=false"
                  class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-scuba-50 dark:hover:bg-scuba-900/20">
                 Leden

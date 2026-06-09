@@ -1,0 +1,116 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-scuba-600 border-t-transparent"></div>
+    </div>
+  } @else if (fout(); as foutMsg) {
+    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-400">
+      {{ foutMsg }}
+    </div>
+  } @else {
+    <div
+      cdkDropList
+      cdkDropListOrientation="mixed"
+      (cdkDropListDropped)="drop($event)"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-min"
+    >
+      @for (widget of widgetOrder(); track widget) {
+        <div cdkDrag class="touch-none">
+          <div
+            class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden"
+          >
+            <!-- Widget header -->
+            <div
+              class="flex items-center gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-grab active:cursor-grabbing select-none"
+              cdkDragHandle
+            >
+              <svg lucideMenu class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"></svg>
+              @if (widget === 'leningen') {
+                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Mijn geleende materialen</h2>
+              } @else {
+                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Aankomende activiteiten</h2>
+              }
+            </div>
+
+            <!-- Widget body -->
+            <div class="p-5">
+              @if (widget === 'leningen') {
+                @if (alleenOpenLeningen().length === 0) {
+                  <div class="text-center py-8">
+                    <div class="text-4xl mb-3">🤿</div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Je hebt momenteel geen materialen geleend.</p>
+                    <a routerLink="/members" class="mt-4 inline-block px-4 py-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-sm font-semibold">
+                      Bekijk beschikbaar materiaal
+                    </a>
+                  </div>
+                } @else {
+                  <div class="space-y-3">
+                    @for (lening of alleenOpenLeningen(); track lening.id) {
+                      <div class="flex items-start justify-between gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                        <div class="min-w-0">
+                          <p class="font-medium text-gray-900 dark:text-white text-sm">{{ lening.materiaalNaam }}</p>
+                          @if (lening.materiaalTypeNaam) {
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ lening.materiaalTypeNaam }}</p>
+                          }
+                          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Geleend op {{ lening.uitgeleendDatum }}</p>
+                        </div>
+                        <app-badge variant="info">Actief</app-badge>
+                      </div>
+                    }
+                  </div>
+                  <a routerLink="/mijn-materialen" class="mt-4 inline-block text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
+                    Bekijk alles →
+                  </a>
+                }
+              } @else if (widget === 'activiteiten') {
+                @if (upcomingOccurrences().length === 0) {
+                  <div class="text-center py-8">
+                    <div class="text-4xl mb-3">📅</div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Geen aankomende activiteiten.</p>
+                    <a routerLink="/activiteiten" class="mt-4 inline-block px-4 py-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-sm font-semibold">
+                      Bekijk alle activiteiten
+                    </a>
+                  </div>
+                } @else {
+                  <div class="space-y-3">
+                    @for (occ of upcomingOccurrences(); track occ.activiteitId + '|' + occ.occurrenceDatum) {
+                      <a
+                        [routerLink]="['/activiteiten', occ.activiteitId]"
+                        [queryParams]="{ datum: occ.occurrenceDatum }"
+                        class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
+                      >
+                        <div class="flex items-start justify-between gap-3">
+                          <div class="min-w-0">
+                            <p class="text-xs text-scuba-600 dark:text-scuba-400 font-medium">
+                              {{ occ.startDatumTijd | localeDateTime }}
+                            </p>
+                            <p class="font-medium text-gray-900 dark:text-white text-sm mt-0.5">{{ occ.titel }}</p>
+                            @if (occ.locatieNaam) {
+                              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ occ.locatieNaam }}</p>
+                            }
+                          </div>
+                          <div class="flex flex-col items-end gap-1 shrink-0">
+                            @if (isIngeschreven(occ)) {
+                              <app-badge variant="success">Aangemeld</app-badge>
+                            }
+                          </div>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                  <a routerLink="/activiteiten" class="mt-4 inline-block text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
+                    Bekijk alle activiteiten →
+                  </a>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
