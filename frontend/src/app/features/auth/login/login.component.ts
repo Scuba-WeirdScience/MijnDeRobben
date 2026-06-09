@@ -48,7 +48,7 @@ export class LoginComponent {
         // User exists but has no role yet — needs validation step
         this.loginStep.set('geboortedatum');
       } else {
-        this.router.navigate(['/members']);
+        this.router.navigate(['/dashboard']);
       }
     } catch (err: unknown) {
       if (err instanceof LoginApiError) {
@@ -83,7 +83,7 @@ export class LoginComponent {
 
     try {
       await this.auth.validateGeboortedatum(dob);
-      this.router.navigate(['/members']);
+      this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       if (err instanceof LoginApiError && err.code === 'InvalidGeboortedatum') {
         this.geboortedatumError.set('Geboortedatum komt niet overeen. Probeer opnieuw.');
