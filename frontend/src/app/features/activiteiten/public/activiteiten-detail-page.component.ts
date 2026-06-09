@@ -1,7 +1,18 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { SpinnerComponent, ButtonComponent, ConfirmDialogComponent } from '../../../shared/components/design-system';
+import {
+  SpinnerComponent,
+  ButtonComponent,
+  ConfirmDialogComponent,
+} from '../../../shared/components/design-system';
 import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -20,7 +31,15 @@ import { MemberService, Member } from '../../members/services/member.service';
 @Component({
   selector: 'app-activiteiten-detail-page',
   standalone: true,
-  imports: [RouterLink, SpinnerComponent, ButtonComponent, ConfirmDialogComponent, ActiviteitInschrijvingComponent, LocaleDateTimePipe],
+  imports: [
+    RouterLink,
+    SpinnerComponent,
+    ButtonComponent,
+    ConfirmDialogComponent,
+    ActiviteitInschrijvingComponent,
+    LocaleDateTimePipe,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteiten-detail-page.component.html',
 })
 export class ActiviteitenDetailPageComponent implements OnInit {
@@ -45,9 +64,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
   readonly confirmReset = signal(false);
   readonly loadingRegistraties = signal(false);
 
-  readonly isAdminOfOrganisator = computed(() =>
-    this.auth.hasAnyRole(['Beheer', 'Bestuur'])
-  );
+  readonly isAdminOfOrganisator = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
   /** Totaal aantal bezette plaatsen: 1 per registratie + aantal gasten */
   readonly aantalDeelnemers = computed((): number =>
@@ -70,7 +87,8 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const loc = this.locatie();
     if (loc?.kaartLink) return loc.kaartLink;
     const zoekterm = loc?.adres || this.occurrence()?.locatieNaam || this.occurrence()?.locatieVrij;
-    if (zoekterm) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(zoekterm)}`;
+    if (zoekterm)
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(zoekterm)}`;
     return null;
   });
 
@@ -96,7 +114,12 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const a = this.activiteit();
     if (!a) return null;
     const datum = this.occurrenceDatum() ?? a.startDatumTijd.substring(0, 10);
-    const results = generateOccurrences([a], new Date(datum + 'T00:00:00'), new Date(datum + 'T23:59:59'), this.overrides());
+    const results = generateOccurrences(
+      [a],
+      new Date(datum + 'T00:00:00'),
+      new Date(datum + 'T23:59:59'),
+      this.overrides()
+    );
     return results[0] ?? null;
   });
 
@@ -105,7 +128,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const map = new Map<string, ActiviteitRegistratieDoc | null>();
     const alleReg = this.registraties();
     for (const kind of this.kinderen()) {
-      const reg = alleReg.find(r => r.memberId === kind.id && r.status === 'aangemeld') ?? null;
+      const reg = alleReg.find((r) => r.memberId === kind.id && r.status === 'aangemeld') ?? null;
       map.set(kind.id, reg);
     }
     return map;
@@ -117,30 +140,32 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     if (datum) this.occurrenceDatum.set(datum);
 
     this.service.getActiviteit(id).subscribe({
-      next: a => {
+      next: (a) => {
         this.activiteit.set(a);
         // Laad locatiedetails als de activiteit een gekoppelde locatie heeft
         if (a.locatieId) {
           this.service.getLocaties().subscribe({
-            next: locaties => this.locatie.set(locaties.find(l => l.id === a.locatieId) ?? null),
+            next: (locaties) =>
+              this.locatie.set(locaties.find((l) => l.id === a.locatieId) ?? null),
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             error: () => {},
           });
         }
         this.service.getOccurrenceOverrides(id).subscribe({
-          next: overrides => {
+          next: (overrides) => {
             this.overrides.set(overrides);
             this.loading.set(false);
             // Load registratie after occurrence() is fully resolved so the
             // datum match is reliable (occurrence depends on overrides).
             if (this.auth.isAuthenticated()) {
               this.service.getMijnRegistraties().subscribe({
-                next: list => {
+                next: (list) => {
                   const resolvedDatum = this.occurrence()?.occurrenceDatum ?? datum;
-                  const occ = list.find(r =>
-                    r.activiteitId === id &&
-                    (!resolvedDatum || r.occurrenceDatum === resolvedDatum) &&
-                    r.status === 'aangemeld'
+                  const occ = list.find(
+                    (r) =>
+                      r.activiteitId === id &&
+                      (!resolvedDatum || r.occurrenceDatum === resolvedDatum) &&
+                      r.status === 'aangemeld'
                   );
                   this.mijnRegistratie.set(occ ?? null);
                 },
@@ -150,7 +175,7 @@ export class ActiviteitenDetailPageComponent implements OnInit {
               this.loadRegistraties(id);
               // Kinderen laden voor verzorger-context
               this.memberService.getMijnKinderen().subscribe({
-                next: kids => this.kinderen.set(kids),
+                next: (kids) => this.kinderen.set(kids),
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 error: () => {},
               });
@@ -168,12 +193,13 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     const id = this.activiteit()?.id;
     if (!id) return;
     this.service.getMijnRegistraties().subscribe({
-      next: list => {
+      next: (list) => {
         const resolvedDatum = this.occurrence()?.occurrenceDatum ?? this.occurrenceDatum();
-        const occ = list.find(r =>
-          r.activiteitId === id &&
-          (!resolvedDatum || r.occurrenceDatum === resolvedDatum) &&
-          r.status === 'aangemeld'
+        const occ = list.find(
+          (r) =>
+            r.activiteitId === id &&
+            (!resolvedDatum || r.occurrenceDatum === resolvedDatum) &&
+            r.status === 'aangemeld'
         );
         this.mijnRegistratie.set(occ ?? null);
       },
@@ -194,8 +220,8 @@ export class ActiviteitenDetailPageComponent implements OnInit {
     if (!resolvedDatum) return;
     this.loadingRegistraties.set(true);
     this.service.getRegistraties(activiteitId, resolvedDatum).subscribe({
-      next: list => {
-        this.registraties.set(list.filter(r => r.status === 'aangemeld'));
+      next: (list) => {
+        this.registraties.set(list.filter((r) => r.status === 'aangemeld'));
         this.loadingRegistraties.set(false);
       },
       error: () => this.loadingRegistraties.set(false),

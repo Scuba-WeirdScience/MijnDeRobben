@@ -1,4 +1,12 @@
-import { Component, input, output, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  OnInit,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { z } from 'zod';
 import { MemberService } from '../../../members/services/member.service';
@@ -6,7 +14,12 @@ import { Member } from '../../../members/services/member.service';
 import { createSignalForm } from '../../../../shared/forms/signal-form';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LocaleDateInputComponent } from '../../../../shared/components/locale-date-input/locale-date-input.component';
-import { ButtonComponent, SidePanelComponent, SpinnerComponent, FormFieldComponent } from '../../../../shared/components/design-system';
+import {
+  ButtonComponent,
+  SidePanelComponent,
+  SpinnerComponent,
+  FormFieldComponent,
+} from '../../../../shared/components/design-system';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MemberBrevetPanelComponent } from '../../brevet-management/member-brevet-panel/member-brevet-panel.component';
 import { LeningService, LeningDoc } from '../../../lening/lening.service';
@@ -16,10 +29,7 @@ import { VerzorgerTabComponent } from '../verzorger-tab/verzorger-tab.component'
 // ── Local form schema ──────────────────────────────────────────────────────
 // Uses email for create (instead of userId — the backend creates the Auth account).
 const MemberFormSchema = z.object({
-  email: z
-    .string()
-    .email('Voer een geldig e-mailadres in.')
-    .optional(),
+  email: z.string().email('Voer een geldig e-mailadres in.').optional(),
   firstName: z
     .string()
     .min(1, 'Voornaam is verplicht')
@@ -42,29 +52,51 @@ const MemberFormSchema = z.object({
 });
 
 type MemberFormValue = z.infer<typeof MemberFormSchema>;
-type TextField = 'email' | 'firstName' | 'lastName' | 'dateOfBirth' | 'joinDate' | 'endOfMembership';
+type TextField =
+  | 'email'
+  | 'firstName'
+  | 'lastName'
+  | 'dateOfBirth'
+  | 'joinDate'
+  | 'endOfMembership';
 type Tab = 'gegevens' | 'brevetten' | 'leningen' | 'verzorger';
 
 const EMPTY: MemberFormValue = {
-  email:       '',
-  firstName:   '',
-  lastName:    '',
+  email: '',
+  firstName: '',
+  lastName: '',
   dateOfBirth: '',
-  joinDate:    '',
-  isActive:    true,
+  joinDate: '',
+  isActive: true,
   endOfMembership: null,
 };
 
 // ── Tailwind safelist — do NOT remove ──────────────────────────────────────
 const _TW_SAFELIST = [
-  'bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-700',
-  'text-amber-700', 'dark:text-amber-300', 'text-amber-500',
+  'bg-amber-50',
+  'dark:bg-amber-900/20',
+  'border-amber-200',
+  'dark:border-amber-700',
+  'text-amber-700',
+  'dark:text-amber-300',
+  'text-amber-500',
 ];
 
 @Component({
   selector: 'app-member-form',
   standalone: true,
-  imports: [FormsModule, LocaleDateInputComponent, SidePanelComponent, ButtonComponent, SpinnerComponent, MemberBrevetPanelComponent, LucideTriangleAlert, FormFieldComponent, VerzorgerTabComponent],
+  imports: [
+    FormsModule,
+    LocaleDateInputComponent,
+    SidePanelComponent,
+    ButtonComponent,
+    SpinnerComponent,
+    MemberBrevetPanelComponent,
+    LucideTriangleAlert,
+    FormFieldComponent,
+    VerzorgerTabComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './member-form.component.html',
 })
 export class MemberFormComponent implements OnInit {
@@ -87,7 +119,8 @@ export class MemberFormComponent implements OnInit {
   readonly leningenLoading = signal(false);
 
   /** Check if user can view leningen */
-  readonly canViewLeningen = () => this.auth.hasAnyRole(['Beheer', 'Bestuur', 'MateriaalCommissie']);
+  readonly canViewLeningen = () =>
+    this.auth.hasAnyRole(['Beheer', 'Bestuur', 'MateriaalCommissie']);
 
   readonly form = createSignalForm(MemberFormSchema, EMPTY);
 
@@ -98,19 +131,24 @@ export class MemberFormComponent implements OnInit {
     const m = this.member();
     if (m) {
       this.form.reset({
-        firstName:   m.firstName,
-        lastName:    m.lastName,
+        firstName: m.firstName,
+        lastName: m.lastName,
         dateOfBirth: m.dateOfBirth?.substring(0, 10) ?? '',
-        joinDate:    m.joinDate?.substring(0, 10) ?? '',
-        isActive:    m.isActive,
+        joinDate: m.joinDate?.substring(0, 10) ?? '',
+        isActive: m.isActive,
         endOfMembership: m.endOfMembership ?? null,
       });
 
       if (this.canViewLeningen()) {
         this.leningenLoading.set(true);
         this.leningService.getByMemberId(m.id).subscribe({
-          next: list => { this.leningen.set(list); this.leningenLoading.set(false); },
-          error: () => { this.leningenLoading.set(false); }
+          next: (list) => {
+            this.leningen.set(list);
+            this.leningenLoading.set(false);
+          },
+          error: () => {
+            this.leningenLoading.set(false);
+          },
         });
       }
     }
@@ -142,11 +180,11 @@ export class MemberFormComponent implements OnInit {
 
     this.saving.set(true);
     const payload = {
-      firstName:   val!.firstName,
-      lastName:    val!.lastName,
+      firstName: val!.firstName,
+      lastName: val!.lastName,
       dateOfBirth: val!.dateOfBirth,
-      joinDate:    val!.joinDate || undefined,
-      isActive:    val!.isActive,
+      joinDate: val!.joinDate || undefined,
+      isActive: val!.isActive,
       endOfMembership: val!.endOfMembership || null,
     };
 
@@ -160,10 +198,14 @@ export class MemberFormComponent implements OnInit {
         });
 
     obs.subscribe({
-      next:  () => { this.saving.set(false); this.saved.emit(); },
+      next: () => {
+        this.saving.set(false);
+        this.saved.emit();
+      },
       error: (err) => {
         this.saving.set(false);
-        const message = err?.error?.error ?? err?.message ?? 'Opslaan mislukt. Probeer het opnieuw.';
+        const message =
+          err?.error?.error ?? err?.message ?? 'Opslaan mislukt. Probeer het opnieuw.';
         this.submitError.set(message);
         this.toast.error(message);
       },

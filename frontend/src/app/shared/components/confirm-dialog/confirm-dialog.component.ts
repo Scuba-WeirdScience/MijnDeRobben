@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '../button/button.component';
 
 /**
@@ -27,14 +27,15 @@ import { ButtonComponent } from '../button/button.component';
   standalone: true,
   imports: [ButtonComponent],
   templateUrl: './confirm-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class ConfirmDialogComponent {
-  readonly title          = input.required<string>();
-  readonly message        = input.required<string>();
-  readonly confirmLabel   = input<string>('Bevestigen');
+  readonly title = input.required<string>();
+  readonly message = input.required<string>();
+  readonly confirmLabel = input<string>('Bevestigen');
   readonly confirmVariant = input<'danger' | 'primary'>('danger');
-  readonly loading        = input<boolean>(false);
-  readonly confirmed      = output<void>();
-  readonly cancelled      = output<void>();
+  readonly loading = input<boolean>(false);
+  readonly confirmed = output<void>();
+  readonly cancelled = output<void>();
 }

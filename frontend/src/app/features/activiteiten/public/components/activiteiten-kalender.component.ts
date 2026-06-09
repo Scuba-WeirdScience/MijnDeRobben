@@ -1,4 +1,4 @@
-import { Component, input, output, computed, signal } from '@angular/core';
+import { Component, input, output, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import {
   format,
@@ -20,9 +20,14 @@ import { ActiviteitKaartComponent } from './activiteit-kaart.component';
 
 // In the component .ts file — do NOT remove
 const _TW_SAFELIST = [
-  'bg-scuba-100', 'text-scuba-700', 'dark:bg-scuba-900/40', 'dark:text-scuba-300',
-  'hover:bg-scuba-200', 'dark:hover:bg-scuba-800/40',
-  'text-scuba-500', 'dark:text-scuba-400',
+  'bg-scuba-100',
+  'text-scuba-700',
+  'dark:bg-scuba-900/40',
+  'dark:text-scuba-300',
+  'hover:bg-scuba-200',
+  'dark:hover:bg-scuba-800/40',
+  'text-scuba-500',
+  'dark:text-scuba-400',
 ];
 
 const MAX_CHIPS = 2;
@@ -31,6 +36,7 @@ const MAX_CHIPS = 2;
   selector: 'app-activiteiten-kalender',
   standalone: true,
   imports: [NgClass, ButtonComponent, ActiviteitKaartComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteiten-kalender.component.html',
 })
 export class ActiviteitenKalenderComponent {
@@ -64,7 +70,7 @@ export class ActiviteitenKalenderComponent {
   });
 
   occurrencesVoorDag(dag: Date): ResolvedOccurrence[] {
-    return this.occurrences().filter(occ => {
+    return this.occurrences().filter((occ) => {
       try {
         return isSameDay(parseISO(occ.startDatumTijd), dag);
       } catch {

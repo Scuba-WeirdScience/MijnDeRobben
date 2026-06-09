@@ -1,14 +1,19 @@
-import { Component, input, output, signal, effect } from '@angular/core';
+import { Component, input, output, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '../../../../shared/components/design-system';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { inject } from '@angular/core';
-import { ActiviteitenService, ResolvedOccurrence, ActiviteitRegistratieDoc } from '../../activiteiten.service';
+import {
+  ActiviteitenService,
+  ResolvedOccurrence,
+  ActiviteitRegistratieDoc,
+} from '../../activiteiten.service';
 import { Member } from '../../../members/services/member.service';
 
 @Component({
   selector: 'app-activiteit-inschrijving',
   standalone: true,
   imports: [ButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteit-inschrijving.component.html',
 })
 export class ActiviteitInschrijvingComponent {
@@ -50,22 +55,24 @@ export class ActiviteitInschrijvingComponent {
   onInschrijven(): void {
     const occ = this.occurrence();
     this.saving.set(true);
-    this.service.registreer({
-      activiteitId: occ.activiteitId,
-      occurrenceDatum: occ.occurrenceDatum,
-      aantalGasten: this.aantalGasten(),
-      opmerking: this.opmerking() || null,
-    }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.toast.success('Je bent ingeschreven.');
-        this.geregistreerd.emit();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.toast.error('Inschrijven mislukt. Probeer opnieuw.');
-      },
-    });
+    this.service
+      .registreer({
+        activiteitId: occ.activiteitId,
+        occurrenceDatum: occ.occurrenceDatum,
+        aantalGasten: this.aantalGasten(),
+        opmerking: this.opmerking() || null,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.toast.success('Je bent ingeschreven.');
+          this.geregistreerd.emit();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Inschrijven mislukt. Probeer opnieuw.');
+        },
+      });
   }
 
   onAnnuleren(): void {
@@ -87,23 +94,25 @@ export class ActiviteitInschrijvingComponent {
   onGastenOpslaan(): void {
     const occ = this.occurrence();
     this.saving.set(true);
-    this.service.updateGasten({
-      activiteitId: occ.activiteitId,
-      occurrenceDatum: occ.occurrenceDatum,
-      aantalGasten: this.bewerkAantalGasten(),
-      opmerking: this.bewerkOpmerking() || null,
-    }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.bewerkGasten.set(false);
-        this.toast.success('Gasten bijgewerkt.');
-        this.geregistreerd.emit();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.toast.error('Opslaan mislukt. Probeer opnieuw.');
-      },
-    });
+    this.service
+      .updateGasten({
+        activiteitId: occ.activiteitId,
+        occurrenceDatum: occ.occurrenceDatum,
+        aantalGasten: this.bewerkAantalGasten(),
+        opmerking: this.bewerkOpmerking() || null,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.bewerkGasten.set(false);
+          this.toast.success('Gasten bijgewerkt.');
+          this.geregistreerd.emit();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Opslaan mislukt. Probeer opnieuw.');
+        },
+      });
   }
 
   isKindSaving(kindId: string): boolean {
@@ -123,21 +132,23 @@ export class ActiviteitInschrijvingComponent {
   onKindInschrijven(kind: Member): void {
     const occ = this.occurrence();
     this.setKindSaving(kind.id, true);
-    this.service.registreerNamens({
-      activiteitId: occ.activiteitId,
-      occurrenceDatum: occ.occurrenceDatum,
-      namensLidId: kind.id,
-    }).subscribe({
-      next: () => {
-        this.setKindSaving(kind.id, false);
-        this.toast.success(`${kind.firstName} is ingeschreven.`);
-        this.geregistreerd.emit();
-      },
-      error: () => {
-        this.setKindSaving(kind.id, false);
-        this.toast.error(`Inschrijven van ${kind.firstName} mislukt.`);
-      },
-    });
+    this.service
+      .registreerNamens({
+        activiteitId: occ.activiteitId,
+        occurrenceDatum: occ.occurrenceDatum,
+        namensLidId: kind.id,
+      })
+      .subscribe({
+        next: () => {
+          this.setKindSaving(kind.id, false);
+          this.toast.success(`${kind.firstName} is ingeschreven.`);
+          this.geregistreerd.emit();
+        },
+        error: () => {
+          this.setKindSaving(kind.id, false);
+          this.toast.error(`Inschrijven van ${kind.firstName} mislukt.`);
+        },
+      });
   }
 
   onKindAnnuleren(kind: Member): void {

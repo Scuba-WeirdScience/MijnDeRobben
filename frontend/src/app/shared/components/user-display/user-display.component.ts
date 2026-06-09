@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 
 /** Deterministic background color from a GUID string. */
@@ -12,6 +12,7 @@ function guidToColor(guid: string): string {
   selector: 'app-user-display',
   standalone: true,
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './user-display.component.html',
 })
 export class UserDisplayComponent {
@@ -43,16 +44,16 @@ export class UserDisplayComponent {
   readonly bgColor = computed(() => guidToColor(this.member().id));
 
   readonly avatarSizeClass = computed(() => ({
-    'w-7 h-7':    this.size() === 'xs',
-    'w-8 h-8':    this.size() === 'sm',
-    'w-10 h-10':  this.size() === 'md',
-    'w-12 h-12':  this.size() === 'lg',
+    'w-7 h-7': this.size() === 'xs',
+    'w-8 h-8': this.size() === 'sm',
+    'w-10 h-10': this.size() === 'md',
+    'w-12 h-12': this.size() === 'lg',
   }));
 
   readonly textSizeClass = computed(() => ({
     'text-[10px]': this.size() === 'xs',
-    'text-xs':     this.size() === 'sm',
-    'text-sm':     this.size() === 'md',
-    'text-base':   this.size() === 'lg',
+    'text-xs': this.size() === 'sm',
+    'text-sm': this.size() === 'md',
+    'text-base': this.size() === 'lg',
   }));
 }

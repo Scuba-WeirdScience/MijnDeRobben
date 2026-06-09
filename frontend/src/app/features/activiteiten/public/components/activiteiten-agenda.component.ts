@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { EmptyStateComponent } from '../../../../shared/components/design-system';
@@ -14,6 +14,7 @@ interface MaandGroep {
   selector: 'app-activiteiten-agenda',
   standalone: true,
   imports: [EmptyStateComponent, ActiviteitKaartComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteiten-agenda.component.html',
 })
 export class ActiviteitenAgendaComponent {

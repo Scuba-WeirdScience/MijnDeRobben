@@ -1,10 +1,4 @@
-import {
-  Component,
-  input,
-  output,
-  signal,
-  effect,
-} from '@angular/core';
+import { Component, input, output, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { format, parse, isValid, parseISO } from 'date-fns';
 
 // ---------------------------------------------------------------------------
@@ -25,20 +19,18 @@ import { format, parse, isValid, parseISO } from 'date-fns';
 function detectRegionalFormatString(): string {
   try {
     const parts = new Intl.DateTimeFormat(undefined, {
-      year:  'numeric',
+      year: 'numeric',
       month: '2-digit',
-      day:   '2-digit',
+      day: '2-digit',
     }).formatToParts(new Date(2000, 0, 15)); // 15 Jan 2000
 
     const tokenMap: Record<string, string> = {
-      day:   'dd',
+      day: 'dd',
       month: 'MM',
-      year:  'yyyy',
+      year: 'yyyy',
     };
 
-    return parts
-      .map(p => tokenMap[p.type] ?? (p.type === 'literal' ? p.value : ''))
-      .join('');
+    return parts.map((p) => tokenMap[p.type] ?? (p.type === 'literal' ? p.value : '')).join('');
   } catch {
     // SSR / very old browser safety net
     return 'dd-MM-yyyy';
@@ -55,7 +47,7 @@ function formatToPlaceholder(fmtStr: string): string {
 
 // Compute once at module load — format string is the same for the entire session.
 const REGIONAL_FORMAT = detectRegionalFormatString();
-const PLACEHOLDER     = formatToPlaceholder(REGIONAL_FORMAT);
+const PLACEHOLDER = formatToPlaceholder(REGIONAL_FORMAT);
 
 // ---------------------------------------------------------------------------
 // Component
@@ -84,6 +76,7 @@ const PLACEHOLDER     = formatToPlaceholder(REGIONAL_FORMAT);
   selector: 'app-locale-date-input',
   standalone: true,
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './locale-date-input.component.html',
 })
 export class LocaleDateInputComponent {
@@ -100,7 +93,7 @@ export class LocaleDateInputComponent {
   // eslint-disable-next-line @angular-eslint/no-output-native
   readonly blur = output<void>();
 
-  readonly placeholder  = PLACEHOLDER;
+  readonly placeholder = PLACEHOLDER;
   readonly displayValue = signal('');
 
   /** True while the user has the field focused — prevents re-formatting mid-type. */
@@ -108,11 +101,14 @@ export class LocaleDateInputComponent {
 
   constructor() {
     // Sync display value from input signal when not typing
-    effect(() => {
-      if (!this.typing) {
-        this.displayValue.set(this.isoToDisplay(this.value()));
-      }
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        if (!this.typing) {
+          this.displayValue.set(this.isoToDisplay(this.value()));
+        }
+      },
+      { }
+    );
   }
 
   onFocus(): void {

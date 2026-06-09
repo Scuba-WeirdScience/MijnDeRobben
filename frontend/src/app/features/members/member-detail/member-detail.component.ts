@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MemberService } from '../services/member.service';
 import { Member } from '../services/member.service';
@@ -11,7 +11,15 @@ import { LocaleDateTimePipe } from '../../../shared/pipes/locale-datetime.pipe';
 @Component({
   selector: 'app-member-detail',
   standalone: true,
-  imports: [RouterLink, SpinnerComponent, MemberStatusPipe, FullNamePipe, LocaleDatePipe, LocaleDateTimePipe],
+  imports: [
+    RouterLink,
+    SpinnerComponent,
+    MemberStatusPipe,
+    FullNamePipe,
+    LocaleDatePipe,
+    LocaleDateTimePipe,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './member-detail.component.html',
 })
 export class MemberDetailComponent {
@@ -27,8 +35,14 @@ export class MemberDetailComponent {
     if (id) {
       this.loading.set(true);
       this.memberService.getById(id).subscribe({
-        next: m => { this.member.set(m); this.loading.set(false); },
-        error: () => { this.error.set('Lid niet gevonden.'); this.loading.set(false); }
+        next: (m) => {
+          this.member.set(m);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Lid niet gevonden.');
+          this.loading.set(false);
+        },
       });
     }
   }

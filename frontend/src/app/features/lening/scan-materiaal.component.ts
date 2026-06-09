@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,7 @@ import { LucideChevronLeft } from '../../shared/lucide-icons';
   selector: 'app-scan-materiaal',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideChevronLeft],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './scan-materiaal.component.html',
 })
 export class ScanMateriaalComponent implements OnInit {
@@ -43,14 +44,14 @@ export class ScanMateriaalComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.leningService.getMateriaalStatus(this.materiaalId).subscribe({
-      next: res => {
+      next: (res) => {
         this.status.set(res);
         this.loading.set(false);
       },
       error: () => {
         this.error.set('Kon materiaalstatus niet laden.');
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -67,7 +68,7 @@ export class ScanMateriaalComponent implements OnInit {
       error: (err: any) => {
         this.error.set(err?.error?.error || 'Lenen mislukt. Probeer opnieuw.');
         this.taking.set(false);
-      }
+      },
     });
   }
 
@@ -91,7 +92,7 @@ export class ScanMateriaalComponent implements OnInit {
       error: (err: any) => {
         this.error.set(err?.error?.error || 'Retournneren mislukt. Probeer opnieuw.');
         this.returning.set(false);
-      }
+      },
     });
   }
 

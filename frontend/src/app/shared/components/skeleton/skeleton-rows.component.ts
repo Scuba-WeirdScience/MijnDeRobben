@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { SkeletonComponent } from './skeleton.component';
 
 /**
@@ -10,6 +10,7 @@ import { SkeletonComponent } from './skeleton.component';
   selector: 'app-skeleton-rows',
   standalone: true,
   imports: [SkeletonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './skeleton-rows.component.html',
 })
 export class SkeletonRowsComponent {

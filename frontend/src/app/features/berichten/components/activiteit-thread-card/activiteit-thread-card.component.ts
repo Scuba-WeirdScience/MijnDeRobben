@@ -1,23 +1,45 @@
-import { Component, computed, inject, signal, effect } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../../../../shared/components/design-system';
+import {
+  ButtonComponent,
+  SpinnerComponent,
+  ConfirmDialogComponent,
+} from '../../../../shared/components/design-system';
 import { ActiviteitRegistratieDoc } from '../../../../core/models/firestore-types';
 
 // Tailwind safelist for dynamic classes
 const _TW_SAFELIST = [
-  'bg-green-50', 'dark:bg-green-900/20', 'border-green-200', 'dark:border-green-700',
-  'text-green-700', 'dark:text-green-400', 'text-green-800', 'dark:text-green-300',
-  'bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-700',
-  'text-amber-700', 'dark:text-amber-400',
+  'bg-green-50',
+  'dark:bg-green-900/20',
+  'border-green-200',
+  'dark:border-green-700',
+  'text-green-700',
+  'dark:text-green-400',
+  'text-green-800',
+  'dark:text-green-300',
+  'bg-amber-50',
+  'dark:bg-amber-900/20',
+  'border-amber-200',
+  'dark:border-amber-700',
+  'text-amber-700',
+  'dark:text-amber-400',
 ];
 
 @Component({
   selector: 'app-activiteit-thread-card',
   standalone: true,
   imports: [CommonModule, ButtonComponent, SpinnerComponent, ConfirmDialogComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteit-thread-card.component.html',
 })
 export class ActiviteitThreadCardComponent {
@@ -47,7 +69,7 @@ export class ActiviteitThreadCardComponent {
   readonly deelnemers = computed(() => this.threadsService.occurrenceRegistraties());
 
   readonly aangemeldDeelnemers = computed(() =>
-    this.deelnemers().filter(r => r.status === 'aangemeld' || r.status === 'aanwezig')
+    this.deelnemers().filter((r) => r.status === 'aangemeld' || r.status === 'aanwezig')
   );
 
   readonly visible = computed(() => {
@@ -92,7 +114,7 @@ export class ActiviteitThreadCardComponent {
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)
-      .map(n => n.charAt(0).toUpperCase())
+      .map((n) => n.charAt(0).toUpperCase())
       .join('');
   }
 

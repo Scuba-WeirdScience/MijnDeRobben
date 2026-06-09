@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 /**
  * DSC PageContainer component.
@@ -22,6 +22,7 @@ import { Component } from '@angular/core';
       <ng-content />
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class PageContainerComponent {}

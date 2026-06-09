@@ -1,9 +1,22 @@
-import { Component, input, inject, signal, computed, effect } from '@angular/core';
+import {
+  Component,
+  input,
+  inject,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { forkJoin, from, of } from 'rxjs';
 import { BrevetManagementService, CreateBrevetRequest } from '../brevet-management.service';
-import { MemberOrganisatieService, CreateMemberOrganisatieRequest, UpdateMemberOrganisatieRequest, MemberOrganisatie } from '../member-organisatie.service';
+import {
+  MemberOrganisatieService,
+  CreateMemberOrganisatieRequest,
+  UpdateMemberOrganisatieRequest,
+  MemberOrganisatie,
+} from '../member-organisatie.service';
 import { LookupTypeDoc } from '../../lookup-type-management/lookup-type-management.component';
 import { call } from '../../../../core/firebase/callable';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
@@ -11,8 +24,9 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
 import { LocaleDatePipe } from '../../../../shared/pipes/locale-date.pipe';
 import { BrevetDoc as Brevet } from '../../../profile/brevet.service';
 import {
-  ORGANISATIES_MET_LOGBOEK, Organisatie,
-  OrganisatieMetLogboek
+  ORGANISATIES_MET_LOGBOEK,
+  Organisatie,
+  OrganisatieMetLogboek,
 } from '../../../../../generated/api-schemas';
 
 /** One row in the checkbox list — one BrevetTypeDef mapped to its current state */
@@ -38,6 +52,7 @@ interface OrgBrevetGroup {
   selector: 'app-member-brevet-panel',
   standalone: true,
   imports: [CommonModule, FormsModule, SpinnerComponent, LocaleDatePipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './member-brevet-panel.component.html',
 })
 export class MemberBrevetPanelComponent {
@@ -68,8 +83,8 @@ export class MemberBrevetPanelComponent {
   readonly orgToDelete = signal<MemberOrganisatie | null>(null);
 
   readonly availableOrgsForAdd = computed<OrganisatieMetLogboek[]>(() => {
-    const linked = new Set(this.organisaties().map(o => o.organisatie));
-    return [...ORGANISATIES_MET_LOGBOEK].filter(o => !linked.has(o));
+    const linked = new Set(this.organisaties().map((o) => o.organisatie));
+    return [...ORGANISATIES_MET_LOGBOEK].filter((o) => !linked.has(o));
   });
 
   // ── Organisatie form state ────────────────────────────────────────────────
@@ -103,7 +118,7 @@ export class MemberBrevetPanelComponent {
   private loadBrevetTypeDefs(): void {
     this.brevetTypeDefsLoading.set(true);
     from(call<void, LookupTypeDoc[]>('getBrevetTypes')).subscribe({
-      next: list => {
+      next: (list) => {
         this.brevetTypeDefs.set(list);
         this.brevetTypeDefsLoading.set(false);
         this.buildCheckboxGroups();
@@ -111,7 +126,7 @@ export class MemberBrevetPanelComponent {
       error: () => {
         this.brevetTypeDefsLoading.set(false);
         this.toast.error('Kon brevet types niet laden.');
-      }
+      },
     });
   }
 
@@ -120,12 +135,15 @@ export class MemberBrevetPanelComponent {
   private loadBrevetten(memberId: string): void {
     this.brevLoading.set(true);
     this.brevetService.getByMember(memberId).subscribe({
-      next: list => {
+      next: (list) => {
         this.brevetten.set(list);
         this.brevLoading.set(false);
         this.buildCheckboxGroups();
       },
-      error: () => { this.brevLoading.set(false); this.toast.error('Kon brevetten niet laden.'); }
+      error: () => {
+        this.brevLoading.set(false);
+        this.toast.error('Kon brevetten niet laden.');
+      },
     });
   }
 
@@ -139,13 +157,13 @@ export class MemberBrevetPanelComponent {
 
     // Match logic: brevet.organisatie + brevet.niveau === def.organisatie + def.naam
     // Only consider brevetten with brevetType === 'Brevet' (not Specialiteit)
-    const brevetBrevetten = brevetten.filter(b => b.brevetType === 'Brevet');
+    const brevetBrevetten = brevetten.filter((b) => b.brevetType === 'Brevet');
 
     // Group defs by organisatie, preserving volgorde sort
     const orgMap = new Map<string, BrevetCheckboxRow[]>();
     for (const def of [...defs].sort((a, b) => a.volgorde - b.volgorde)) {
       const match = brevetBrevetten.find(
-        b => b.organisatie === def.organisatie && b.niveau === def.naam
+        (b) => b.organisatie === def.organisatie && b.niveau === def.naam
       );
 
       const row: BrevetCheckboxRow = {
@@ -164,7 +182,7 @@ export class MemberBrevetPanelComponent {
     // Preserve expansion state if groups already exist
     const existingGroups = this.checkboxGroups();
     const existingExpansion = new Map<string, boolean>(
-      existingGroups.map(g => [g.organisatie, g.isExpanded()])
+      existingGroups.map((g) => [g.organisatie, g.isExpanded()])
     );
 
     const groups: OrgBrevetGroup[] = [];
@@ -187,16 +205,16 @@ export class MemberBrevetPanelComponent {
       row.behaaldDatum = '';
     }
     // Trigger change detection by rebuilding the signal value
-    this.checkboxGroups.update(groups => [...groups]);
+    this.checkboxGroups.update((groups) => [...groups]);
   }
 
   onDateChange(row: BrevetCheckboxRow, date: string): void {
     row.behaaldDatum = date;
-    this.checkboxGroups.update(groups => [...groups]);
+    this.checkboxGroups.update((groups) => [...groups]);
   }
 
   toggleOrgGroup(group: OrgBrevetGroup): void {
-    group.isExpanded.update(v => !v);
+    group.isExpanded.update((v) => !v);
   }
 
   // ── Save brevetten (diff-based) ───────────────────────────────────────────
@@ -207,7 +225,7 @@ export class MemberBrevetPanelComponent {
     const currentBrevetten = this.brevetten();
 
     const toCreate: CreateBrevetRequest[] = [];
-    const toDelete: string[] = [];        // existing brevet ids to delete
+    const toDelete: string[] = []; // existing brevet ids to delete
     const toUpdate: { id: string; dto: CreateBrevetRequest }[] = [];
 
     for (const group of groups) {
@@ -224,7 +242,7 @@ export class MemberBrevetPanelComponent {
           });
         } else if (row.checked && row.existingId !== null) {
           // Existing: check if date changed
-          const existing = currentBrevetten.find(b => b.id === row.existingId);
+          const existing = currentBrevetten.find((b) => b.id === row.existingId);
           const existingDate = existing?.behaaldDatum ?? '';
           if ((row.behaaldDatum || '') !== (existingDate || '')) {
             toUpdate.push({
@@ -236,7 +254,7 @@ export class MemberBrevetPanelComponent {
                 brevetType: 'Brevet',
                 behaaldDatum: row.behaaldDatum || null,
                 notities: existing?.notities ?? null,
-              }
+              },
             });
           }
         } else if (!row.checked && row.existingId !== null) {
@@ -253,8 +271,8 @@ export class MemberBrevetPanelComponent {
 
     this.checkboxSaving.set(true);
 
-    const creates$ = toCreate.map(dto => this.brevetService.create(memberId, dto));
-    const deletes$ = toDelete.map(id => this.brevetService.delete(memberId, id));
+    const creates$ = toCreate.map((dto) => this.brevetService.create(memberId, dto));
+    const deletes$ = toDelete.map((id) => this.brevetService.delete(memberId, id));
     const updates$ = toUpdate.map(({ id, dto }) => this.brevetService.update(memberId, id, dto));
 
     forkJoin([...creates$, ...deletes$, ...updates$, of(null)]).subscribe({
@@ -267,7 +285,7 @@ export class MemberBrevetPanelComponent {
       error: () => {
         this.checkboxSaving.set(false);
         this.toast.error('Opslaan mislukt. Probeer opnieuw.');
-      }
+      },
     });
   }
 
@@ -288,7 +306,7 @@ export class MemberBrevetPanelComponent {
         this.loadOrganisaties(this.memberId());
         this.toast.success('Brevet verwijderd.');
       },
-      error: () => this.toast.error('Verwijderen mislukt.')
+      error: () => this.toast.error('Verwijderen mislukt.'),
     });
   }
 
@@ -297,8 +315,14 @@ export class MemberBrevetPanelComponent {
   private loadOrganisaties(memberId: string): void {
     this.orgLoading.set(true);
     this.organisatieService.getByMember(memberId).subscribe({
-      next: list => { this.organisaties.set(list); this.orgLoading.set(false); },
-      error: () => { this.orgLoading.set(false); this.toast.error('Kon organisatiekoppelingen niet laden.'); }
+      next: (list) => {
+        this.organisaties.set(list);
+        this.orgLoading.set(false);
+      },
+      error: () => {
+        this.orgLoading.set(false);
+        this.toast.error('Kon organisatiekoppelingen niet laden.');
+      },
     });
   }
 
@@ -323,7 +347,10 @@ export class MemberBrevetPanelComponent {
   }
 
   saveOrg(): void {
-    if (!this.orgForm.organisatie) { this.orgFormError.set('Organisatie is verplicht.'); return; }
+    if (!this.orgForm.organisatie) {
+      this.orgFormError.set('Organisatie is verplicht.');
+      return;
+    }
 
     this.orgFormError.set(null);
     this.orgSaving.set(true);
@@ -345,7 +372,7 @@ export class MemberBrevetPanelComponent {
         error: () => {
           this.orgSaving.set(false);
           this.orgFormError.set('Opslaan mislukt. Probeer opnieuw.');
-        }
+        },
       });
     } else {
       const dto: CreateMemberOrganisatieRequest = {
@@ -362,11 +389,12 @@ export class MemberBrevetPanelComponent {
         },
         error: (err) => {
           this.orgSaving.set(false);
-          const msg = err?.status === 409
-            ? 'Deze organisatie is al gekoppeld voor dit lid.'
-            : 'Opslaan mislukt. Probeer opnieuw.';
+          const msg =
+            err?.status === 409
+              ? 'Deze organisatie is al gekoppeld voor dit lid.'
+              : 'Opslaan mislukt. Probeer opnieuw.';
           this.orgFormError.set(msg);
-        }
+        },
       });
     }
   }
@@ -385,7 +413,7 @@ export class MemberBrevetPanelComponent {
         this.loadOrganisaties(this.memberId());
         this.toast.success('Organisatiekoppeling verwijderd.');
       },
-      error: () => this.toast.error('Verwijderen mislukt.')
+      error: () => this.toast.error('Verwijderen mislukt.'),
     });
   }
 

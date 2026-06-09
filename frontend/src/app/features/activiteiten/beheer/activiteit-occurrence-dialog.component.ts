@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '../../../shared/components/design-system';
 import { EditScope } from '../activiteiten.service';
 
@@ -7,6 +7,7 @@ import { EditScope } from '../activiteiten.service';
   standalone: true,
   imports: [ButtonComponent],
   templateUrl: './activiteit-occurrence-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class ActiviteitOccurrenceDialogComponent {

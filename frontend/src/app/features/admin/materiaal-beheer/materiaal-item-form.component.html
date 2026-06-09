@@ -1,13 +1,20 @@
 <app-side-panel
   [title]="editingMateriaal() ? 'Materiaal bewerken' : 'Materiaal toevoegen'"
-  [subtitle]="editingMateriaal()?.naam"
-  (closed)="cancelled.emit()">
-
+  [subtitle]="$safeNavigationMigration(editingMateriaal()?.naam)"
+  (closed)="cancelled.emit()"
+>
   <div class="space-y-5">
-
-    <app-form-field label="Naam *" hint="Bijv. Duikfles #1, Trimvest Medium, …"
-      [error]="firstError(materiaalFormState.naam())">
-      <app-input [value]="materiaalNaam()" (valueChange)="setMateriaalNaam($event)" [maxLength]="100" placeholder="Naam" />
+    <app-form-field
+      label="Naam *"
+      hint="Bijv. Duikfles #1, Trimvest Medium, …"
+      [error]="firstError(materiaalFormState.naam())"
+    >
+      <app-input
+        [value]="materiaalNaam()"
+        (valueChange)="setMateriaalNaam($event)"
+        [maxLength]="100"
+        placeholder="Naam"
+      />
     </app-form-field>
 
     <app-form-field label="Serienummer" hint="Optioneel">
@@ -16,14 +23,14 @@
 
     <!-- Custom property fields -->
     @for (field of customPropertyDefs(); track field.key) {
-      <app-form-field [label]="field.label">
-        <app-input
-          [value]="materiaalFormCustomProperties()[field.key] ?? ''"
-          (input)="setCustomProp(field.key, $any($event.target).value)"
-          [maxLength]="100"
-          [placeholder]="field.label"
-        />
-      </app-form-field>
+    <app-form-field [label]="field.label">
+      <app-input
+        [value]="materiaalFormCustomProperties()[field.key] ?? ''"
+        (input)="setCustomProp(field.key, $any($event.target).value)"
+        [maxLength]="100"
+        [placeholder]="field.label"
+      />
+    </app-form-field>
     }
 
     <app-form-field label="Aankoopdatum" hint="Optioneel">
@@ -31,7 +38,12 @@
     </app-form-field>
 
     <app-form-field label="Notities" hint="Optioneel">
-      <app-textarea [(value)]="materiaalNotities" [rows]="3" [maxLength]="500" placeholder="Optionele notities…" />
+      <app-textarea
+        [(value)]="materiaalNotities"
+        [rows]="3"
+        [maxLength]="500"
+        placeholder="Optionele notities…"
+      />
     </app-form-field>
 
     <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
@@ -41,9 +53,7 @@
 
     <!-- Leninggeschiedenis (alleen bij bewerken) -->
     @if (editingMateriaal()) {
-      <app-materiaal-lening-history [materiaalId]="editingMateriaal()!.id" />
+    <app-materiaal-lening-history [materiaalId]="editingMateriaal()!.id" />
     }
-
   </div>
-
 </app-side-panel>

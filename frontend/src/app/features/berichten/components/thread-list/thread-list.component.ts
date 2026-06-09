@@ -1,28 +1,73 @@
-import { Component, computed, effect, inject, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  output,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService, ThreadConcept, Thread } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { LucidePlus, LucideHash, LucidePin, LucideTrash2, LucideFileText } from '../../../../shared/lucide-icons';
-import { InputComponent, TextareaComponent, ButtonComponent, SkeletonRowsComponent, ConfirmDialogComponent } from '../../../../shared/components/design-system';
+import {
+  LucidePlus,
+  LucideHash,
+  LucidePin,
+  LucideTrash2,
+  LucideFileText,
+} from '../../../../shared/lucide-icons';
+import {
+  InputComponent,
+  TextareaComponent,
+  ButtonComponent,
+  SkeletonRowsComponent,
+  ConfirmDialogComponent,
+} from '../../../../shared/components/design-system';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 import { ActiviteitenService, ActiviteitDoc } from '../../../activiteiten/activiteiten.service';
 
 const _TW_SAFELIST = [
-  'bg-scuba-50', 'border-scuba-500', 'text-scuba-700',
-  'dark:bg-scuba-900/20', 'dark:border-scuba-400', 'dark:text-scuba-300',
-  'border-amber-400', 'bg-amber-50', 'dark:bg-amber-900/20',
-  'hover:text-red-500', 'dark:hover:text-red-400',
-  'bg-scuba-600', 'hover:bg-scuba-700',
-  'text-scuba-600', 'dark:text-scuba-400', 'hover:underline', 'text-red-500',
+  'bg-scuba-50',
+  'border-scuba-500',
+  'text-scuba-700',
+  'dark:bg-scuba-900/20',
+  'dark:border-scuba-400',
+  'dark:text-scuba-300',
+  'border-amber-400',
+  'bg-amber-50',
+  'dark:bg-amber-900/20',
+  'hover:text-red-500',
+  'dark:hover:text-red-400',
+  'bg-scuba-600',
+  'hover:bg-scuba-700',
+  'text-scuba-600',
+  'dark:text-scuba-400',
+  'hover:underline',
+  'text-red-500',
 ];
 
 @Component({
   selector: 'app-thread-list',
   templateUrl: './thread-list.component.html',
   standalone: true,
-  imports: [CommonModule, LucidePlus, LucideHash, LucidePin, LucideTrash2, LucideFileText, InputComponent, TextareaComponent, ButtonComponent, EmoticonPipe, SkeletonRowsComponent, ConfirmDialogComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    CommonModule,
+    LucidePlus,
+    LucideHash,
+    LucidePin,
+    LucideTrash2,
+    LucideFileText,
+    InputComponent,
+    TextareaComponent,
+    ButtonComponent,
+    EmoticonPipe,
+    SkeletonRowsComponent,
+    ConfirmDialogComponent,
+  ],
 })
 export class ThreadListComponent {
   protected readonly groepenService = inject(GroepenService);
@@ -38,9 +83,7 @@ export class ThreadListComponent {
     this.auth.hasAnyRole(['Beheer', 'Bestuur', 'MateriaalCommissie', 'InstructieKader'])
   );
 
-  readonly isAdmin = computed(() =>
-    this.auth.hasAnyRole(['Beheer', 'Bestuur'])
-  );
+  readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
   canDeleteThread(thread: Thread): boolean {
     return this.isAdmin() || thread.authorUid === this.auth.currentUser()?.uid;
@@ -65,7 +108,9 @@ export class ThreadListComponent {
   showActiviteitConfirm = signal(false);
   deleting = signal(false);
 
-  get isBusy(): boolean { return this.saving() || this.savingConcept(); }
+  get isBusy(): boolean {
+    return this.saving() || this.savingConcept();
+  }
 
   constructor() {
     // Reset form when active groep changes
@@ -117,7 +162,11 @@ export class ThreadListComponent {
     if (!groepId || !this.newTitle().trim() || this.isBusy) return;
     this.saving.set(true);
     try {
-      const result = await this.threadsService.createThread(groepId, this.newTitle(), this.newBody());
+      const result = await this.threadsService.createThread(
+        groepId,
+        this.newTitle(),
+        this.newBody()
+      );
       this.toast.success('Thread aangemaakt.');
       this.showForm.set(false);
       this.saveAsDraft.set(false);
@@ -137,7 +186,12 @@ export class ThreadListComponent {
     this.savingConcept.set(true);
     try {
       const conceptId = this.editingConceptId() ?? undefined;
-      await this.threadsService.saveThreadConcept(groepId, this.newTitle(), this.newBody(), conceptId);
+      await this.threadsService.saveThreadConcept(
+        groepId,
+        this.newTitle(),
+        this.newBody(),
+        conceptId
+      );
       this.toast.success('Concept opgeslagen.');
       this.showForm.set(false);
       this.saveAsDraft.set(false);
@@ -239,7 +293,9 @@ export class ThreadListComponent {
     try {
       await this.threadsService.deleteThread(thread.id, groepId);
       if (alsoDeleteActiviteit && activiteit) {
-        await this.activiteitenService.deleteActiviteit({ id: activiteit.id, scope: 'all' }).toPromise();
+        await this.activiteitenService
+          .deleteActiviteit({ id: activiteit.id, scope: 'all' })
+          .toPromise();
         this.toast.success('Thread en activiteit verwijderd.');
       } else {
         this.toast.success('Thread verwijderd.');

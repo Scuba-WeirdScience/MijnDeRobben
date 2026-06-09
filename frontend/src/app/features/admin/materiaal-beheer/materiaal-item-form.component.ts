@@ -1,7 +1,20 @@
 import {
-  Component, input, output, inject, signal, computed, effect,
+  Component,
+  input,
+  output,
+  inject,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { ButtonComponent, FormFieldComponent, InputComponent, SidePanelComponent, TextareaComponent } from '../../../shared/components/design-system';
+import {
+  ButtonComponent,
+  FormFieldComponent,
+  InputComponent,
+  SidePanelComponent,
+  TextareaComponent,
+} from '../../../shared/components/design-system';
 import { FieldTree, form } from '@angular/forms/signals';
 import { CustomPropertyDef, Materiaal } from '../../../../generated/api-schemas';
 import { materiaalFormSchema, type MateriaalForm } from '../../../shared/form-schemas';
@@ -12,7 +25,15 @@ import { MateriaalLeningHistoryComponent } from './materiaal-lening-history.comp
 @Component({
   selector: 'app-materiaal-item-form',
   standalone: true,
-  imports: [SidePanelComponent, ButtonComponent, FormFieldComponent, InputComponent, TextareaComponent, MateriaalLeningHistoryComponent],
+  imports: [
+    SidePanelComponent,
+    ButtonComponent,
+    FormFieldComponent,
+    InputComponent,
+    TextareaComponent,
+    MateriaalLeningHistoryComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './materiaal-item-form.component.html',
 })
 export class MateriaalItemFormComponent {
@@ -46,24 +67,38 @@ export class MateriaalItemFormComponent {
   readonly editingMateriaal = computed(() => this.materiaal());
 
   readonly materiaalNaam = computed(() => this.formModel().naam);
-  setMateriaalNaam(v: string): void { this.formModel.update(m => ({ ...m, naam: v })); }
+  setMateriaalNaam(v: string): void {
+    this.formModel.update((m) => ({ ...m, naam: v }));
+  }
 
-  get materiaalSerienummer(): string { return this.formModel().serienummer ?? ''; }
-  set materiaalSerienummer(v: string) { this.formModel.update(m => ({ ...m, serienummer: v })); }
+  get materiaalSerienummer(): string {
+    return this.formModel().serienummer ?? '';
+  }
+  set materiaalSerienummer(v: string) {
+    this.formModel.update((m) => ({ ...m, serienummer: v }));
+  }
 
-  get materiaalAankoopDatum(): string { return this.formModel().aankoopDatum ?? ''; }
-  set materiaalAankoopDatum(v: string) { this.formModel.update(m => ({ ...m, aankoopDatum: v })); }
+  get materiaalAankoopDatum(): string {
+    return this.formModel().aankoopDatum ?? '';
+  }
+  set materiaalAankoopDatum(v: string) {
+    this.formModel.update((m) => ({ ...m, aankoopDatum: v }));
+  }
 
-  get materiaalNotities(): string { return this.formModel().notities ?? ''; }
-  set materiaalNotities(v: string) { this.formModel.update(m => ({ ...m, notities: v })); }
+  get materiaalNotities(): string {
+    return this.formModel().notities ?? '';
+  }
+  set materiaalNotities(v: string) {
+    this.formModel.update((m) => ({ ...m, notities: v }));
+  }
 
   protected firstError(field: { errors(): readonly { message?: string }[] }): string {
     const errs = field.errors();
-    return errs.length > 0 ? (errs[0].message ?? '') : '';
+    return errs.length > 0 ? errs[0].message ?? '' : '';
   }
 
   setCustomProp(key: string, value: string): void {
-    this.materiaalFormCustomProperties.update(m => ({ ...m, [key]: value }));
+    this.materiaalFormCustomProperties.update((m) => ({ ...m, [key]: value }));
   }
 
   // ── Lifecycle ───────────────────────────────────────────────────────────
@@ -73,16 +108,21 @@ export class MateriaalItemFormComponent {
     this.materiaalFormState = form<MateriaalForm>(this.formModel, materiaalFormSchema as any);
 
     // Watch input and populate form when materiaal changes
-    effect(() => {
-      const m = this.materiaal();
-      this.formModel.set({
-        naam: m?.naam ?? '',
-        serienummer: m?.serienummer ?? '',
-        aankoopDatum: m?.aankoopDatum ?? '',
-        notities: m?.notities ?? '',
-      });
-      this.materiaalFormCustomProperties.set(m?.customProperties ? { ...m.customProperties } : {});
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        const m = this.materiaal();
+        this.formModel.set({
+          naam: m?.naam ?? '',
+          serienummer: m?.serienummer ?? '',
+          aankoopDatum: m?.aankoopDatum ?? '',
+          notities: m?.notities ?? '',
+        });
+        this.materiaalFormCustomProperties.set(
+          m?.customProperties ? { ...m.customProperties } : {}
+        );
+      },
+      { }
+    );
   }
 
   // ── Save ───────────────────────────────────────────────────────────────
@@ -125,7 +165,7 @@ export class MateriaalItemFormComponent {
       error: () => {
         this.saving.set(false);
         this.toast.error('Opslaan mislukt. Probeer opnieuw.');
-      }
+      },
     });
   }
 }

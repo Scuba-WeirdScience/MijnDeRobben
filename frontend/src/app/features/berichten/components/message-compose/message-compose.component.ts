@@ -1,6 +1,14 @@
 import {
-  Component, inject, signal, ViewChild, ElementRef,
-  OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA, effect,
+  Component,
+  inject,
+  signal,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+  NgZone,
+  CUSTOM_ELEMENTS_SCHEMA,
+  effect,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Quill from 'quill';
@@ -15,8 +23,15 @@ const EDITOR_OVERHEAD_PX = 52;
 
 // Safelist for dynamically computed classes (Tailwind scans .ts files as plain text)
 const _TW_SAFELIST = [
-  'bg-amber-50', 'dark:bg-amber-900/10', '-mx-3', 'px-3', 'rounded',
-  'text-scuba-600', 'dark:text-scuba-400', 'hover:underline', 'text-red-500',
+  'bg-amber-50',
+  'dark:bg-amber-900/10',
+  '-mx-3',
+  'px-3',
+  'rounded',
+  'text-scuba-600',
+  'dark:text-scuba-400',
+  'hover:underline',
+  'text-red-500',
 ];
 
 interface EmojiSuggestion {
@@ -32,6 +47,7 @@ interface EmojiSuggestion {
   host: { class: 'flex flex-col overflow-hidden' },
   standalone: true,
   imports: [CommonModule, LucideSend],
+  changeDetection: ChangeDetectionStrategy.Eager,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class MessageComposeComponent implements OnDestroy {
@@ -83,7 +99,7 @@ export class MessageComposeComponent implements OnDestroy {
     });
 
     // Observe host resize (driven by drag handle)
-    this.hostObs = new ResizeObserver(entries => {
+    this.hostObs = new ResizeObserver((entries) => {
       this.zone.run(() => this.hostHeight.set(entries[0].contentRect.height));
     });
     this.hostObs.observe(this.hostEl.nativeElement);
@@ -122,8 +138,9 @@ export class MessageComposeComponent implements OnDestroy {
                 handler: () => {
                   if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
                     this.zone.run(() =>
-                      this.emojiSelectedIndex.update(i =>
-                        (i - 1 + this.emojiSuggestions().length) % this.emojiSuggestions().length
+                      this.emojiSelectedIndex.update(
+                        (i) =>
+                          (i - 1 + this.emojiSuggestions().length) % this.emojiSuggestions().length
                       )
                     );
                     return false;
@@ -136,8 +153,8 @@ export class MessageComposeComponent implements OnDestroy {
                 handler: () => {
                   if (this.zone.run(() => this.emojiSuggestions().length > 0)) {
                     this.zone.run(() =>
-                      this.emojiSelectedIndex.update(i =>
-                        (i + 1) % this.emojiSuggestions().length
+                      this.emojiSelectedIndex.update(
+                        (i) => (i + 1) % this.emojiSuggestions().length
                       )
                     );
                     return false;
@@ -182,13 +199,19 @@ export class MessageComposeComponent implements OnDestroy {
     if (!this.quill) return;
 
     const range = this.quill.getSelection();
-    if (!range) { this.clearEmojiSuggestions(); return; }
+    if (!range) {
+      this.clearEmojiSuggestions();
+      return;
+    }
 
     const cursorIndex = range.index;
     const text = this.quill.getText(0, cursorIndex);
 
     const colonIndex = text.lastIndexOf(':');
-    if (colonIndex === -1) { this.clearEmojiSuggestions(); return; }
+    if (colonIndex === -1) {
+      this.clearEmojiSuggestions();
+      return;
+    }
 
     const query = text.slice(colonIndex + 1);
 
@@ -292,7 +315,12 @@ export class MessageComposeComponent implements OnDestroy {
     if (!threadId || !groepId || !this.body().trim() || this.savingConcept()) return;
     this.savingConcept.set(true);
     try {
-      const result = await this.messagesService.saveMessageConcept(threadId, groepId, this.body(), this.currentConceptId() ?? undefined);
+      const result = await this.messagesService.saveMessageConcept(
+        threadId,
+        groepId,
+        this.body(),
+        this.currentConceptId() ?? undefined
+      );
       this.currentConceptId.set(result.messageId);
       this.clearEditor();
       this.currentConceptId.set(null);

@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 /**
  * Single shimmer bar. Use [width] and [height] to size it.
@@ -7,10 +7,11 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'app-skeleton',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './skeleton.component.html',
 })
 export class SkeletonComponent {
-  readonly width  = input<string>('100%');
+  readonly width = input<string>('100%');
   readonly height = input<string>('1rem');
   readonly rounded = input<string>('rounded');
 }

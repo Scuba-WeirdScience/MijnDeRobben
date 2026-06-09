@@ -45,8 +45,7 @@ No lint/test commands are wired into CI. Run `npx ng build` as the primary verif
 
 ## Angular package versions — CRITICAL
 
-All `@angular/*` and `@angular-devkit/*` packages **must be pinned to exact `21.2.7`** (no `^` or `~`).  
-`@angular/build` and `@angular/cli` only reach `21.2.7` while other packages go to `21.2.9`, causing peer-dep conflicts.  
+All `@angular/*` and `@angular-devkit/*` packages **must be pinned to exact `22.0.0`** (no `^` or `~`).  
 `pnpm install` works without issues only when all are pinned at the same exact version.
 
 ---

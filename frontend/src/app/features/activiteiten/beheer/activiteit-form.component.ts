@@ -1,5 +1,12 @@
 import {
-  Component, input, output, inject, signal, computed, effect,
+  Component,
+  input,
+  output,
+  inject,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FieldTree, form } from '@angular/forms/signals';
@@ -11,7 +18,12 @@ import {
   RichTextEditorComponent,
 } from '../../../shared/components/design-system';
 import { ToastService } from '../../../shared/components/toast/toast.service';
-import { ActiviteitenService, ActiviteitDoc, LocatieDoc, RecurrenceRule } from '../activiteiten.service';
+import {
+  ActiviteitenService,
+  ActiviteitDoc,
+  LocatieDoc,
+  RecurrenceRule,
+} from '../activiteiten.service';
 import { GroepenService, Groep } from '../../berichten/services/groepen.service';
 import { ThreadsService, Thread } from '../../berichten/services/threads.service';
 import { MemberService, Member } from '../../members/services/member.service';
@@ -22,8 +34,11 @@ import { firestore } from '@fire';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
-  'bg-scuba-600', 'hover:bg-scuba-700', 'dark:bg-scuba-500',
-  'bg-gray-200', 'dark:bg-gray-700',
+  'bg-scuba-600',
+  'hover:bg-scuba-700',
+  'dark:bg-scuba-500',
+  'bg-gray-200',
+  'dark:bg-gray-700',
 ];
 
 export interface GroepMetThreads {
@@ -44,6 +59,7 @@ export interface GroepMetThreads {
     RichTextEditorComponent,
     ActiviteitRecurrenceFormComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteit-form.component.html',
 })
 export class ActiviteitFormComponent {
@@ -131,7 +147,7 @@ export class ActiviteitFormComponent {
     const tid = this.formModel().threadId;
     if (!tid) return null;
     for (const g of this.groepenMetThreads()) {
-      const t = g.threads.find(t => t.id === tid);
+      const t = g.threads.find((t) => t.id === tid);
       if (t) return `${g.groep.name} › ${t.title}`;
     }
     return null;
@@ -139,7 +155,7 @@ export class ActiviteitFormComponent {
 
   protected firstError(field: { errors(): readonly { message?: string }[] }): string {
     const errs = field.errors();
-    return errs.length > 0 ? (errs[0].message ?? '') : '';
+    return errs.length > 0 ? errs[0].message ?? '' : '';
   }
 
   numToStr(v: number | null | undefined): string {
@@ -158,87 +174,90 @@ export class ActiviteitFormComponent {
     // Laad alle threads voor alle groepen eenmalig
     this.laadAlleThreads();
 
-    effect(() => {
-      const a = this.activiteit();
-      this.formModel.set({
-        titel: a?.titel ?? '',
-        startDatumTijd: this.toDatetimeLocal(a?.startDatumTijd ?? ''),
-        eindDatumTijd: this.toDatetimeLocal(a?.eindDatumTijd ?? ''),
-        locatieId: a?.locatieId ?? null,
-        locatieVrij: a?.locatieVrij ?? null,
-        beschrijving: a?.beschrijving ?? '',
-        inschrijvingenActief: a?.inschrijvingenActief ?? false,
-        isPubliek: a?.isPubliek ?? false,
-        maxDeelnemers: a?.maxDeelnemers ?? null,
-        registratiesZichtbaar: a?.registratiesZichtbaar ?? 'iedereen',
-        gasten: a?.gasten ?? false,
-        maxGastenPerInschrijving: a?.maxGastenPerInschrijving ?? null,
-        gastKosten: a?.gastKosten ?? null,
-        lidKosten: a?.lidKosten ?? null,
-        organisatorId: a?.organisatorId ?? null,
-        organisatorLeden: a?.organisatorLeden ?? [],
-        organisatorGroepId: a?.organisatorGroepId ?? null,
-        bannerUrl: a?.bannerUrl ?? null,
-        threadId: a?.threadId ?? null,
-        groepId: a?.groepId ?? null,
-        nieuweThreadTitel: null,
-        nieuweThreadBericht: null,
-      });
-      this.showInschrijvingen.set(a?.inschrijvingenActief ?? false);
-      this.showHerhaling.set(a?.isHerhalend ?? false);
-      this.recurrenceRule.set(a?.recurrenceRule ?? null);
-      this.locatieType.set(a?.locatieVrij ? 'vrij' : 'selecteer');
-      this.nieuweThreadModus.set(false);
-      // Reset dirty tracking after form is loaded — use the same object we just set
-      const snapshot: ActiviteitForm = {
-        titel: a?.titel ?? '',
-        startDatumTijd: this.toDatetimeLocal(a?.startDatumTijd ?? ''),
-        eindDatumTijd: this.toDatetimeLocal(a?.eindDatumTijd ?? ''),
-        locatieId: a?.locatieId ?? null,
-        locatieVrij: a?.locatieVrij ?? null,
-        beschrijving: a?.beschrijving ?? '',
-        inschrijvingenActief: a?.inschrijvingenActief ?? false,
-        isPubliek: a?.isPubliek ?? false,
-        maxDeelnemers: a?.maxDeelnemers ?? null,
-        registratiesZichtbaar: a?.registratiesZichtbaar ?? 'iedereen',
-        gasten: a?.gasten ?? false,
-        maxGastenPerInschrijving: a?.maxGastenPerInschrijving ?? null,
-        gastKosten: a?.gastKosten ?? null,
-        lidKosten: a?.lidKosten ?? null,
-        organisatorId: a?.organisatorId ?? null,
-        organisatorLeden: a?.organisatorLeden ?? [],
-        organisatorGroepId: a?.organisatorGroepId ?? null,
-        bannerUrl: a?.bannerUrl ?? null,
-        threadId: a?.threadId ?? null,
-        groepId: a?.groepId ?? null,
-        nieuweThreadTitel: null,
-        nieuweThreadBericht: null,
-      };
-      this.cleanModel.set(snapshot);
-
-      // Open de groep van de gekoppelde thread automatisch
-      if (a?.groepId) {
-        this.groepenMetThreads.update(list =>
-          list.map(g => g.groep.id === a.groepId ? { ...g, open: true } : g)
-        );
-      }
-
-      // Herstel geselecteerde leden
-      const leden = a?.organisatorLeden ?? [];
-      this.geselecteerdeOrganisatorLeden.set([]);
-      if (leden.length > 0) {
-        leden.forEach(uid => {
-          this.members.getById(uid).subscribe({
-            next: m => {
-              this.geselecteerdeOrganisatorLeden.update(prev => {
-                if (prev.find(x => x.id === m.id)) return prev;
-                return [...prev, m];
-              });
-            },
-          });
+    effect(
+      () => {
+        const a = this.activiteit();
+        this.formModel.set({
+          titel: a?.titel ?? '',
+          startDatumTijd: this.toDatetimeLocal(a?.startDatumTijd ?? ''),
+          eindDatumTijd: this.toDatetimeLocal(a?.eindDatumTijd ?? ''),
+          locatieId: a?.locatieId ?? null,
+          locatieVrij: a?.locatieVrij ?? null,
+          beschrijving: a?.beschrijving ?? '',
+          inschrijvingenActief: a?.inschrijvingenActief ?? false,
+          isPubliek: a?.isPubliek ?? false,
+          maxDeelnemers: a?.maxDeelnemers ?? null,
+          registratiesZichtbaar: a?.registratiesZichtbaar ?? 'iedereen',
+          gasten: a?.gasten ?? false,
+          maxGastenPerInschrijving: a?.maxGastenPerInschrijving ?? null,
+          gastKosten: a?.gastKosten ?? null,
+          lidKosten: a?.lidKosten ?? null,
+          organisatorId: a?.organisatorId ?? null,
+          organisatorLeden: a?.organisatorLeden ?? [],
+          organisatorGroepId: a?.organisatorGroepId ?? null,
+          bannerUrl: a?.bannerUrl ?? null,
+          threadId: a?.threadId ?? null,
+          groepId: a?.groepId ?? null,
+          nieuweThreadTitel: null,
+          nieuweThreadBericht: null,
         });
-      }
-    }, { allowSignalWrites: true });
+        this.showInschrijvingen.set(a?.inschrijvingenActief ?? false);
+        this.showHerhaling.set(a?.isHerhalend ?? false);
+        this.recurrenceRule.set(a?.recurrenceRule ?? null);
+        this.locatieType.set(a?.locatieVrij ? 'vrij' : 'selecteer');
+        this.nieuweThreadModus.set(false);
+        // Reset dirty tracking after form is loaded — use the same object we just set
+        const snapshot: ActiviteitForm = {
+          titel: a?.titel ?? '',
+          startDatumTijd: this.toDatetimeLocal(a?.startDatumTijd ?? ''),
+          eindDatumTijd: this.toDatetimeLocal(a?.eindDatumTijd ?? ''),
+          locatieId: a?.locatieId ?? null,
+          locatieVrij: a?.locatieVrij ?? null,
+          beschrijving: a?.beschrijving ?? '',
+          inschrijvingenActief: a?.inschrijvingenActief ?? false,
+          isPubliek: a?.isPubliek ?? false,
+          maxDeelnemers: a?.maxDeelnemers ?? null,
+          registratiesZichtbaar: a?.registratiesZichtbaar ?? 'iedereen',
+          gasten: a?.gasten ?? false,
+          maxGastenPerInschrijving: a?.maxGastenPerInschrijving ?? null,
+          gastKosten: a?.gastKosten ?? null,
+          lidKosten: a?.lidKosten ?? null,
+          organisatorId: a?.organisatorId ?? null,
+          organisatorLeden: a?.organisatorLeden ?? [],
+          organisatorGroepId: a?.organisatorGroepId ?? null,
+          bannerUrl: a?.bannerUrl ?? null,
+          threadId: a?.threadId ?? null,
+          groepId: a?.groepId ?? null,
+          nieuweThreadTitel: null,
+          nieuweThreadBericht: null,
+        };
+        this.cleanModel.set(snapshot);
+
+        // Open de groep van de gekoppelde thread automatisch
+        if (a?.groepId) {
+          this.groepenMetThreads.update((list) =>
+            list.map((g) => (g.groep.id === a.groepId ? { ...g, open: true } : g))
+          );
+        }
+
+        // Herstel geselecteerde leden
+        const leden = a?.organisatorLeden ?? [];
+        this.geselecteerdeOrganisatorLeden.set([]);
+        if (leden.length > 0) {
+          leden.forEach((uid) => {
+            this.members.getById(uid).subscribe({
+              next: (m) => {
+                this.geselecteerdeOrganisatorLeden.update((prev) => {
+                  if (prev.find((x) => x.id === m.id)) return prev;
+                  return [...prev, m];
+                });
+              },
+            });
+          });
+        }
+      },
+      { }
+    );
   }
 
   // ── Gesprek: laad alle threads ───────────────────────────────────────────────
@@ -268,13 +287,13 @@ export class ActiviteitFormComponent {
 
   private laadThreadsVoorGroepen(groepen: Groep[]): void {
     this.gesprekLaden.set(true);
-    const promises = groepen.map(groep => {
+    const promises = groepen.map((groep) => {
       const q = query(
         collection(firestore, 'groepen', groep.id, 'threads'),
         orderBy('title', 'asc')
       );
-      return getDocs(q).then(snap => {
-        const threads: Thread[] = snap.docs.map(d => {
+      return getDocs(q).then((snap) => {
+        const threads: Thread[] = snap.docs.map((d) => {
           const data = d.data();
           return {
             id: d.id,
@@ -297,24 +316,26 @@ export class ActiviteitFormComponent {
       });
     });
 
-    Promise.all(promises).then(result => {
-      // Toon enkel groepen met threads
-      this.groepenMetThreads.set(result.filter(g => g.threads.length > 0));
-      this.gesprekLaden.set(false);
-    }).catch(() => {
-      this.gesprekLaden.set(false);
-    });
+    Promise.all(promises)
+      .then((result) => {
+        // Toon enkel groepen met threads
+        this.groepenMetThreads.set(result.filter((g) => g.threads.length > 0));
+        this.gesprekLaden.set(false);
+      })
+      .catch(() => {
+        this.gesprekLaden.set(false);
+      });
   }
 
   selecteerThreadById(threadId: string): void {
     if (!threadId) {
-      this.formModel.update(m => ({ ...m, threadId: null, groepId: null }));
+      this.formModel.update((m) => ({ ...m, threadId: null, groepId: null }));
       return;
     }
     for (const g of this.groepenMetThreads()) {
-      const thread = g.threads.find(t => t.id === threadId);
+      const thread = g.threads.find((t) => t.id === threadId);
       if (thread) {
-        this.formModel.update(m => ({ ...m, threadId: thread.id, groepId: thread.groepId }));
+        this.formModel.update((m) => ({ ...m, threadId: thread.id, groepId: thread.groepId }));
         return;
       }
     }
@@ -323,21 +344,21 @@ export class ActiviteitFormComponent {
   selecteerThread(thread: Thread): void {
     const huidig = this.formModel().threadId;
     if (huidig === thread.id) {
-      this.formModel.update(m => ({ ...m, threadId: null, groepId: null }));
+      this.formModel.update((m) => ({ ...m, threadId: null, groepId: null }));
     } else {
-      this.formModel.update(m => ({ ...m, threadId: thread.id, groepId: thread.groepId }));
+      this.formModel.update((m) => ({ ...m, threadId: thread.id, groepId: thread.groepId }));
       this.nieuweThreadModus.set(false);
     }
   }
 
   toggleNieuweThread(): void {
-    this.nieuweThreadModus.update(v => !v);
+    this.nieuweThreadModus.update((v) => !v);
     if (this.nieuweThreadModus()) {
       // Wis eventuele bestaande selectie
-      this.formModel.update(m => ({ ...m, threadId: null, groepId: null }));
+      this.formModel.update((m) => ({ ...m, threadId: null, groepId: null }));
       this.nieuweThreadGroepId.set('');
     } else {
-      this.formModel.update(m => ({ ...m, nieuweThreadTitel: null, nieuweThreadBericht: null }));
+      this.formModel.update((m) => ({ ...m, nieuweThreadTitel: null, nieuweThreadBericht: null }));
     }
   }
 
@@ -353,7 +374,7 @@ export class ActiviteitFormComponent {
     this.ledenZoekenBezig.set(true);
     this.ledenZoekTimeout = setTimeout(() => {
       this.members.getAll(1, 10, zoekterm).subscribe({
-        next: r => {
+        next: (r) => {
           this.ledenZoekResultaten.set(r.items);
           this.ledenZoekenBezig.set(false);
         },
@@ -363,16 +384,22 @@ export class ActiviteitFormComponent {
   }
 
   voegLidToe(lid: Member): void {
-    if (this.geselecteerdeOrganisatorLeden().find(l => l.id === lid.id)) return;
-    this.geselecteerdeOrganisatorLeden.update(prev => [...prev, lid]);
-    this.formModel.update(m => ({ ...m, organisatorLeden: [...(m.organisatorLeden ?? []), lid.userId] }));
+    if (this.geselecteerdeOrganisatorLeden().find((l) => l.id === lid.id)) return;
+    this.geselecteerdeOrganisatorLeden.update((prev) => [...prev, lid]);
+    this.formModel.update((m) => ({
+      ...m,
+      organisatorLeden: [...(m.organisatorLeden ?? []), lid.userId],
+    }));
     this.ledenZoekterm.set('');
     this.ledenZoekResultaten.set([]);
   }
 
   verwijderLid(lid: Member): void {
-    this.geselecteerdeOrganisatorLeden.update(prev => prev.filter(l => l.id !== lid.id));
-    this.formModel.update(m => ({ ...m, organisatorLeden: (m.organisatorLeden ?? []).filter(uid => uid !== lid.userId) }));
+    this.geselecteerdeOrganisatorLeden.update((prev) => prev.filter((l) => l.id !== lid.id));
+    this.formModel.update((m) => ({
+      ...m,
+      organisatorLeden: (m.organisatorLeden ?? []).filter((uid) => uid !== lid.userId),
+    }));
   }
 
   lidNaam(lid: Member): string {
@@ -382,13 +409,13 @@ export class ActiviteitFormComponent {
   // ── Rest ─────────────────────────────────────────────────────────────────────
 
   onBeschrijvingChange(value: string): void {
-    this.formModel.update(m => ({ ...m, beschrijving: value }));
+    this.formModel.update((m) => ({ ...m, beschrijving: value }));
   }
 
   toggleInschrijvingen(): void {
     const next = !this.showInschrijvingen();
     this.showInschrijvingen.set(next);
-    this.formModel.update(m => ({ ...m, inschrijvingenActief: next }));
+    this.formModel.update((m) => ({ ...m, inschrijvingenActief: next }));
   }
 
   toggleHerhaling(): void {
@@ -428,11 +455,12 @@ export class ActiviteitFormComponent {
         titel: model.titel.trim(),
         startDatumTijd: model.startDatumTijd,
         eindDatumTijd: model.eindDatumTijd ?? '',
-        locatieId: this.locatieType() === 'selecteer' ? (model.locatieId || null) : null,
-        locatieNaam: this.locatieType() === 'selecteer' && model.locatieId
-          ? (this.locaties().find(l => l.id === model.locatieId)?.naam ?? null)
-          : null,
-        locatieVrij: this.locatieType() === 'vrij' ? (model.locatieVrij?.trim() || null) : null,
+        locatieId: this.locatieType() === 'selecteer' ? model.locatieId || null : null,
+        locatieNaam:
+          this.locatieType() === 'selecteer' && model.locatieId
+            ? this.locaties().find((l) => l.id === model.locatieId)?.naam ?? null
+            : null,
+        locatieVrij: this.locatieType() === 'vrij' ? model.locatieVrij?.trim() || null : null,
         beschrijving: model.beschrijving?.trim() || null,
         inschrijvingenActief: model.inschrijvingenActief,
         isPubliek: model.isPubliek,
@@ -473,16 +501,19 @@ export class ActiviteitFormComponent {
 
     if (this.nieuweThreadModus() && model.nieuweThreadTitel?.trim()) {
       const groepId = this.nieuweThreadGroepId();
-      this.threadsService.createThread(
-        groepId,
-        model.nieuweThreadTitel.trim(),
-        model.nieuweThreadBericht?.trim() || ''
-      ).then(result => {
-        doSave(result.threadId, groepId);
-      }).catch(() => {
-        this.saving.set(false);
-        this.toast.error('Gesprek aanmaken mislukt. Probeer opnieuw.');
-      });
+      this.threadsService
+        .createThread(
+          groepId,
+          model.nieuweThreadTitel.trim(),
+          model.nieuweThreadBericht?.trim() || ''
+        )
+        .then((result) => {
+          doSave(result.threadId, groepId);
+        })
+        .catch(() => {
+          this.saving.set(false);
+          this.toast.error('Gesprek aanmaken mislukt. Probeer opnieuw.');
+        });
     } else {
       doSave(model.threadId || null, model.groepId || null);
     }

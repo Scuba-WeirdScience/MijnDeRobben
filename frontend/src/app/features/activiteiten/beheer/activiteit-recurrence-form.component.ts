@@ -1,4 +1,12 @@
-import { Component, input, output, signal, computed, effect } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { NgClass } from '@angular/common';
 import {
   FormFieldComponent,
@@ -11,6 +19,7 @@ import { RecurrenceRule, RecurrenceFrequency } from '../activiteiten.service';
   selector: 'app-activiteit-recurrence-form',
   standalone: true,
   imports: [NgClass, FormFieldComponent, InputComponent, SelectComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteit-recurrence-form.component.html',
 })
 export class ActiviteitRecurrenceFormComponent {
@@ -58,27 +67,32 @@ export class ActiviteitRecurrenceFormComponent {
   readonly isWeekly = computed(() => this.frequency() === 'weekly');
   readonly isMonthlyDay = computed(() => this.frequency() === 'monthly-day');
 
-  numToStr(v: number): string { return String(v); }
+  numToStr(v: number): string {
+    return String(v);
+  }
 
   constructor() {
-    effect(() => {
-      const r = this.rule();
-      if (!r) return;
-      this.frequency.set(r.frequency);
-      this.interval.set(r.interval ?? 1);
-      this.daysOfWeek.set(r.daysOfWeek ?? []);
-      this.monthlyDayOccurrence.set(r.monthlyDayOccurrence ?? 1);
-      this.monthlyDayOfWeek.set(r.monthlyDayOfWeek ?? 1);
-      if (r.endsOn) {
-        this.endsType.set('op');
-        this.endsOn.set(r.endsOn);
-      } else if (r.endsAfter) {
-        this.endsType.set('na');
-        this.endsAfter.set(r.endsAfter);
-      } else {
-        this.endsType.set('nooit');
-      }
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        const r = this.rule();
+        if (!r) return;
+        this.frequency.set(r.frequency);
+        this.interval.set(r.interval ?? 1);
+        this.daysOfWeek.set(r.daysOfWeek ?? []);
+        this.monthlyDayOccurrence.set(r.monthlyDayOccurrence ?? 1);
+        this.monthlyDayOfWeek.set(r.monthlyDayOfWeek ?? 1);
+        if (r.endsOn) {
+          this.endsType.set('op');
+          this.endsOn.set(r.endsOn);
+        } else if (r.endsAfter) {
+          this.endsType.set('na');
+          this.endsAfter.set(r.endsAfter);
+        } else {
+          this.endsType.set('nooit');
+        }
+      },
+      { }
+    );
   }
 
   private emit(): void {
@@ -114,7 +128,7 @@ export class ActiviteitRecurrenceFormComponent {
   toggleDayOfWeek(dag: number): void {
     const current = this.daysOfWeek();
     if (current.includes(dag)) {
-      this.daysOfWeek.set(current.filter(d => d !== dag));
+      this.daysOfWeek.set(current.filter((d) => d !== dag));
     } else {
       this.daysOfWeek.set([...current, dag].sort());
     }

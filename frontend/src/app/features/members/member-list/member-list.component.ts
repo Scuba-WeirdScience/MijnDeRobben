@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from '../services/member.service';
@@ -14,7 +14,16 @@ import { ADMIN_ROLES } from '../../../core/models/role.model';
 @Component({
   selector: 'app-member-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, SpinnerComponent, MemberStatusPipe, UserDisplayComponent, LocaleDatePipe, PageContainerComponent],
+  imports: [
+    RouterLink,
+    FormsModule,
+    SpinnerComponent,
+    MemberStatusPipe,
+    UserDisplayComponent,
+    LocaleDatePipe,
+    PageContainerComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './member-list.component.html',
 })
 export class MemberListComponent {
@@ -38,8 +47,14 @@ export class MemberListComponent {
     this.loading.set(true);
     this.error.set(null);
     this.memberService.getAll(this.page(), this.pageSize, this.searchTerm).subscribe({
-      next: res => { this.result.set(res); this.loading.set(false); },
-      error: () => { this.error.set('Kon leden niet laden.'); this.loading.set(false); }
+      next: (res) => {
+        this.result.set(res);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Kon leden niet laden.');
+        this.loading.set(false);
+      },
     });
   }
 
@@ -55,5 +70,4 @@ export class MemberListComponent {
     this.page.set(p);
     this.load();
   }
-
 }

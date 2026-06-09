@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { GroepenService, Groep } from '../../services/groepen.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { MemberService, Member } from '../../../../features/members/services/member.service';
@@ -15,10 +15,16 @@ import { LucideX } from '../../../../shared/lucide-icons';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
-  'focus:ring-scuba-500', 'focus:outline-none',
-  'hover:bg-gray-50', 'dark:hover:bg-gray-700/50',
-  'bg-scuba-100', 'dark:bg-scuba-800', 'text-scuba-700', 'dark:text-scuba-300',
-  'hover:bg-scuba-200', 'dark:hover:bg-scuba-700',
+  'focus:ring-scuba-500',
+  'focus:outline-none',
+  'hover:bg-gray-50',
+  'dark:hover:bg-gray-700/50',
+  'bg-scuba-100',
+  'dark:bg-scuba-800',
+  'text-scuba-700',
+  'dark:text-scuba-300',
+  'hover:bg-scuba-200',
+  'dark:hover:bg-scuba-700',
 ];
 
 @Component({
@@ -34,6 +40,7 @@ const _TW_SAFELIST = [
     PageContainerComponent,
     LucideX,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './groep-beheer.component.html',
 })
 export class GroepBeheerComponent {
@@ -63,20 +70,20 @@ export class GroepBeheerComponent {
   readonly filteredGroepen = computed(() => {
     const q = this.search().toLowerCase().trim();
     if (!q) return this.groepenService.allGroepen();
-    return this.groepenService.allGroepen().filter(g =>
-      g.name.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q)
-    );
+    return this.groepenService
+      .allGroepen()
+      .filter((g) => g.name.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q));
   });
 
   readonly selectedMembers = computed(() => {
     const uids = this.selectedUids();
-    return this.allMembers().filter(m => uids.includes(m.userId));
+    return this.allMembers().filter((m) => uids.includes(m.userId));
   });
 
   readonly availableMembers = computed(() => {
     const uids = this.selectedUids();
     const search = this.memberSearch().toLowerCase();
-    return this.allMembers().filter(m => {
+    return this.allMembers().filter((m) => {
       if (uids.includes(m.userId)) return false;
       if (!search) return true;
       return (
@@ -88,7 +95,7 @@ export class GroepBeheerComponent {
   });
 
   constructor() {
-    this.memberService.getAll(1, 200, '').subscribe(result => {
+    this.memberService.getAll(1, 200, '').subscribe((result) => {
       this.allMembers.set(result.items);
     });
   }
@@ -118,13 +125,13 @@ export class GroepBeheerComponent {
   }
 
   removeSelectedMember(uid: string): void {
-    this.selectedUids.set(this.selectedUids().filter(u => u !== uid));
+    this.selectedUids.set(this.selectedUids().filter((u) => u !== uid));
   }
 
   toggleMember(uid: string): void {
     const current = this.selectedUids();
     if (current.includes(uid)) {
-      this.selectedUids.set(current.filter(u => u !== uid));
+      this.selectedUids.set(current.filter((u) => u !== uid));
     } else {
       this.selectedUids.set([...current, uid]);
     }
@@ -153,7 +160,12 @@ export class GroepBeheerComponent {
     try {
       const editing = this.editingGroep();
       if (editing) {
-        await this.groepenService.updateGroep({ groepId: editing.id, name, description, memberUids });
+        await this.groepenService.updateGroep({
+          groepId: editing.id,
+          name,
+          description,
+          memberUids,
+        });
         this.toast.success('Groep bijgewerkt.');
       } else {
         await this.groepenService.createGroep({ name, description, memberUids });

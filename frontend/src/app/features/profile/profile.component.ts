@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProfileService } from './profile.service';
@@ -14,6 +14,7 @@ import { LocaleDatePipe } from '../../shared/pipes/locale-date.pipe';
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, RouterLink, SpinnerComponent, LocaleDatePipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './profile.component.html',
 })
 export class ProfileComponent implements OnInit {
@@ -54,12 +55,14 @@ export class ProfileComponent implements OnInit {
       error: () => {
         this.error.set('Kon profielgegevens niet laden. Probeer opnieuw.');
         this.loading.set(false);
-      }
+      },
     });
 
     this.memberService.getMijnKinderen().subscribe({
-      next: kids => this.kinderen.set(kids),
-      error: () => { /* no children or not a verzorger — silently ignore */ },
+      next: (kids) => this.kinderen.set(kids),
+      error: () => {
+        /* no children or not a verzorger — silently ignore */
+      },
     });
   }
 
@@ -102,7 +105,7 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.uploading.set(false);
         this.uploadError.set(err?.error?.error ?? 'Upload mislukt. Probeer opnieuw.');
-      }
+      },
     });
   }
 
@@ -112,7 +115,7 @@ export class ProfileComponent implements OnInit {
     this.uploading.set(true);
     this.profileService.deleteAvatar().subscribe({
       next: () => {
-        this.member.update(m => m ? { ...m, avatarUrl: null } : m);
+        this.member.update((m) => (m ? { ...m, avatarUrl: null } : m));
         this.avatarPreview.set(null);
         this.avatarState.setAvatarUrl(null);
         this.uploading.set(false);
@@ -121,7 +124,7 @@ export class ProfileComponent implements OnInit {
       error: () => {
         this.uploading.set(false);
         this.uploadError.set('Verwijderen mislukt. Probeer opnieuw.');
-      }
+      },
     });
   }
 }

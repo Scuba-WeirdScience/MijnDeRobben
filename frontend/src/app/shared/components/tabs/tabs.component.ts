@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TabComponent } from './tab/tab.component';
 
 /**
@@ -19,15 +19,16 @@ import { TabComponent } from './tab/tab.component';
   selector: 'app-tabs',
   standalone: true,
   templateUrl: './tabs.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class TabsComponent {
-  readonly tabs        = signal<TabComponent[]>([]);
+  readonly tabs = signal<TabComponent[]>([]);
   readonly activeTabId = signal<string>('');
 
   register(tab: TabComponent): void {
-    this.tabs.update(existing => {
-      if (existing.some(t => t.id() === tab.id())) return existing;
+    this.tabs.update((existing) => {
+      if (existing.some((t) => t.id() === tab.id())) return existing;
       return [...existing, tab];
     });
     if (!this.activeTabId()) {
@@ -39,7 +40,7 @@ export class TabsComponent {
     this.activeTabId.set(id);
   }
 
-  readonly activeTab = computed(() =>
-    this.tabs().find(t => t.id() === this.activeTabId()) ?? null
+  readonly activeTab = computed(
+    () => this.tabs().find((t) => t.id() === this.activeTabId()) ?? null
   );
 }

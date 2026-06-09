@@ -1,4 +1,12 @@
-import { Component, input, output, inject, signal, effect } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  inject,
+  signal,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FieldTree, form } from '@angular/forms/signals';
 import {
   SidePanelComponent,
@@ -15,7 +23,9 @@ import { occurrenceEditFormSchema, type OccurrenceEditForm } from '../../../shar
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
-  'focus:outline-none', 'focus:ring-2', 'focus:ring-scuba-500',
+  'focus:outline-none',
+  'focus:ring-2',
+  'focus:ring-scuba-500',
   'focus:border-transparent',
 ];
 
@@ -31,6 +41,7 @@ const _TW_SAFELIST = [
     TextareaComponent,
     RichTextEditorComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteit-occurrence-edit.component.html',
 })
 export class ActiviteitOccurrenceEditComponent {
@@ -63,26 +74,29 @@ export class ActiviteitOccurrenceEditComponent {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.formState = form<OccurrenceEditForm>(this.formModel, occurrenceEditFormSchema as any);
 
-    effect(() => {
-      const occ = this.occurrence();
-      this.formModel.set({
-        titel:          occ.titel,
-        startDatumTijd: occ.startDatumTijd.substring(0, 16),
-        eindDatumTijd:  occ.eindDatumTijd.substring(0, 16),
-        locatieId:      occ.locatieId,
-        locatieVrij:    occ.locatieVrij,
-        beschrijving:   occ.beschrijving,
-        bannerUrl:      occ.bannerUrl,
-        maxDeelnemers:  occ.maxDeelnemers,
-        notitie:        null,
-      });
-      this.locatieType.set(occ.locatieVrij ? 'vrij' : 'selecteer');
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        const occ = this.occurrence();
+        this.formModel.set({
+          titel: occ.titel,
+          startDatumTijd: occ.startDatumTijd.substring(0, 16),
+          eindDatumTijd: occ.eindDatumTijd.substring(0, 16),
+          locatieId: occ.locatieId,
+          locatieVrij: occ.locatieVrij,
+          beschrijving: occ.beschrijving,
+          bannerUrl: occ.bannerUrl,
+          maxDeelnemers: occ.maxDeelnemers,
+          notitie: null,
+        });
+        this.locatieType.set(occ.locatieVrij ? 'vrij' : 'selecteer');
+      },
+      { }
+    );
   }
 
   protected firstError(field: { errors(): readonly { message?: string }[] }): string {
     const errs = field.errors();
-    return errs.length > 0 ? (errs[0].message ?? '') : '';
+    return errs.length > 0 ? errs[0].message ?? '' : '';
   }
 
   numToStr(v: number | null | undefined): string {
@@ -90,7 +104,7 @@ export class ActiviteitOccurrenceEditComponent {
   }
 
   onBeschrijvingChange(value: string): void {
-    this.formModel.update(m => ({ ...m, beschrijving: value || null }));
+    this.formModel.update((m) => ({ ...m, beschrijving: value || null }));
   }
 
   onSave(): void {
@@ -102,35 +116,38 @@ export class ActiviteitOccurrenceEditComponent {
       return;
     }
 
-    const occ   = this.occurrence();
+    const occ = this.occurrence();
     const model = this.formModel();
 
     this.saving.set(true);
-    this.service.updateActiviteit({
-      id:              occ.activiteitId,
-      scope:           'single',
-      occurrenceDatum: occ.occurrenceDatum,
-      titel:           model.titel.trim(),
-      startDatumTijd:  model.startDatumTijd,
-      eindDatumTijd:   model.eindDatumTijd,
-      locatieId:       this.locatieType() === 'selecteer' ? (model.locatieId ?? null) : null,
-      locatieNaam:     this.locatieType() === 'selecteer' && model.locatieId
-                         ? (this.locaties().find(l => l.id === model.locatieId)?.naam ?? null)
-                         : null,
-      locatieVrij:     this.locatieType() === 'vrij' ? (model.locatieVrij?.trim() || null) : null,
-      beschrijving:    model.beschrijving?.trim() || null,
-      bannerUrl:       model.bannerUrl?.trim() || null,
-      maxDeelnemers:   model.maxDeelnemers ?? null,
-    }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.toast.success('Exemplaar bijgewerkt.');
-        this.saved.emit();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.toast.error('Opslaan mislukt. Probeer opnieuw.');
-      },
-    });
+    this.service
+      .updateActiviteit({
+        id: occ.activiteitId,
+        scope: 'single',
+        occurrenceDatum: occ.occurrenceDatum,
+        titel: model.titel.trim(),
+        startDatumTijd: model.startDatumTijd,
+        eindDatumTijd: model.eindDatumTijd,
+        locatieId: this.locatieType() === 'selecteer' ? model.locatieId ?? null : null,
+        locatieNaam:
+          this.locatieType() === 'selecteer' && model.locatieId
+            ? this.locaties().find((l) => l.id === model.locatieId)?.naam ?? null
+            : null,
+        locatieVrij: this.locatieType() === 'vrij' ? model.locatieVrij?.trim() || null : null,
+        beschrijving: model.beschrijving?.trim() || null,
+        bannerUrl: model.bannerUrl?.trim() || null,
+        maxDeelnemers: model.maxDeelnemers ?? null,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.toast.success('Exemplaar bijgewerkt.');
+          this.saved.emit();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Opslaan mislukt. Probeer opnieuw.');
+        },
+      });
   }
 }

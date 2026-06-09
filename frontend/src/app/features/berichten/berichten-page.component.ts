@@ -1,4 +1,14 @@
-import { Component, computed, inject, signal, HostListener, ElementRef, ViewChild, effect } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+  HostListener,
+  ElementRef,
+  ViewChild,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -15,7 +25,10 @@ import { ThreadComposeComponent } from './components/thread-compose/thread-compo
 import { MessageListComponent } from './components/message-list/message-list.component';
 import { MessageComposeComponent } from './components/message-compose/message-compose.component';
 import { GroepBeheerComponent } from './components/groep-beheer/groep-beheer.component';
-import { ConceptenPanelComponent, ConceptSelected } from './components/concepten-panel/concepten-panel.component';
+import {
+  ConceptenPanelComponent,
+  ConceptSelected,
+} from './components/concepten-panel/concepten-panel.component';
 import { SidePanelComponent } from '../../shared/components/design-system';
 import { LucideChevronLeft } from '../../shared/lucide-icons';
 
@@ -31,6 +44,7 @@ const STORAGE_KEY = 'berichten-compose-height';
   templateUrl: './berichten-page.component.html',
   host: { class: 'flex-1 min-h-0 flex flex-col' },
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     CommonModule,
     RouterOutlet,
@@ -58,9 +72,9 @@ export class BerichtenPageComponent {
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
 
   readonly isMobile = toSignal(
-    inject(BreakpointObserver).observe('(max-width: 767px)').pipe(
-      map(result => result.matches)
-    ),
+    inject(BreakpointObserver)
+      .observe('(max-width: 767px)')
+      .pipe(map((result) => result.matches)),
     { initialValue: false }
   );
 
@@ -75,9 +89,7 @@ export class BerichtenPageComponent {
   @ViewChild(MessageComposeComponent) private messageCompose?: MessageComposeComponent;
 
   // ── Resizable compose bar ─────────────────────────────────────────────────
-  composeHeight = signal<number>(
-    Number(localStorage.getItem(STORAGE_KEY)) || COMPOSE_DEFAULT_PX
-  );
+  composeHeight = signal<number>(Number(localStorage.getItem(STORAGE_KEY)) || COMPOSE_DEFAULT_PX);
 
   private dragging = false;
   private dragStartY = 0;
@@ -96,7 +108,10 @@ export class BerichtenPageComponent {
     if (!this.dragging) return;
     const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
     const delta = this.dragStartY - clientY; // dragging up = larger compose
-    const newHeight = Math.min(COMPOSE_MAX_PX, Math.max(COMPOSE_MIN_PX, this.dragStartHeight + delta));
+    const newHeight = Math.min(
+      COMPOSE_MAX_PX,
+      Math.max(COMPOSE_MIN_PX, this.dragStartHeight + delta)
+    );
     this.composeHeight.set(newHeight);
   }
 
@@ -118,10 +133,7 @@ export class BerichtenPageComponent {
     // Using merge(of(null), ...) defers the initial read to a microtask so
     // that Angular has finished activating child routes by the time we run.
     const childParams = toSignal(
-      merge(
-        of(null),
-        this.router.events.pipe(filter(e => e instanceof NavigationEnd))
-      ).pipe(
+      merge(of(null), this.router.events.pipe(filter((e) => e instanceof NavigationEnd))).pipe(
         map(() => {
           let route = this.route.firstChild;
           const params: Record<string, string> = {};
@@ -182,7 +194,9 @@ export class BerichtenPageComponent {
     }
   }
 
-  onNewThread(): void { this.showNewThread.set(true); }
+  onNewThread(): void {
+    this.showNewThread.set(true);
+  }
 
   onShowConcepten(): void {
     this.showConcepten.set(true);

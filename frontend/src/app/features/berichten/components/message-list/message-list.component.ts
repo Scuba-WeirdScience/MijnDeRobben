@@ -1,4 +1,14 @@
-import { Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  OnDestroy,
+  signal,
+  viewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MessagesService, Message } from '../../services/messages.service';
@@ -6,7 +16,15 @@ import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService } from '../../services/threads.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { LucidePin, LucidePinOff, LucideTrash2, LucideReply, LucideHash, LucideCalendar, LucideChevronRight } from '../../../../shared/lucide-icons';
+import {
+  LucidePin,
+  LucidePinOff,
+  LucideTrash2,
+  LucideReply,
+  LucideHash,
+  LucideCalendar,
+  LucideChevronRight,
+} from '../../../../shared/lucide-icons';
 import { EmoticonPipe } from '../../../../shared/pipes/emoticon.pipe';
 import { LocaleDateTimePipe } from '../../../../shared/pipes/locale-datetime.pipe';
 import { ThreadLezingenComponent } from '../thread-lezingen/thread-lezingen.component';
@@ -14,9 +32,15 @@ import { ActiviteitThreadCardComponent } from '../activiteit-thread-card/activit
 import { SkeletonRowsComponent } from '../../../../shared/components/design-system';
 
 const _TW_SAFELIST = [
-  'bg-scuba-600', 'bg-scuba-700', 'dark:bg-scuba-700', 'rounded-tr-none',
-  'bg-gray-100', 'dark:bg-gray-800', 'rounded-tl-none',
-  'text-scuba-400', 'dark:text-scuba-300',
+  'bg-scuba-600',
+  'bg-scuba-700',
+  'dark:bg-scuba-700',
+  'rounded-tr-none',
+  'bg-gray-100',
+  'dark:bg-gray-800',
+  'rounded-tl-none',
+  'text-scuba-400',
+  'dark:text-scuba-300',
   'msg-highlight',
 ];
 
@@ -24,6 +48,7 @@ const _TW_SAFELIST = [
   selector: 'app-message-list',
   templateUrl: './message-list.component.html',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     CommonModule,
     RouterLink,
@@ -51,7 +76,9 @@ export class MessageListComponent implements OnDestroy {
   readonly messagesEnd = viewChild<ElementRef>('messagesEnd');
 
   readonly isAdmin = computed(() => this.auth.hasAnyRole(['Beheer', 'Bestuur']));
-  readonly pinnedMessages = computed(() => this.messagesService.messages().filter(m => m.pinnedAt && !m.deletedAt));
+  readonly pinnedMessages = computed(() =>
+    this.messagesService.messages().filter((m) => m.pinnedAt && !m.deletedAt)
+  );
 
   replyOpenId = signal<string | null>(null);
   replyBody = signal('');
@@ -139,7 +166,7 @@ export class MessageListComponent implements OnDestroy {
     // The backend is idempotent (skips the lezing write if it already exists)
     // but always updates threadSeenByUids.
     if (!hasUnreadFromOthers && msgs.length > 0) {
-      const anyMsg = msgs.find(m => !m.deletedAt);
+      const anyMsg = msgs.find((m) => !m.deletedAt);
       if (anyMsg) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         this.messagesService.markMessageRead(anyMsg.id, threadId, groepId).catch(() => {});
@@ -147,7 +174,11 @@ export class MessageListComponent implements OnDestroy {
     }
   }
 
-  private _onIntersection(entries: IntersectionObserverEntry[], threadId: string, groepId: string): void {
+  private _onIntersection(
+    entries: IntersectionObserverEntry[],
+    threadId: string,
+    groepId: string
+  ): void {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
 
@@ -234,7 +265,12 @@ export class MessageListComponent implements OnDestroy {
     if (!threadId || !groepId || !this.replyBody().trim()) return;
     this.sendingReply.set(true);
     try {
-      await this.messagesService.sendMessage(threadId, groepId, this.replyBody(), this.replyOpenId());
+      await this.messagesService.sendMessage(
+        threadId,
+        groepId,
+        this.replyBody(),
+        this.replyOpenId()
+      );
       this.closeReply();
     } catch {
       this.toast.error('Versturen mislukt.');
@@ -245,7 +281,7 @@ export class MessageListComponent implements OnDestroy {
 
   getReplyParent(message: Message): Message | null {
     if (!message.replyToId) return null;
-    return this.messagesService.messages().find(m => m.id === message.replyToId) ?? null;
+    return this.messagesService.messages().find((m) => m.id === message.replyToId) ?? null;
   }
 
   scrollToMessage(messageId: string): void {

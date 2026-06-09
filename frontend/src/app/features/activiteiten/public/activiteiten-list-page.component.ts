@@ -1,8 +1,21 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { NgClass } from '@angular/common';
 import { startOfMonth, startOfDay, startOfWeek, addMonths, addWeeks } from 'date-fns';
 import { SpinnerComponent } from '../../../shared/components/design-system';
-import { ActiviteitenService, ActiviteitDoc, ActiviteitOccurrenceDoc, ResolvedOccurrence, generateOccurrences } from '../activiteiten.service';
+import {
+  ActiviteitenService,
+  ActiviteitDoc,
+  ActiviteitOccurrenceDoc,
+  ResolvedOccurrence,
+  generateOccurrences,
+} from '../activiteiten.service';
 import { ActiviteitenAgendaComponent } from './components/activiteiten-agenda.component';
 import { ActiviteitenKalenderComponent } from './components/activiteiten-kalender.component';
 import { ActiviteitenWeekComponent } from './components/activiteiten-week.component';
@@ -17,6 +30,7 @@ import { ActiviteitenWeekComponent } from './components/activiteiten-week.compon
     ActiviteitenKalenderComponent,
     ActiviteitenWeekComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteiten-list-page.component.html',
 })
 export class ActiviteitenListPageComponent implements OnInit {
@@ -53,7 +67,7 @@ export class ActiviteitenListPageComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.service.getActiviteiten().subscribe({
-      next: list => {
+      next: (list) => {
         this.activiteiten.set(list);
         this.loading.set(false);
       },
@@ -62,7 +76,7 @@ export class ActiviteitenListPageComponent implements OnInit {
       },
     });
     this.service.getAllOccurrenceOverrides().subscribe({
-      next: list => this.overrides.set(list),
+      next: (list) => this.overrides.set(list),
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
