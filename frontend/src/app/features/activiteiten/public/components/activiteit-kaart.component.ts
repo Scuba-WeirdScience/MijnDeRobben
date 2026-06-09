@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BadgeComponent } from '../../../../shared/components/design-system';
 import { LocaleDateTimePipe } from '../../../../shared/pipes/locale-datetime.pipe';
@@ -8,6 +8,7 @@ import { ResolvedOccurrence } from '../../activiteiten.service';
   selector: 'app-activiteit-kaart',
   standalone: true,
   imports: [RouterLink, BadgeComponent, LocaleDateTimePipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteit-kaart.component.html',
 })
 export class ActiviteitKaartComponent {

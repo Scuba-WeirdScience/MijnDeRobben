@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -16,11 +23,16 @@ import {
 } from '../activiteiten/activiteiten.service';
 
 const _TW_SAFELIST = [
-  'grid-cols-1', 'lg:grid-cols-2',
-  'translate-x-1', '-translate-x-1',
-  '-translate-y-1', 'translate-y-1',
-  'translate-x-2', '-translate-x-2',
-  '-translate-y-2', 'translate-y-2',
+  'grid-cols-1',
+  'lg:grid-cols-2',
+  'translate-x-1',
+  '-translate-x-1',
+  '-translate-y-1',
+  'translate-y-1',
+  'translate-x-2',
+  '-translate-x-2',
+  '-translate-y-2',
+  'translate-y-2',
 ];
 
 const WIDGET_ORDER_KEY = 'dashboard-widget-order';
@@ -29,28 +41,25 @@ const DEFAULT_WIDGET_ORDER = ['leningen', 'activiteiten'];
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    RouterLink,
-    DragDropModule,
-    BadgeComponent,
-    ...LUCIDE_ICONS,
-    LocaleDateTimePipe,
+  imports: [RouterLink, DragDropModule, BadgeComponent, ...LUCIDE_ICONS, LocaleDateTimePipe],
+  styles: [
+    `
+      .cdk-drag-preview {
+        opacity: 0.85;
+        transform: rotate(2deg);
+      }
+      .cdk-drag-placeholder {
+        opacity: 0;
+      }
+      .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+      }
+      .cdk-drag-animating {
+        transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
+      }
+    `,
   ],
-  styles: [`
-    .cdk-drag-preview {
-      opacity: 0.85;
-      transform: rotate(2deg);
-    }
-    .cdk-drag-placeholder {
-      opacity: 0;
-    }
-    .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
-      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-    }
-    .cdk-drag-animating {
-      transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
-    }
-  `],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -66,7 +75,7 @@ export class DashboardComponent implements OnInit {
   readonly widgetOrder = signal<string[]>(this.leesWidgetOrder());
 
   readonly alleenOpenLeningen = computed(() =>
-    this.mijnLeningen().filter(l => l.retourdatum === null)
+    this.mijnLeningen().filter((l) => l.retourdatum === null)
   );
 
   readonly upcomingOccurrences = computed((): ResolvedOccurrence[] => {
@@ -78,7 +87,7 @@ export class DashboardComponent implements OnInit {
     tot.setMonth(tot.getMonth() + 6);
     const all = generateOccurrences(activiteiten, van, tot, overrides);
     return all
-      .filter(o => new Date(o.startDatumTijd) >= van)
+      .filter((o) => new Date(o.startDatumTijd) >= van)
       .sort((a, b) => new Date(a.startDatumTijd).getTime() - new Date(b.startDatumTijd).getTime())
       .slice(0, 5);
   });
@@ -138,7 +147,10 @@ export class DashboardComponent implements OnInit {
       const saved = localStorage.getItem(WIDGET_ORDER_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.every((w: unknown) => w === 'leningen' || w === 'activiteiten')) {
+        if (
+          Array.isArray(parsed) &&
+          parsed.every((w: unknown) => w === 'leningen' || w === 'activiteiten')
+        ) {
           return parsed;
         }
       }

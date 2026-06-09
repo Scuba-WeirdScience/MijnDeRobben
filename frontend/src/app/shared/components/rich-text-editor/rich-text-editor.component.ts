@@ -1,14 +1,24 @@
 import {
-  Component, ElementRef, ViewChild,
-  AfterViewInit, OnDestroy, NgZone,
-  input, model, inject,
+  Component,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  NgZone,
+  input,
+  model,
+  inject,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import Quill from 'quill';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
-  'border-gray-300', 'dark:border-gray-600', 'border-red-500', 'dark:border-red-400',
+  'border-gray-300',
+  'dark:border-gray-600',
+  'border-red-500',
+  'dark:border-red-400',
 ];
 
 @Component({
@@ -17,14 +27,15 @@ const _TW_SAFELIST = [
   imports: [NgClass],
   templateUrl: './rich-text-editor.component.html',
   styleUrl: './rich-text-editor.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class RichTextEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('container') container!: ElementRef<HTMLDivElement>;
 
-  readonly value       = model<string>('');
-  readonly disabled    = input<boolean>(false);
-  readonly invalid     = input<boolean>(false);
+  readonly value = model<string>('');
+  readonly disabled = input<boolean>(false);
+  readonly invalid = input<boolean>(false);
   readonly placeholder = input<string>('');
 
   private quill: Quill | null = null;

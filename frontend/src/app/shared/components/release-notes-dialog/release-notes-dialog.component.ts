@@ -1,12 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '../button/button.component';
 import { PwaService } from '../../../core/services/pwa.service';
 import { LocaleDatePipe } from '../../pipes/locale-date.pipe';
 
 // In-file safelist so Tailwind scanner picks up dynamic classes — do NOT remove
 const _TW_SAFELIST = [
-  'dark:bg-gray-800', 'dark:text-white', 'dark:text-gray-300',
-  'dark:text-gray-400', 'dark:border-gray-700',
+  'dark:bg-gray-800',
+  'dark:text-white',
+  'dark:text-gray-300',
+  'dark:text-gray-400',
+  'dark:border-gray-700',
 ];
 
 /**
@@ -27,6 +30,7 @@ const _TW_SAFELIST = [
   standalone: true,
   imports: [ButtonComponent, LocaleDatePipe],
   templateUrl: './release-notes-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class ReleaseNotesDialogComponent {

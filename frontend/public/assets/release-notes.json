@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.14.1",
+    "date": "2026-06-09",
+    "sections": [
+      {
+        "heading": "Verbeterd",
+        "items": [
+          "Verbeterde stabiliteit en performantie door framework-upgrade"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.14.0",
     "date": "2026-06-09",
     "sections": [

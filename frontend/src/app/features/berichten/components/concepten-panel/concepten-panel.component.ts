@@ -1,4 +1,4 @@
-import { Component, computed, inject, output } from '@angular/core';
+import { Component, computed, inject, output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService, ThreadConcept } from '../../services/threads.service';
@@ -20,14 +20,18 @@ export type ConceptSelected = ThreadConceptSelected | MessageConceptSelected;
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
-  'text-scuba-600', 'dark:text-scuba-400', 'hover:underline',
-  'text-red-500', 'hover:text-red-700',
+  'text-scuba-600',
+  'dark:text-scuba-400',
+  'hover:underline',
+  'text-red-500',
+  'hover:text-red-700',
 ];
 
 @Component({
   selector: 'app-concepten-panel',
   standalone: true,
   imports: [CommonModule, LucideFileText, LucideMessageSquare, EmptyStateComponent, EmoticonPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './concepten-panel.component.html',
 })
 export class ConceptenPanelComponent {
@@ -50,12 +54,24 @@ export class ConceptenPanelComponent {
   }
 
   threadTitle(threadId: string): string {
-    return this.threadsService.threads().find(t => t.id === threadId)?.title ?? '…';
+    return this.threadsService.threads().find((t) => t.id === threadId)?.title ?? '…';
   }
 
   readonly allConcepts = computed(() => {
-    const threads = this.threadsService.allThreadConcepten().map(c => ({ kind: 'thread' as const, concept: c, updatedAt: c.updatedAt?.toMillis?.() ?? 0 }));
-    const messages = this.messagesService.allMessageConcepten().map(c => ({ kind: 'message' as const, concept: c, updatedAt: c.updatedAt?.toMillis?.() ?? 0 }));
+    const threads = this.threadsService
+      .allThreadConcepten()
+      .map((c) => ({
+        kind: 'thread' as const,
+        concept: c,
+        updatedAt: c.updatedAt?.toMillis?.() ?? 0,
+      }));
+    const messages = this.messagesService
+      .allMessageConcepten()
+      .map((c) => ({
+        kind: 'message' as const,
+        concept: c,
+        updatedAt: c.updatedAt?.toMillis?.() ?? 0,
+      }));
     return [...threads, ...messages].sort((a, b) => b.updatedAt - a.updatedAt);
   });
 

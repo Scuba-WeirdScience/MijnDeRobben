@@ -6,7 +6,7 @@ import {
   isDevMode,
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { provideSignalFormsConfig } from '@angular/forms/signals';
 import { provideServiceWorker } from '@angular/service-worker';
 
@@ -38,7 +38,7 @@ function unregisterStaleServiceWorkers() {
   return async () => {
     if (isDevMode() && 'serviceWorker' in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map(r => r.unregister()));
+      await Promise.all(registrations.map((r) => r.unregister()));
     }
   };
 }
@@ -48,7 +48,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withXhr(), withInterceptors([authInterceptor, errorInterceptor])),
     provideSignalFormsConfig({ classes: {} }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
@@ -73,4 +73,3 @@ export const appConfig: ApplicationConfig = {
     },
   ],
 };
-

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { App } from './app';
@@ -13,11 +13,7 @@ describe('App', () => {
         // Disable the service worker in tests
         ServiceWorkerModule.register('', { enabled: false }),
       ],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideRouter([]), provideHttpClient(withXhr()), provideHttpClientTesting()],
     }).compileComponents();
   });
 

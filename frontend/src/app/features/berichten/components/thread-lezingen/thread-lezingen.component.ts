@@ -1,4 +1,12 @@
-import { Component, computed, inject, input, signal, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MessagesService, ThreadLezingInfo } from '../../services/messages.service';
 import { Thread } from '../../services/threads.service';
@@ -7,16 +15,21 @@ import { SpinnerComponent } from '../../../../shared/components/design-system';
 
 // Tailwind safelist — do NOT remove
 const _TW_SAFELIST = [
-  'text-green-500', 'dark:text-green-400',
-  'text-gray-300', 'dark:text-gray-600',
-  'text-gray-800', 'dark:text-gray-200',
-  'text-gray-400', 'dark:text-gray-500',
+  'text-green-500',
+  'dark:text-green-400',
+  'text-gray-300',
+  'dark:text-gray-600',
+  'text-gray-800',
+  'dark:text-gray-200',
+  'text-gray-400',
+  'dark:text-gray-500',
 ];
 
 @Component({
   selector: 'app-thread-lezingen',
   standalone: true,
   imports: [NgClass, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './thread-lezingen.component.html',
 })
 export class ThreadLezingenComponent implements OnInit {
@@ -31,16 +44,14 @@ export class ThreadLezingenComponent implements OnInit {
   readonly gezienCount = signal(0);
   readonly totalCount = signal(0);
 
-  readonly isAuthor = computed(() =>
-    this.thread().authorUid === this.auth.currentUser()?.uid
-  );
+  readonly isAuthor = computed(() => this.thread().authorUid === this.auth.currentUser()?.uid);
 
   async ngOnInit(): Promise<void> {
     if (!this.isAuthor()) return;
     try {
       const result = await this.messagesService.getThreadLezingen(
         this.thread().id,
-        this.thread().groepId,
+        this.thread().groepId
       );
       this.lezingen.set(result.lezingen);
       this.gezienCount.set(result.gezienCount);
@@ -63,7 +74,7 @@ export class ThreadLezingenComponent implements OnInit {
     try {
       const result = await this.messagesService.getThreadLezingen(
         this.thread().id,
-        this.thread().groepId,
+        this.thread().groepId
       );
       this.lezingen.set(result.lezingen);
       this.gezienCount.set(result.gezienCount);

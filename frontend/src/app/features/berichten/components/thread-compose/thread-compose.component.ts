@@ -1,23 +1,47 @@
-import { Component, inject, model, signal, output, input, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  model,
+  signal,
+  output,
+  input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GroepenService } from '../../services/groepen.service';
 import { ThreadsService, ThreadConcept } from '../../services/threads.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { InputComponent, TextareaComponent, ButtonComponent } from '../../../../shared/components/design-system';
+import {
+  InputComponent,
+  TextareaComponent,
+  ButtonComponent,
+} from '../../../../shared/components/design-system';
 import { LucideFileText } from '../../../../shared/lucide-icons';
 
 // Safelist for dynamic Tailwind classes — do NOT remove
 const _TW_SAFELIST = [
-  'text-scuba-600', 'dark:text-scuba-400', 'hover:underline',
-  'text-red-500', 'hover:text-red-700',
+  'text-scuba-600',
+  'dark:text-scuba-400',
+  'hover:underline',
+  'text-red-500',
+  'hover:text-red-700',
 ];
 
 @Component({
   selector: 'app-thread-compose',
   templateUrl: './thread-compose.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputComponent, TextareaComponent, ButtonComponent, LucideFileText],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [
+    CommonModule,
+    FormsModule,
+    InputComponent,
+    TextareaComponent,
+    ButtonComponent,
+    LucideFileText,
+  ],
 })
 export class ThreadComposeComponent implements OnInit {
   protected readonly groepenService = inject(GroepenService);

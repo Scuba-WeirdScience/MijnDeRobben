@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { NgClass } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, NavigationEnd, RouterOutlet } from '@angular/router';
@@ -48,6 +55,7 @@ import { ActiviteitOccurrenceDialogComponent } from './activiteit-occurrence-dia
     LocaleDatePipe,
     LocaleDateTimePipe,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteiten-beheer.component.html',
 })
 export class ActiviteitenBeheerComponent implements OnInit {
@@ -57,9 +65,9 @@ export class ActiviteitenBeheerComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   readonly isMobile = toSignal(
-    inject(BreakpointObserver).observe('(max-width: 767px)').pipe(
-      map(r => r.matches)
-    ),
+    inject(BreakpointObserver)
+      .observe('(max-width: 767px)')
+      .pipe(map((r) => r.matches)),
     { initialValue: false }
   );
 
@@ -92,14 +100,15 @@ export class ActiviteitenBeheerComponent implements OnInit {
   readonly deleting = signal(false);
 
   readonly resettingOccurrence = signal(false);
-  readonly confirmResetOccurrence = signal<{ activiteitId: string; occurrenceDatum: string } | null>(null);
+  readonly confirmResetOccurrence = signal<{
+    activiteitId: string;
+    occurrenceDatum: string;
+  } | null>(null);
 
   readonly gefilterd = computed(() => {
     const term = this.zoekterm().toLowerCase().trim();
     if (!term) return this.activiteiten();
-    return this.activiteiten().filter(a =>
-      a.titel.toLowerCase().includes(term)
-    );
+    return this.activiteiten().filter((a) => a.titel.toLowerCase().includes(term));
   });
 
   readonly previewOccurrences = computed((): ResolvedOccurrence[] => {
@@ -114,21 +123,23 @@ export class ActiviteitenBeheerComponent implements OnInit {
     this.loadAll();
 
     // After data loads (or on nav), select the activiteit from the URL param.
-    this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd),
-      startWith(null),
-    ).subscribe(() => {
-      const id = this.route.firstChild?.snapshot.params['activiteitId'];
-      if (id && id !== this.selectedActiviteit()?.id) {
-        // If list already loaded, select immediately; else defer to loadAll().
-        const found = this.activiteiten().find(a => a.id === id);
-        if (found) {
-          this.selectActiviteit(found);
-        } else {
-          this._pendingSelectId = id;
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        startWith(null)
+      )
+      .subscribe(() => {
+        const id = this.route.firstChild?.snapshot.params['activiteitId'];
+        if (id && id !== this.selectedActiviteit()?.id) {
+          // If list already loaded, select immediately; else defer to loadAll().
+          const found = this.activiteiten().find((a) => a.id === id);
+          if (found) {
+            this.selectActiviteit(found);
+          } else {
+            this._pendingSelectId = id;
+          }
         }
-      }
-    });
+      });
   }
 
   private _pendingSelectId: string | null = null;
@@ -136,12 +147,14 @@ export class ActiviteitenBeheerComponent implements OnInit {
   loadAll(): void {
     this.loading.set(true);
     this.service.getAllActiviteiten().subscribe({
-      next: list => {
-        this.activiteiten.set(list.sort((a, b) => a.startDatumTijd.localeCompare(b.startDatumTijd)));
+      next: (list) => {
+        this.activiteiten.set(
+          list.sort((a, b) => a.startDatumTijd.localeCompare(b.startDatumTijd))
+        );
         this.loading.set(false);
         // Resolve any pending URL-driven selection that arrived before the list loaded
         if (this._pendingSelectId) {
-          const found = this.activiteiten().find(a => a.id === this._pendingSelectId);
+          const found = this.activiteiten().find((a) => a.id === this._pendingSelectId);
           if (found) {
             this.selectActiviteit(found);
           }
@@ -154,12 +167,12 @@ export class ActiviteitenBeheerComponent implements OnInit {
       },
     });
     this.service.getAllOccurrenceOverrides().subscribe({
-      next: list => this.overrides.set(list),
+      next: (list) => this.overrides.set(list),
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
     this.service.getLocaties().subscribe({
-      next: list => this.locaties.set(list),
+      next: (list) => this.locaties.set(list),
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       error: () => {},
     });
@@ -178,7 +191,7 @@ export class ActiviteitenBeheerComponent implements OnInit {
       this.selectedOccurrenceDatum.set(occurrenceDatum);
       this.loadingRegistraties.set(true);
       this.service.getRegistraties(a.id, occurrenceDatum).subscribe({
-        next: list => {
+        next: (list) => {
           this.registraties.set(list);
           this.loadingRegistraties.set(false);
         },
@@ -194,7 +207,7 @@ export class ActiviteitenBeheerComponent implements OnInit {
     this.selectedOccurrenceDatum.set(occ.occurrenceDatum);
     this.loadingRegistraties.set(true);
     this.service.getRegistraties(occ.activiteitId, occ.occurrenceDatum).subscribe({
-      next: list => {
+      next: (list) => {
         this.registraties.set(list);
         this.loadingRegistraties.set(false);
       },
@@ -242,7 +255,11 @@ export class ActiviteitenBeheerComponent implements OnInit {
     const a = this.selectedActiviteit();
     if (!a) return;
     if (a.isHerhalend) {
-      this.occurrenceDialogState.set({ activiteit: a, occurrenceDatum: occ.occurrenceDatum, action });
+      this.occurrenceDialogState.set({
+        activiteit: a,
+        occurrenceDatum: occ.occurrenceDatum,
+        action,
+      });
     } else if (action === 'verwijderen') {
       this.activiteitToDelete.set(a);
     } else {
@@ -256,17 +273,23 @@ export class ActiviteitenBeheerComponent implements OnInit {
     this.occurrenceDialogState.set(null);
     if (state.action === 'verwijderen') {
       this.deleting.set(true);
-      this.service.deleteActiviteit({ id: state.activiteit.id, scope, occurrenceDatum: state.occurrenceDatum }).subscribe({
-        next: () => {
-          this.deleting.set(false);
-          this.toast.success('Activiteit verwijderd.');
-          this.loadAll();
-        },
-        error: () => {
-          this.deleting.set(false);
-          this.toast.error('Verwijderen mislukt.');
-        },
-      });
+      this.service
+        .deleteActiviteit({
+          id: state.activiteit.id,
+          scope,
+          occurrenceDatum: state.occurrenceDatum,
+        })
+        .subscribe({
+          next: () => {
+            this.deleting.set(false);
+            this.toast.success('Activiteit verwijderd.');
+            this.loadAll();
+          },
+          error: () => {
+            this.deleting.set(false);
+            this.toast.error('Verwijderen mislukt.');
+          },
+        });
     } else {
       this.editingActiviteit.set(state.activiteit);
       this.showActiviteitForm.set(true);
@@ -275,7 +298,11 @@ export class ActiviteitenBeheerComponent implements OnInit {
 
   confirmDeleteActiviteit(a: ActiviteitDoc): void {
     if (a.isHerhalend) {
-      this.occurrenceDialogState.set({ activiteit: a, occurrenceDatum: a.startDatumTijd.substring(0, 10), action: 'verwijderen' });
+      this.occurrenceDialogState.set({
+        activiteit: a,
+        occurrenceDatum: a.startDatumTijd.substring(0, 10),
+        action: 'verwijderen',
+      });
     } else {
       this.activiteitToDelete.set(a);
     }
@@ -301,7 +328,10 @@ export class ActiviteitenBeheerComponent implements OnInit {
   }
 
   resetOccurrenceInschrijvingen(occ: ResolvedOccurrence): void {
-    this.confirmResetOccurrence.set({ activiteitId: occ.activiteitId, occurrenceDatum: occ.occurrenceDatum });
+    this.confirmResetOccurrence.set({
+      activiteitId: occ.activiteitId,
+      occurrenceDatum: occ.occurrenceDatum,
+    });
   }
 
   resetOccurrenceConfirmed(): void {

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, output } from '@angular/core';
+import { Component, inject, signal, OnInit, output, ChangeDetectionStrategy } from '@angular/core';
 import {
   SidePanelComponent,
   ButtonComponent,
@@ -21,6 +21,7 @@ import { LocatieFormComponent } from './locatie-form.component';
     ConfirmDialogComponent,
     LocatieFormComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './locaties-beheer.component.html',
 })
 export class LocatiesBeheerComponent implements OnInit {
@@ -43,7 +44,7 @@ export class LocatiesBeheerComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.service.getLocaties().subscribe({
-      next: list => {
+      next: (list) => {
         this.locaties.set(list);
         this.loading.set(false);
       },

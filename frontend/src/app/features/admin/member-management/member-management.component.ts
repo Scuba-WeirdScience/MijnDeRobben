@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from '../../members/services/member.service';
 import { Member, PagedResult } from '../../members/services/member.service';
@@ -22,8 +22,9 @@ import { PageContainerComponent } from '../../../shared/components/design-system
     MemberFormComponent,
     MemberDeleteDialogComponent,
     PageContainerComponent,
-    LocaleDatePipe
+    LocaleDatePipe,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './member-management.component.html',
 })
 export class MemberManagementComponent {
@@ -49,17 +50,29 @@ export class MemberManagementComponent {
     this.loading.set(true);
     this.error.set(null);
     this.adminMemberService.getAll(this.page(), this.pageSize, this.searchTerm).subscribe({
-      next: res => { this.result.set(res); this.loading.set(false); },
-      error: () => { this.error.set('Kon leden niet laden.'); this.loading.set(false); }
+      next: (res) => {
+        this.result.set(res);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Kon leden niet laden.');
+        this.loading.set(false);
+      },
     });
   }
 
   onSearch() {
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => { this.page.set(1); this.load(); }, 350);
+    this.searchTimeout = setTimeout(() => {
+      this.page.set(1);
+      this.load();
+    }, 350);
   }
 
-  changePage(p: number) { this.page.set(p); this.load(); }
+  changePage(p: number) {
+    this.page.set(p);
+    this.load();
+  }
 
   openForm(member: Member | null = null) {
     this.selectedMember.set(member);
@@ -90,14 +103,14 @@ export class MemberManagementComponent {
         this.load();
         this.toast.success('Lid verwijderd.');
       },
-      error: () => this.toast.error('Verwijderen mislukt.')
+      error: () => this.toast.error('Verwijderen mislukt.'),
     });
   }
 
   resendUitnodiging(member: Member) {
     this.adminMemberService.resendUitnodiging(member.id).subscribe({
       next: () => this.toast.success(`Uitnodiging opnieuw verstuurd naar ${member.email}.`),
-      error: () => this.toast.error('Versturen mislukt.')
+      error: () => this.toast.error('Versturen mislukt.'),
     });
   }
 }

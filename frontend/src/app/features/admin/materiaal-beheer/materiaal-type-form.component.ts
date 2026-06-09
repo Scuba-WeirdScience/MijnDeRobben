@@ -1,7 +1,20 @@
 import {
-  Component, input, output, inject, signal, computed, effect,
+  Component,
+  input,
+  output,
+  inject,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { ButtonComponent, FormFieldComponent, InputComponent, SidePanelComponent, TextareaComponent } from '../../../shared/components/design-system';
+import {
+  ButtonComponent,
+  FormFieldComponent,
+  InputComponent,
+  SidePanelComponent,
+  TextareaComponent,
+} from '../../../shared/components/design-system';
 import { LucideX } from '../../../shared/lucide-icons';
 import { FieldTree, form } from '@angular/forms/signals';
 import { CustomPropertyDef, MateriaalTypeWithMaterialen } from '../../../../generated/api-schemas';
@@ -12,7 +25,15 @@ import { MateriaalService } from './materiaal.service';
 @Component({
   selector: 'app-materiaal-type-form',
   standalone: true,
-  imports: [SidePanelComponent, ButtonComponent, FormFieldComponent, InputComponent, TextareaComponent, LucideX],
+  imports: [
+    SidePanelComponent,
+    ButtonComponent,
+    FormFieldComponent,
+    InputComponent,
+    TextareaComponent,
+    LucideX,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './materiaal-type-form.component.html',
 })
 export class MateriaalTypeFormComponent {
@@ -46,14 +67,20 @@ export class MateriaalTypeFormComponent {
   readonly editingType = computed(() => this.type());
 
   readonly naam = computed(() => this.formModel().naam);
-  setNaam(v: string): void { this.formModel.update(m => ({ ...m, naam: v })); }
+  setNaam(v: string): void {
+    this.formModel.update((m) => ({ ...m, naam: v }));
+  }
 
-  get beschrijving(): string { return this.formModel().beschrijving ?? ''; }
-  set beschrijving(v: string) { this.formModel.update(m => ({ ...m, beschrijving: v })); }
+  get beschrijving(): string {
+    return this.formModel().beschrijving ?? '';
+  }
+  set beschrijving(v: string) {
+    this.formModel.update((m) => ({ ...m, beschrijving: v }));
+  }
 
   readonly volgordeAsString = computed(() => String(this.formModel().volgorde ?? 0));
   onVolgordeInput(value: string): void {
-    this.formModel.update(m => ({ ...m, volgorde: Number(value) || 0 }));
+    this.formModel.update((m) => ({ ...m, volgorde: Number(value) || 0 }));
   }
 
   readonly maxLeningenAsString = computed(() => {
@@ -62,7 +89,7 @@ export class MateriaalTypeFormComponent {
   });
   onMaxLeningenInput(value: string): void {
     const n = value ? Number(value) : null;
-    this.formModel.update(m => ({ ...m, maxLeningenPerLid: n }));
+    this.formModel.update((m) => ({ ...m, maxLeningenPerLid: n }));
   }
 
   readonly huurprijsAsString = computed(() => {
@@ -71,25 +98,28 @@ export class MateriaalTypeFormComponent {
   });
   onHuurprijsInput(value: string): void {
     const n = value ? Number(value) : null;
-    this.formModel.update(m => ({ ...m, huurprijs: n }));
+    this.formModel.update((m) => ({ ...m, huurprijs: n }));
   }
 
   protected firstError(field: { errors(): readonly { message?: string }[] }): string {
     const errs = field.errors();
-    return errs.length > 0 ? (errs[0].message ?? '') : '';
+    return errs.length > 0 ? errs[0].message ?? '' : '';
   }
 
   // ── Custom property management ────────────────────────────────────────
   addCustomProperty(): void {
-    this.customProperties.update(props => [...props, { id: crypto.randomUUID(), key: '', label: '' }]);
+    this.customProperties.update((props) => [
+      ...props,
+      { id: crypto.randomUUID(), key: '', label: '' },
+    ]);
   }
 
   removeCustomProperty(index: number): void {
-    this.customProperties.update(props => props.filter((_, i) => i !== index));
+    this.customProperties.update((props) => props.filter((_, i) => i !== index));
   }
 
   updatePropKey(index: number, value: string): void {
-    this.customProperties.update(props => {
+    this.customProperties.update((props) => {
       const updated = [...props];
       updated[index] = { ...updated[index], key: value };
       return updated;
@@ -97,7 +127,7 @@ export class MateriaalTypeFormComponent {
   }
 
   updatePropLabel(index: number, value: string): void {
-    this.customProperties.update(props => {
+    this.customProperties.update((props) => {
       const updated = [...props];
       updated[index] = { ...updated[index], label: value };
       return updated;
@@ -111,17 +141,26 @@ export class MateriaalTypeFormComponent {
     this.typeFormState = form<MateriaalTypeForm>(this.formModel, materiaalTypeFormSchema as any);
 
     // Watch input and populate form when type changes
-    effect(() => {
-      const t = this.type();
-      this.formModel.set({
-        naam: t?.naam ?? '',
-        beschrijving: t?.beschrijving ?? '',
-        volgorde: t?.volgorde ?? 0,
-        maxLeningenPerLid: t?.maxLeningenPerLid ?? null,
-        huurprijs: t?.huurprijs ?? null,
-      });
-      this.customProperties.set((t?.customProperties ?? []).map((p: CustomPropertyDef) => ({ id: crypto.randomUUID(), key: p.key, label: p.label })));
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        const t = this.type();
+        this.formModel.set({
+          naam: t?.naam ?? '',
+          beschrijving: t?.beschrijving ?? '',
+          volgorde: t?.volgorde ?? 0,
+          maxLeningenPerLid: t?.maxLeningenPerLid ?? null,
+          huurprijs: t?.huurprijs ?? null,
+        });
+        this.customProperties.set(
+          (t?.customProperties ?? []).map((p: CustomPropertyDef) => ({
+            id: crypto.randomUUID(),
+            key: p.key,
+            label: p.label,
+          }))
+        );
+      },
+      { }
+    );
   }
 
   // ── Save ────────────────────────────────────────────────────────────
@@ -132,15 +171,17 @@ export class MateriaalTypeFormComponent {
       return;
     }
 
-    const keys = this.customProperties().map(p => p.key.trim()).filter(k => k.length > 0);
+    const keys = this.customProperties()
+      .map((p) => p.key.trim())
+      .filter((k) => k.length > 0);
     if (new Set(keys).size !== keys.length) {
       this.toast.error('Elk veld moet een unieke veldnaam hebben.');
       return;
     }
 
     const customProperties: CustomPropertyDef[] = this.customProperties()
-      .filter(p => p.key.trim() && p.label.trim())
-      .map(p => ({ key: p.key.trim(), label: p.label.trim() }));
+      .filter((p) => p.key.trim() && p.label.trim())
+      .map((p) => ({ key: p.key.trim(), label: p.label.trim() }));
 
     const model = this.formModel();
     const dto = {
@@ -168,7 +209,7 @@ export class MateriaalTypeFormComponent {
       error: () => {
         this.saving.set(false);
         this.toast.error('Opslaan mislukt. Probeer opnieuw.');
-      }
+      },
     });
   }
 }

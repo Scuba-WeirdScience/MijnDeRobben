@@ -1,12 +1,22 @@
 import {
-  Component, input, output,
-  OnInit, inject, signal, computed,
+  Component,
+  input,
+  output,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminRoleService } from '../../services/admin-role.service';
 import { MemberService, Member } from '../../../../features/members/services/member.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { ButtonComponent, SidePanelComponent, SpinnerComponent } from '../../../../shared/components/design-system';
+import {
+  ButtonComponent,
+  SidePanelComponent,
+  SpinnerComponent,
+} from '../../../../shared/components/design-system';
 
 export interface UserSummary {
   id: string;
@@ -19,6 +29,7 @@ export interface UserSummary {
   selector: 'app-user-detail-panel',
   standalone: true,
   imports: [FormsModule, SidePanelComponent, ButtonComponent, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './user-detail-panel.component.html',
 })
 export class UserDetailPanelComponent implements OnInit {
@@ -35,34 +46,40 @@ export class UserDetailPanelComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   // ── state ──────────────────────────────────────────────────────────────
-  readonly loading      = signal(true);
-  readonly rolesBusy    = signal(false);
-  readonly emailBusy    = signal(false);
+  readonly loading = signal(true);
+  readonly rolesBusy = signal(false);
+  readonly emailBusy = signal(false);
   readonly passwordBusy = signal(false);
-  readonly ledenBusy    = signal(false);
+  readonly ledenBusy = signal(false);
 
-  readonly userRoles          = signal<string[]>([]);
-  readonly gekoppeldeLeden     = signal<Member[]>([]);
-  readonly ledenSearchResults  = signal<Member[]>([]);
-  readonly emailError         = signal('');
-  readonly passwordError      = signal('');
+  readonly userRoles = signal<string[]>([]);
+  readonly gekoppeldeLeden = signal<Member[]>([]);
+  readonly ledenSearchResults = signal<Member[]>([]);
+  readonly emailError = signal('');
+  readonly passwordError = signal('');
 
-  selectedRole    = '';
-  emailDraft      = '';
-  newPassword     = '';
+  selectedRole = '';
+  emailDraft = '';
+  newPassword = '';
   confirmPassword = '';
-  ledenSearch     = '';
+  ledenSearch = '';
 
   readonly availableRoles = computed(() =>
-    this.allRoles().filter(r => !this.userRoles().includes(r))
+    this.allRoles().filter((r) => !this.userRoles().includes(r))
   );
 
   // ── lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.emailDraft = this.user().email;
     this.roleService.getUserRoles(this.user().id).subscribe({
-      next: roles => { this.userRoles.set(roles); this.loading.set(false); },
-      error: ()    => { this.loading.set(false); this.toast.error('Kon rollen niet laden.'); },
+      next: (roles) => {
+        this.userRoles.set(roles);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.toast.error('Kon rollen niet laden.');
+      },
     });
     this._loadGekoppeldeLeden();
   }
@@ -70,13 +87,13 @@ export class UserDetailPanelComponent implements OnInit {
   private _loadGekoppeldeLeden(): void {
     // Fetch all members and filter by verzorgerIds containing this user's UID
     this.memberService.getAll(1, 200).subscribe({
-      next: result => {
-        const gekoppeld = result.items.filter(m =>
-          m.verzorgerIds?.includes(this.user().id)
-        );
+      next: (result) => {
+        const gekoppeld = result.items.filter((m) => m.verzorgerIds?.includes(this.user().id));
         this.gekoppeldeLeden.set(gekoppeld);
       },
-      error: () => { /* silently ignore */ },
+      error: () => {
+        /* silently ignore */
+      },
     });
   }
 
@@ -87,12 +104,15 @@ export class UserDetailPanelComponent implements OnInit {
     this.rolesBusy.set(true);
     this.roleService.assignRole(this.user().id, role).subscribe({
       next: () => {
-        this.userRoles.update(r => [...r, role]);
+        this.userRoles.update((r) => [...r, role]);
         this.selectedRole = '';
         this.rolesBusy.set(false);
         this.toast.success(`Rol '${role}' toegewezen.`);
       },
-      error: () => { this.rolesBusy.set(false); this.toast.error('Toewijzen mislukt.'); },
+      error: () => {
+        this.rolesBusy.set(false);
+        this.toast.error('Toewijzen mislukt.');
+      },
     });
   }
 
@@ -100,11 +120,14 @@ export class UserDetailPanelComponent implements OnInit {
     this.rolesBusy.set(true);
     this.roleService.removeRole(this.user().id, role).subscribe({
       next: () => {
-        this.userRoles.update(r => r.filter(x => x !== role));
+        this.userRoles.update((r) => r.filter((x) => x !== role));
         this.rolesBusy.set(false);
         this.toast.success(`Rol '${role}' verwijderd.`);
       },
-      error: () => { this.rolesBusy.set(false); this.toast.error('Verwijderen mislukt.'); },
+      error: () => {
+        this.rolesBusy.set(false);
+        this.toast.error('Verwijderen mislukt.');
+      },
     });
   }
 
@@ -165,20 +188,23 @@ export class UserDetailPanelComponent implements OnInit {
   // ── gekoppelde leden ───────────────────────────────────────────────────
   zoekLeden(): void {
     const q = this.ledenSearch.trim();
-    if (!q) { this.ledenSearchResults.set([]); return; }
+    if (!q) {
+      this.ledenSearchResults.set([]);
+      return;
+    }
 
     this.memberService.getAll(1, 50, q).subscribe({
-      next: result => {
+      next: (result) => {
         // Exclude already-coupled members
-        const gekoppeldIds = this.gekoppeldeLeden().map(m => m.id);
-        this.ledenSearchResults.set(result.items.filter(m => !gekoppeldIds.includes(m.id)));
+        const gekoppeldIds = this.gekoppeldeLeden().map((m) => m.id);
+        this.ledenSearchResults.set(result.items.filter((m) => !gekoppeldIds.includes(m.id)));
       },
       error: () => this.toast.error('Zoeken mislukt.'),
     });
   }
 
   koppelLid(lid: Member): void {
-    const huidig = this.gekoppeldeLeden().map(m => m.id);
+    const huidig = this.gekoppeldeLeden().map((m) => m.id);
     if (huidig.includes(lid.id)) return;
 
     const nieuweIds = [...(lid.verzorgerIds ?? [])];
@@ -187,26 +213,32 @@ export class UserDetailPanelComponent implements OnInit {
     this.ledenBusy.set(true);
     this.roleService.updateVerzorgerIds(lid.id, nieuweIds).subscribe({
       next: () => {
-        this.gekoppeldeLeden.update(l => [...l, { ...lid, verzorgerIds: nieuweIds }]);
-        this.ledenSearchResults.update(r => r.filter(m => m.id !== lid.id));
+        this.gekoppeldeLeden.update((l) => [...l, { ...lid, verzorgerIds: nieuweIds }]);
+        this.ledenSearchResults.update((r) => r.filter((m) => m.id !== lid.id));
         this.ledenBusy.set(false);
         this.toast.success(`${lid.firstName} ${lid.lastName} gekoppeld.`);
       },
-      error: () => { this.ledenBusy.set(false); this.toast.error('Koppelen mislukt.'); },
+      error: () => {
+        this.ledenBusy.set(false);
+        this.toast.error('Koppelen mislukt.');
+      },
     });
   }
 
   ontkoppelLid(lid: Member): void {
-    const nieuweIds = (lid.verzorgerIds ?? []).filter(id => id !== this.user().id);
+    const nieuweIds = (lid.verzorgerIds ?? []).filter((id) => id !== this.user().id);
 
     this.ledenBusy.set(true);
     this.roleService.updateVerzorgerIds(lid.id, nieuweIds).subscribe({
       next: () => {
-        this.gekoppeldeLeden.update(l => l.filter(m => m.id !== lid.id));
+        this.gekoppeldeLeden.update((l) => l.filter((m) => m.id !== lid.id));
         this.ledenBusy.set(false);
         this.toast.success(`${lid.firstName} ${lid.lastName} ontkoppeld.`);
       },
-      error: () => { this.ledenBusy.set(false); this.toast.error('Ontkoppelen mislukt.'); },
+      error: () => {
+        this.ledenBusy.set(false);
+        this.toast.error('Ontkoppelen mislukt.');
+      },
     });
   }
 }

@@ -1,11 +1,25 @@
-import { Component, inject, input, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import {
   SpinnerComponent,
-  FormFieldComponent, InputComponent, SelectComponent,
-  ButtonComponent, SidePanelComponent, ConfirmDialogComponent,
-  PageHeaderComponent, BadgeComponent, EmptyStateComponent,
+  FormFieldComponent,
+  InputComponent,
+  SelectComponent,
+  ButtonComponent,
+  SidePanelComponent,
+  ConfirmDialogComponent,
+  PageHeaderComponent,
+  BadgeComponent,
+  EmptyStateComponent,
 } from '../../../shared/components/design-system';
 import { FieldTree, form } from '@angular/forms/signals';
 import { ORGANISATIES, Organisatie } from '../../../../generated/api-schemas';
@@ -38,10 +52,20 @@ export interface LookupTypeConfig {
 
 // Tailwind safelist — do not remove
 const _TW_SAFELIST = [
-  'px-3', 'py-1.5', 'rounded-full', 'text-sm', 'font-medium',
-  'bg-scuba-600', 'text-white', 'transition-colors',
-  'bg-scuba-100', 'dark:bg-scuba-900/20', 'text-scuba-700', 'dark:text-scuba-300',
-  'hover:bg-scuba-200', 'dark:hover:bg-scuba-800/30',
+  'px-3',
+  'py-1.5',
+  'rounded-full',
+  'text-sm',
+  'font-medium',
+  'bg-scuba-600',
+  'text-white',
+  'transition-colors',
+  'bg-scuba-100',
+  'dark:bg-scuba-900/20',
+  'text-scuba-700',
+  'dark:text-scuba-300',
+  'hover:bg-scuba-200',
+  'dark:hover:bg-scuba-800/30',
 ];
 
 @Component({
@@ -49,10 +73,19 @@ const _TW_SAFELIST = [
   standalone: true,
   imports: [
     TitleCasePipe,
-    SpinnerComponent, FormFieldComponent, InputComponent, SelectComponent,
-    ButtonComponent, SidePanelComponent, ConfirmDialogComponent,
-    PageHeaderComponent, BadgeComponent, EmptyStateComponent, LucideChevronDown,
+    SpinnerComponent,
+    FormFieldComponent,
+    InputComponent,
+    SelectComponent,
+    ButtonComponent,
+    SidePanelComponent,
+    ConfirmDialogComponent,
+    PageHeaderComponent,
+    BadgeComponent,
+    EmptyStateComponent,
+    LucideChevronDown,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './lookup-type-management.component.html',
 })
 export class LookupTypeManagementComponent implements OnInit {
@@ -74,7 +107,7 @@ export class LookupTypeManagementComponent implements OnInit {
 
   readonly filtered = computed<LookupTypeDoc[]>(() => {
     const org = this.selectedOrg();
-    return org ? this.items().filter(i => i.organisatie === org) : this.items();
+    return org ? this.items().filter((i) => i.organisatie === org) : this.items();
   });
 
   // ── Signal form ────────────────────────────────────────────────────────────
@@ -94,7 +127,10 @@ export class LookupTypeManagementComponent implements OnInit {
   private loadAll(): void {
     this.loading.set(true);
     from(call<void, LookupTypeDoc[]>(this.config().getAllFn)).subscribe({
-      next: list => { this.items.set(list); this.loading.set(false); },
+      next: (list) => {
+        this.items.set(list);
+        this.loading.set(false);
+      },
       error: () => {
         this.loading.set(false);
         this.toast.error(`Kon ${this.config().sectionLabel.toLowerCase()} niet laden.`);
@@ -113,12 +149,12 @@ export class LookupTypeManagementComponent implements OnInit {
   // ── Helpers ────────────────────────────────────────────────────────────────
   protected firstError(field: { errors(): readonly { message?: string }[] }): string {
     const errs = field.errors();
-    return errs.length > 0 ? (errs[0].message ?? '') : '';
+    return errs.length > 0 ? errs[0].message ?? '' : '';
   }
 
   protected volgordeAsString = computed(() => String(this.formModel().volgorde ?? 0));
   protected onVolgordeInput(value: string): void {
-    this.formModel.update(m => ({ ...m, volgorde: Number(value) || 0 }));
+    this.formModel.update((m) => ({ ...m, volgorde: Number(value) || 0 }));
   }
 
   // ── Form ───────────────────────────────────────────────────────────────────
@@ -155,7 +191,12 @@ export class LookupTypeManagementComponent implements OnInit {
 
     const existing = this.editItem();
     const req$ = existing
-      ? from(call<typeof dto & { id: string }, LookupTypeDoc>(cfg.updateFn, { id: existing.id, ...dto }))
+      ? from(
+          call<typeof dto & { id: string }, LookupTypeDoc>(cfg.updateFn, {
+            id: existing.id,
+            ...dto,
+          })
+        )
       : from(call<typeof dto, LookupTypeDoc>(cfg.createFn, dto));
 
     req$.subscribe({
@@ -163,9 +204,9 @@ export class LookupTypeManagementComponent implements OnInit {
         this.saving.set(false);
         this.closeForm();
         this.loadAll();
-        this.toast.success(existing
-          ? `${cfg.itemLabel} bijgewerkt.`
-          : `${cfg.itemLabel} toegevoegd.`);
+        this.toast.success(
+          existing ? `${cfg.itemLabel} bijgewerkt.` : `${cfg.itemLabel} toegevoegd.`
+        );
       },
       error: () => {
         this.saving.set(false);
@@ -181,7 +222,9 @@ export class LookupTypeManagementComponent implements OnInit {
   onDeleteConfirmed(): void {
     const item = this.itemToDelete();
     if (!item) return;
-    from(call<{ id: string }, { success: boolean }>(this.config().deleteFn, { id: item.id })).subscribe({
+    from(
+      call<{ id: string }, { success: boolean }>(this.config().deleteFn, { id: item.id })
+    ).subscribe({
       next: () => {
         this.itemToDelete.set(null);
         this.loadAll();

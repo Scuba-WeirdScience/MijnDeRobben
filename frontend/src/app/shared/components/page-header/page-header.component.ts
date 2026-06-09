@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 /**
  * DSC PageHeader component.
@@ -23,15 +23,16 @@ import { Component, input } from '@angular/core';
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ title() }}</h1>
         @if (subtitle()) {
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ subtitle() }}</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ subtitle() }}</p>
         }
       </div>
       <ng-content select="[actions]" />
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class PageHeaderComponent {
-  readonly title    = input.required<string>();
+  readonly title = input.required<string>();
   readonly subtitle = input<string | undefined>(undefined);
 }

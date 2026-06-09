@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PwaService } from '../../../core/services/pwa.service';
 import { LucideRefreshCw } from '../../lucide-icons';
 
@@ -6,6 +6,7 @@ import { LucideRefreshCw } from '../../lucide-icons';
   selector: 'app-update-notification',
   standalone: true,
   imports: [LucideRefreshCw],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './update-notification.component.html',
 })
 export class UpdateNotificationComponent {

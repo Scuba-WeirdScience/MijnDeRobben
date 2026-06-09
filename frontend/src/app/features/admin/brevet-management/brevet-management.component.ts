@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from '../../members/services/member.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
@@ -11,7 +11,14 @@ import { PageContainerComponent } from '../../../shared/components/design-system
 @Component({
   selector: 'app-brevet-management',
   standalone: true,
-  imports: [FormsModule, SpinnerComponent, MemberBrevetPanelComponent, LucideX, PageContainerComponent],
+  imports: [
+    FormsModule,
+    SpinnerComponent,
+    MemberBrevetPanelComponent,
+    LucideX,
+    PageContainerComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './brevet-management.component.html',
 })
 export class BrevetManagementComponent {
@@ -29,15 +36,23 @@ export class BrevetManagementComponent {
 
   onMemberSearch(): void {
     if (this.memberSearchTimeout) clearTimeout(this.memberSearchTimeout);
-    if (!this.memberSearch.trim()) { this.members.set([]); return; }
+    if (!this.memberSearch.trim()) {
+      this.members.set([]);
+      return;
+    }
     this.memberSearchTimeout = setTimeout(() => this.loadMembers(), 350);
   }
 
   private loadMembers(): void {
     this.membersLoading.set(true);
     this.adminMemberService.getAll(1, 20, this.memberSearch).subscribe({
-      next: res => { this.members.set(res.items); this.membersLoading.set(false); },
-      error: () => { this.membersLoading.set(false); }
+      next: (res) => {
+        this.members.set(res.items);
+        this.membersLoading.set(false);
+      },
+      error: () => {
+        this.membersLoading.set(false);
+      },
     });
   }
 

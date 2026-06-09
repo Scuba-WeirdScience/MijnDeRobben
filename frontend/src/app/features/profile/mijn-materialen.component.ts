@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LeningService, LeningDoc } from '../lening/lening.service';
@@ -9,6 +9,7 @@ import { VerzorgerContextService } from '../../core/services/verzorger-context.s
   selector: 'app-mijn-materialen',
   standalone: true,
   imports: [CommonModule, RouterLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mijn-materialen.component.html',
 })
 export class MijnMaterialenComponent implements OnInit {
@@ -31,13 +32,13 @@ export class MijnMaterialenComponent implements OnInit {
       : this.leningService.getMyLeningen();
 
     obs$.subscribe({
-      next: list => {
+      next: (list) => {
         this.leningen.set(list);
         this.loading.set(false);
       },
       error: () => {
         this.loading.set(false);
-      }
+      },
     });
   }
 }

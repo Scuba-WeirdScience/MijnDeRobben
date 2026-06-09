@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit } from '@angular/core';
+import { Component, inject, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TabsComponent } from '../tabs.component';
 
 /**
@@ -22,10 +22,11 @@ import { TabsComponent } from '../tabs.component';
   selector: 'app-tab',
   standalone: true,
   template: `<ng-content />`,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: contents' },
 })
 export class TabComponent implements OnInit {
-  readonly id    = input.required<string>();
+  readonly id = input.required<string>();
   readonly label = input.required<string>();
 
   private readonly tabs = inject(TabsComponent);

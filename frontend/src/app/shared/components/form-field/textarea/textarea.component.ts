@@ -1,4 +1,4 @@
-import { Component, computed, input, model } from '@angular/core';
+import { Component, computed, input, model, ChangeDetectionStrategy } from '@angular/core';
 import { FORM_FIELD } from '../form-field.token';
 
 @Component({
@@ -7,17 +7,18 @@ import { FORM_FIELD } from '../form-field.token';
   imports: [],
   viewProviders: [{ provide: FORM_FIELD, useExisting: TextareaComponent }],
   templateUrl: './textarea.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { style: 'display: block' },
 })
 export class TextareaComponent {
-  readonly value       = model<string>('');
-  readonly errors      = input<readonly { message?: string }[]>([]);
-  readonly disabled    = input<boolean>(false);
-  readonly required    = input<boolean>(false);
-  readonly invalid     = input<boolean>(false);
-  readonly maxLength   = input<number | undefined>(undefined);
+  readonly value = model<string>('');
+  readonly errors = input<readonly { message?: string }[]>([]);
+  readonly disabled = input<boolean>(false);
+  readonly required = input<boolean>(false);
+  readonly invalid = input<boolean>(false);
+  readonly maxLength = input<number | undefined>(undefined);
   readonly placeholder = input<string>('');
-  readonly rows        = input<number>(3);
+  readonly rows = input<number>(3);
 
   readonly cls = computed(() =>
     [
@@ -32,7 +33,9 @@ export class TextareaComponent {
     ].join(' ')
   );
 
-  onInput(e: Event): void { this.value.set((e.target as HTMLTextAreaElement).value); }
+  onInput(e: Event): void {
+    this.value.set((e.target as HTMLTextAreaElement).value);
+  }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onBlur(): void {}
 }

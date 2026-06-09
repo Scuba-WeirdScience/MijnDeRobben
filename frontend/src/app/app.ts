@@ -1,5 +1,12 @@
-import { Component, computed, inject } from '@angular/core';
-import { RouterOutlet, Router, NavigationEnd, NavigationStart, NavigationCancel, NavigationError } from '@angular/router';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  RouterOutlet,
+  Router,
+  NavigationEnd,
+  NavigationStart,
+  NavigationCancel,
+  NavigationError,
+} from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { UpdateNotificationComponent } from './shared/components/pwa/update-notification.component';
@@ -12,9 +19,19 @@ import { PwaService } from './core/services/pwa.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavbarComponent, ToastComponent, UpdateNotificationComponent, InstallPromptBannerComponent, CommonModule, SpinnerComponent, ReleaseNotesDialogComponent],
+  imports: [
+    RouterOutlet,
+    NavbarComponent,
+    ToastComponent,
+    UpdateNotificationComponent,
+    InstallPromptBannerComponent,
+    CommonModule,
+    SpinnerComponent,
+    ReleaseNotesDialogComponent,
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './app.css',
 })
 export class App {
   private readonly router = inject(Router);
@@ -22,9 +39,9 @@ export class App {
 
   private readonly url = toSignal(
     this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd),
-      map(e => (e as NavigationEnd).urlAfterRedirects),
-      startWith(this.router.url),
+      filter((e) => e instanceof NavigationEnd),
+      map((e) => (e as NavigationEnd).urlAfterRedirects),
+      startWith(this.router.url)
     ),
     { initialValue: this.router.url }
   );
@@ -33,8 +50,14 @@ export class App {
 
   readonly isNavigating = toSignal(
     this.router.events.pipe(
-      filter(e => e instanceof NavigationStart || e instanceof NavigationEnd || e instanceof NavigationCancel || e instanceof NavigationError),
-      map(e => e instanceof NavigationStart),
+      filter(
+        (e) =>
+          e instanceof NavigationStart ||
+          e instanceof NavigationEnd ||
+          e instanceof NavigationCancel ||
+          e instanceof NavigationError
+      ),
+      map((e) => e instanceof NavigationStart)
     ),
     { initialValue: false }
   );

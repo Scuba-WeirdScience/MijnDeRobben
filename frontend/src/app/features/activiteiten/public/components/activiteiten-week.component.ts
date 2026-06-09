@@ -1,4 +1,4 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -18,16 +18,23 @@ import { ResolvedOccurrence } from '../../activiteiten.service';
 
 // In the component .ts file — do NOT remove
 const _TW_SAFELIST = [
-  'bg-scuba-100', 'text-scuba-700', 'dark:bg-scuba-900/40', 'dark:text-scuba-300',
-  'hover:bg-scuba-200', 'dark:hover:bg-scuba-800/40',
-  'bg-scuba-50', 'dark:bg-scuba-900/10',
-  'text-scuba-600', 'dark:text-scuba-400',
+  'bg-scuba-100',
+  'text-scuba-700',
+  'dark:bg-scuba-900/40',
+  'dark:text-scuba-300',
+  'hover:bg-scuba-200',
+  'dark:hover:bg-scuba-800/40',
+  'bg-scuba-50',
+  'dark:bg-scuba-900/10',
+  'text-scuba-600',
+  'dark:text-scuba-400',
 ];
 
 @Component({
   selector: 'app-activiteiten-week',
   standalone: true,
   imports: [NgClass, ButtonComponent, RouterLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './activiteiten-week.component.html',
 })
 export class ActiviteitenWeekComponent {
@@ -50,11 +57,13 @@ export class ActiviteitenWeekComponent {
     if (start.getMonth() === end.getMonth()) {
       return format(start, 'd', { locale: nl }) + '–' + format(end, 'd MMMM yyyy', { locale: nl });
     }
-    return format(start, 'd MMM', { locale: nl }) + ' – ' + format(end, 'd MMM yyyy', { locale: nl });
+    return (
+      format(start, 'd MMM', { locale: nl }) + ' – ' + format(end, 'd MMM yyyy', { locale: nl })
+    );
   });
 
   occurrencesVoorDag(dag: Date): ResolvedOccurrence[] {
-    return this.occurrences().filter(occ => {
+    return this.occurrences().filter((occ) => {
       try {
         return isSameDay(parseISO(occ.startDatumTijd), dag);
       } catch {

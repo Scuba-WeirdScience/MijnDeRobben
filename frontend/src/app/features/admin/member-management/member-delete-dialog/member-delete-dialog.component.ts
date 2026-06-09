@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { Member } from '../../../members/services/member.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/design-system';
 
@@ -6,10 +6,11 @@ import { ConfirmDialogComponent } from '../../../../shared/components/design-sys
   selector: 'app-member-delete-dialog',
   standalone: true,
   imports: [ConfirmDialogComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './member-delete-dialog.component.html',
 })
 export class MemberDeleteDialogComponent {
-  readonly member    = input.required<Member>();
+  readonly member = input.required<Member>();
   readonly confirmed = output<void>();
   readonly cancelled = output<void>();
 

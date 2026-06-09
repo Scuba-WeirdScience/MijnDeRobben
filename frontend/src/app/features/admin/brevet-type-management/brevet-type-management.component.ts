@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   LookupTypeManagementComponent,
   LookupTypeConfig,
@@ -19,6 +19,7 @@ const config: LookupTypeConfig = {
   selector: 'app-brevet-type-management',
   standalone: true,
   imports: [LookupTypeManagementComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './brevet-type-management.component.html',
 })
 export class BrevetTypeManagementComponent {
