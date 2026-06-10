@@ -7,7 +7,24 @@ const angular = require('angular-eslint');
 module.exports = defineConfig([
   // ── Generated files ────────────────────────────────────────────────────────
   {
-    ignores: ['src/generated/**'],
+    ignores: ['src/generated/**', 'src/lib/spartan/**'],
+  },
+
+  // ── spartan/ui Helm library — exempt from app-prefix selector rules ────────
+  {
+    files: ['src/lib/spartan/**/*.ts'],
+    extends: [
+      eslint.configs.recommended,
+      tseslint.configs.recommended,
+      angular.configs.tsRecommended,
+    ],
+    processor: angular.processInlineTemplates,
+    rules: {
+      '@angular-eslint/directive-selector': 'off',
+      '@angular-eslint/component-selector': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+    },
   },
 
   // ── TypeScript sources ─────────────────────────────────────────────────────

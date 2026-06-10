@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.15.0",
+    "date": "2026-06-10",
+    "sections": [
+      {
+        "heading": "Intern",
+        "items": [
+          "Verbeterde componentenbibliotheek voor toekomstige UI-verbeteringen"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.14.1",
     "date": "2026-06-09",
     "sections": [
