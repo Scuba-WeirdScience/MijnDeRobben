@@ -25,6 +25,15 @@ export interface UserSettings {
   colorScheme?: 'ocean' | 'forest' | 'sunset' | 'slate' | 'rose';
   /** When false: suppress the automatic changelog dialog on new version (default: true) */
   showChangelogUponNewVersion?: boolean;
+  /** Per-user dashboard widget configuration (order = array order) */
+  dashboardWidgets?: DashboardWidgetConfig[];
+}
+
+/** Configuration for a single dashboard widget */
+export interface DashboardWidgetConfig {
+  id: string;
+  visible: boolean;
+  collapsed: boolean;
 }
 
 export interface MemberDoc {

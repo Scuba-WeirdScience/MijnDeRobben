@@ -122,6 +122,13 @@ export interface MemberDoc {
 
 // ── Brevetten ──────────────────────────────────────────────────────────────
 
+// Mirrors functions/src/shared/types.ts:DashboardWidgetConfig
+export interface DashboardWidgetConfig {
+  id: string;
+  visible: boolean;
+  collapsed: boolean;
+}
+
 // Mirrors functions/src/shared/types.ts:BrevetDoc
 export interface BrevetDoc {
   id: string;

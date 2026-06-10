@@ -1,8 +1,68 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- ── Header ─────────────────────────────────────────────────── -->
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+    <button
+      (click)="toggleEditMode()"
+      class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150"
+      [ngClass]="{
+        'bg-scuba-600 text-white hover:bg-scuba-700 dark:bg-scuba-600 dark:hover:bg-scuba-500': !isEditMode(),
+        'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700': isEditMode()
+      }"
+    >
+      <svg lucideEdit2 class="w-4 h-4"></svg>
+      {{ isEditMode() ? 'Gereed' : 'Bewerken' }}
+    </button>
   </div>
 
+  <!-- ── Edit toolbar ───────────────────────────────────────────── -->
+  @if (isEditMode()) {
+    <div class="flex flex-wrap items-center gap-3 mb-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+      <!-- Add widget -->
+      <div class="relative">
+        <app-button (click)="showAddWidget.set(!showAddWidget())" variant="secondary" size="sm">
+          <svg lucidePlus class="w-4 h-4"></svg>
+          Widget toevoegen
+        </app-button>
+
+        @if (showAddWidget()) {
+          <div class="absolute top-full left-0 mt-1 z-50 w-72 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
+            @if (availableWidgetsNotOnDashboard().length > 0) {
+              <div class="py-1 max-h-60 overflow-y-auto">
+                @for (widgetId of availableWidgetsNotOnDashboard(); track widgetId) {
+                  <button
+                    (click)="addWidget(widgetId)"
+                    class="w-full text-left px-4 py-3 text-sm hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
+                  >
+                    <div class="font-medium text-gray-900 dark:text-white">{{ getWidgetTitle(widgetId) }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ AVAILABLE_WIDGETS[widgetId].description }}</div>
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                Alle widgets zijn al toegevoegd.
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex-1"></div>
+
+      <!-- Save / Cancel -->
+      <app-button variant="primary" size="sm" (click)="save()">
+        <svg lucideCircleCheck class="w-4 h-4"></svg>
+        Opslaan
+      </app-button>
+      <app-button variant="ghost" size="sm" (click)="cancel()">
+        <svg lucideX class="w-4 h-4"></svg>
+        Annuleren
+      </app-button>
+    </div>
+  }
+
+  <!-- ── Content ────────────────────────────────────────────────── -->
   @if (loading()) {
     <div class="flex justify-center py-20">
       <div class="animate-spin rounded-full h-10 w-10 border-4 border-scuba-600 border-t-transparent"></div>
@@ -18,99 +78,157 @@
       (cdkDropListDropped)="drop($event)"
       class="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-min"
     >
-      @for (widget of widgetOrder(); track widget) {
-        <div cdkDrag class="touch-none">
-          <div
-            class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden"
-          >
+      @for (widget of widgetConfig(); track widget.id) {
+        <div
+          cdkDrag
+          [cdkDragDisabled]="!isEditMode()"
+          [class.hidden]="!isEditMode() && !widget.visible"
+          [class.touch-none]="isEditMode()"
+          class="transition-opacity duration-200"
+          [ngClass]="{
+            'opacity-40': isEditMode() && !widget.visible,
+          }"
+        >
+          <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
             <!-- Widget header -->
             <div
-              class="flex items-center gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-grab active:cursor-grabbing select-none"
+              class="flex items-center gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+              [ngClass]="{
+                'cursor-grab active:cursor-grabbing select-none': isEditMode(),
+              }"
               cdkDragHandle
             >
-              <svg lucideMenu class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"></svg>
-              @if (widget === 'leningen') {
-                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Mijn geleende materialen</h2>
-              } @else {
-                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Aankomende activiteiten</h2>
+              <!-- Drag handle (edit mode only) -->
+              @if (isEditMode()) {
+                <svg lucideMenu class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"></svg>
+              }
+
+              <!-- Collapse toggle -->
+              <button
+                (click)="toggleCollapse(widget.id)"
+                class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                [title]="widget.collapsed ? 'Uitklappen' : 'Inklappen'"
+              >
+                @if (widget.collapsed) {
+                  <svg lucideChevronRight class="w-4 h-4"></svg>
+                } @else {
+                  <svg lucideChevronDown class="w-4 h-4"></svg>
+                }
+              </button>
+
+              <!-- Title -->
+              <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-1 min-w-0 truncate">
+                {{ getWidgetTitle(widget.id) }}
+              </h2>
+
+              <!-- Edit-mode actions -->
+              @if (isEditMode()) {
+                <button
+                  (click)="toggleVisibility(widget.id)"
+                  class="flex-shrink-0 text-gray-400 hover:text-scuba-600 dark:hover:text-scuba-400 transition-colors"
+                  [title]="widget.visible ? 'Verbergen' : 'Tonen'"
+                >
+                  @if (widget.visible) {
+                    <svg lucideCircleCheck class="w-4 h-4 text-scuba-500"></svg>
+                  } @else {
+                    <svg lucideXCircle class="w-4 h-4"></svg>
+                  }
+                </button>
+
+                <button
+                  (click)="removeWidget(widget.id)"
+                  class="flex-shrink-0 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                  title="Verwijderen"
+                >
+                  <svg lucideX class="w-4 h-4"></svg>
+                </button>
               }
             </div>
 
             <!-- Widget body -->
-            <div class="p-5">
-              @if (widget === 'leningen') {
-                @if (alleenOpenLeningen().length === 0) {
-                  <div class="text-center py-8">
-                    <div class="text-4xl mb-3">🤿</div>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">Je hebt momenteel geen materialen geleend.</p>
-                    <a routerLink="/members" class="mt-4 inline-block px-4 py-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-sm font-semibold">
-                      Bekijk beschikbaar materiaal
-                    </a>
-                  </div>
-                } @else {
-                  <div class="space-y-3">
-                    @for (lening of alleenOpenLeningen(); track lening.id) {
-                      <div class="flex items-start justify-between gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                        <div class="min-w-0">
-                          <p class="font-medium text-gray-900 dark:text-white text-sm">{{ lening.materiaalNaam }}</p>
-                          @if (lening.materiaalTypeNaam) {
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ lening.materiaalTypeNaam }}</p>
-                          }
-                          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Geleend op {{ lening.uitgeleendDatum }}</p>
-                        </div>
-                        <app-badge variant="info">Actief</app-badge>
-                      </div>
-                    }
-                  </div>
-                  <a routerLink="/mijn-materialen" class="mt-4 inline-block text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
-                    Bekijk alles →
-                  </a>
-                }
-              } @else if (widget === 'activiteiten') {
-                @if (upcomingOccurrences().length === 0) {
-                  <div class="text-center py-8">
-                    <div class="text-4xl mb-3">📅</div>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">Geen aankomende activiteiten.</p>
-                    <a routerLink="/activiteiten" class="mt-4 inline-block px-4 py-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-sm font-semibold">
-                      Bekijk alle activiteiten
-                    </a>
-                  </div>
-                } @else {
-                  <div class="space-y-3">
-                    @for (occ of upcomingOccurrences(); track occ.activiteitId + '|' + occ.occurrenceDatum) {
-                      <a
-                        [routerLink]="['/activiteiten', occ.activiteitId]"
-                        [queryParams]="{ datum: occ.occurrenceDatum }"
-                        class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
-                      >
-                        <div class="flex items-start justify-between gap-3">
-                          <div class="min-w-0">
-                            <p class="text-xs text-scuba-600 dark:text-scuba-400 font-medium">
-                              {{ occ.startDatumTijd | localeDateTime }}
-                            </p>
-                            <p class="font-medium text-gray-900 dark:text-white text-sm mt-0.5">{{ occ.titel }}</p>
-                            @if (occ.locatieNaam) {
-                              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ occ.locatieNaam }}</p>
-                            }
-                          </div>
-                          <div class="flex flex-col items-end gap-1 shrink-0">
-                            @if (isIngeschreven(occ)) {
-                              <app-badge variant="success">Aangemeld</app-badge>
-                            }
-                          </div>
-                        </div>
+            @if (!widget.collapsed) {
+              <div class="p-5">
+                @if (widget.id === 'leningen') {
+                  @if (alleenOpenLeningen().length === 0) {
+                    <div class="text-center py-8">
+                      <div class="text-4xl mb-3">🤿</div>
+                      <p class="text-gray-500 dark:text-gray-400 text-sm">Je hebt momenteel geen materialen geleend.</p>
+                      <a routerLink="/members" class="mt-4 inline-block px-4 py-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-sm font-semibold">
+                        Bekijk beschikbaar materiaal
                       </a>
-                    }
-                  </div>
-                  <a routerLink="/activiteiten" class="mt-4 inline-block text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
-                    Bekijk alle activiteiten →
-                  </a>
+                    </div>
+                  } @else {
+                    <div class="space-y-3">
+                      @for (lening of alleenOpenLeningen(); track lening.id) {
+                        <div class="flex items-start justify-between gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                          <div class="min-w-0">
+                            <p class="font-medium text-gray-900 dark:text-white text-sm">{{ lening.materiaalNaam }}</p>
+                            @if (lening.materiaalTypeNaam) {
+                              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ lening.materiaalTypeNaam }}</p>
+                            }
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Geleend op {{ lening.uitgeleendDatum }}</p>
+                          </div>
+                          <app-badge variant="info">Actief</app-badge>
+                        </div>
+                      }
+                    </div>
+                    <a routerLink="/mijn-materialen" class="mt-4 inline-block text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
+                      Bekijk alles →
+                    </a>
+                  }
+                } @else if (widget.id === 'activiteiten') {
+                  @if (upcomingOccurrences().length === 0) {
+                    <div class="text-center py-8">
+                      <div class="text-4xl mb-3">📅</div>
+                      <p class="text-gray-500 dark:text-gray-400 text-sm">Geen aankomende activiteiten.</p>
+                      <a routerLink="/activiteiten" class="mt-4 inline-block px-4 py-2 rounded-lg bg-scuba-600 hover:bg-scuba-700 text-white text-sm font-semibold">
+                        Bekijk alle activiteiten
+                      </a>
+                    </div>
+                  } @else {
+                    <div class="space-y-3">
+                      @for (occ of upcomingOccurrences(); track occ.activiteitId + '|' + occ.occurrenceDatum) {
+                        <a
+                          [routerLink]="['/activiteiten', occ.activiteitId]"
+                          [queryParams]="{ datum: occ.occurrenceDatum }"
+                          class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-scuba-50 dark:hover:bg-scuba-900/20 transition-colors"
+                        >
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                              <p class="text-xs text-scuba-600 dark:text-scuba-400 font-medium">
+                                {{ occ.startDatumTijd | localeDateTime }}
+                              </p>
+                              <p class="font-medium text-gray-900 dark:text-white text-sm mt-0.5">{{ occ.titel }}</p>
+                              @if (occ.locatieNaam) {
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ occ.locatieNaam }}</p>
+                              }
+                            </div>
+                            <div class="flex flex-col items-end gap-1 shrink-0">
+                              @if (isIngeschreven(occ)) {
+                                <app-badge variant="success">Aangemeld</app-badge>
+                              }
+                            </div>
+                          </div>
+                        </a>
+                      }
+                    </div>
+                    <a routerLink="/activiteiten" class="mt-4 inline-block text-sm font-medium text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200">
+                      Bekijk alle activiteiten →
+                    </a>
+                  }
                 }
-              }
-            </div>
+              </div>
+            }
           </div>
         </div>
       }
     </div>
+
+    <!-- Empty dashboard (edit mode, no widgets at all) -->
+    @if (isEditMode() && widgetConfig().length === 0) {
+      <div class="text-center py-20">
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Je dashboard is leeg. Voeg widgets toe via de knop hierboven.</p>
+      </div>
+    }
   }
 </div>
