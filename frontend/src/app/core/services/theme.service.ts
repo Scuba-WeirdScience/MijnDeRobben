@@ -1,5 +1,6 @@
 import { Injectable, signal, effect, computed } from '@angular/core';
 import { call } from '../firebase/callable';
+import { DashboardWidgetConfig } from '../models/firestore-types';
 
 export type ThemeOption = 'light' | 'dark' | 'system';
 export type ColorScheme = 'ocean' | 'forest' | 'sunset' | 'slate' | 'rose';
@@ -17,12 +18,18 @@ interface UserSettings {
   colorScheme?: ColorScheme;
   /** When false: suppress the automatic changelog dialog on new version (default: true) */
   showChangelogUponNewVersion?: boolean;
+  dashboardWidgets?: DashboardWidgetConfig[];
 }
 
 const LS_KEY_THEME = 'theme';
 const LS_KEY_SCHEME = 'colorScheme';
 const LS_KEY_CHANGELOG = 'showChangelogUponNewVersion';
+const LS_KEY_DASHBOARD_WIDGETS = 'dashboardWidgets';
 const DEFAULT_SCHEME: ColorScheme = 'ocean';
+
+function defaultDashboardWidgets(): DashboardWidgetConfig[] {
+  return []; // dashboard component provides defaults when empty
+}
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
@@ -37,6 +44,9 @@ export class ThemeService {
 
   /** When false, the changelog dialog is suppressed on new-version boot (default: true) */
   readonly showChangelogUponNewVersion = signal<boolean>(this._loadInitialChangelog());
+
+  /** Dashboard widget configuration (persisted in Firestore, cached in localStorage) */
+  readonly dashboardWidgets = signal<DashboardWidgetConfig[]>(this._loadInitialDashboardWidgets());
 
   /** The accent hex for the current scheme — used for the swatch button in the navbar */
   readonly schemeAccentColor = computed(() =>
@@ -85,6 +95,13 @@ export class ThemeService {
     this._saveToFirestore({ showChangelogUponNewVersion: value });
   }
 
+  /** Persist dashboard widget configuration to Firestore (and local cache). */
+  setDashboardWidgets(config: DashboardWidgetConfig[]): void {
+    this.dashboardWidgets.set(config);
+    localStorage.setItem(LS_KEY_DASHBOARD_WIDGETS, JSON.stringify(config));
+    this._saveToFirestore({ dashboardWidgets: config });
+  }
+
   /** Called after login — loads the persisted settings from Firestore. */
   async loadFromFirestore(): Promise<void> {
     try {
@@ -99,6 +116,10 @@ export class ThemeService {
           result.showChangelogUponNewVersion !== this.showChangelogUponNewVersion()) {
         this.showChangelogUponNewVersion.set(result.showChangelogUponNewVersion);
         localStorage.setItem(LS_KEY_CHANGELOG, String(result.showChangelogUponNewVersion));
+      }
+      if (result?.dashboardWidgets && Array.isArray(result.dashboardWidgets)) {
+        this.dashboardWidgets.set(result.dashboardWidgets);
+        localStorage.setItem(LS_KEY_DASHBOARD_WIDGETS, JSON.stringify(result.dashboardWidgets));
       }
     } catch {
       // Not logged in or network error — stay with local value.
@@ -124,6 +145,22 @@ export class ThemeService {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem(LS_KEY_CHANGELOG);
     return saved === null ? true : saved !== 'false';
+  }
+
+  private _loadInitialDashboardWidgets(): DashboardWidgetConfig[] {
+    if (typeof window === 'undefined') return defaultDashboardWidgets();
+    try {
+      const saved = localStorage.getItem(LS_KEY_DASHBOARD_WIDGETS);
+      if (saved) {
+        const parsed = JSON.parse(saved) as DashboardWidgetConfig[];
+        if (Array.isArray(parsed) && parsed.every((w) => w.id && typeof w.visible === 'boolean' && typeof w.collapsed === 'boolean')) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return defaultDashboardWidgets();
   }
 
   private _resolve(t: ThemeOption): boolean {

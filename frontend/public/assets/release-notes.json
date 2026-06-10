@@ -1,5 +1,19 @@
 [
   {
+    "version": "2.16.0",
+    "date": "2026-06-10",
+    "sections": [
+      {
+        "heading": "Nieuw",
+        "items": [
+          "Dashboard-widgets kunnen nu in een bewerkmodus worden versleept, verborgen, toegevoegd en verwijderd",
+          "Dashboard-instellingen worden opgeslagen in je profiel, zodat ze overal hetzelfde zijn",
+          "Widgets kunnen worden in- en uitgeklapt om meer overzicht te krijgen"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.15.0",
     "date": "2026-06-10",
     "sections": [
