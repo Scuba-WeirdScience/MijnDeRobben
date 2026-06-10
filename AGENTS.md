@@ -9,7 +9,7 @@ Quick-ramp context for AI agents. Only non-obvious facts are listed.
 ```
 api-gateway/    ASP.NET Core 9 + YARP + JWT + ASP.NET Identity  →  :5238
 member-api/     ASP.NET Core 9 + EF Core + SQL Server           →  :5107
-frontend/       Angular 21 SPA (standalone, signals)            →  :4300
+frontend/       Angular 22 SPA (standalone, signals)            →  :4300
 migrations/     Hand-written SQL scripts (no EF migrations CLI)
 ```
 
