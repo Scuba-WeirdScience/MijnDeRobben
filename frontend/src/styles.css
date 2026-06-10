@@ -9,6 +9,9 @@
 /* ── spartan/ui preset (bundles @angular/cdk overlay + tw-animate-css) ───── */
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
 
+/* ── spartan component styles (extracted from spartan CLI nova theme) ──── */
+@import './lib/spartan/spartan-styles.css';
+
 @plugin "@tailwindcss/forms";
 
 /* ── Dark mode: toggle via .dark class on <html> ───────────────────────── */
@@ -16,8 +19,9 @@
 /* We keep this variant for our own components using &:where(.dark, .dark *) */
 @variant dark (&:where(.dark, .dark *));
 
-/* ── spartan/ui semantic color tokens ───────────────────────────────────── */
-/* These tokens power all hlm-* components (bg-primary, text-foreground, …) */
+/* ── spartan/ui semantic color tokens — DeRobben scuba theme ────────────── */
+/* These tokens power all hlm-* components (bg-primary, text-foreground, …)  */
+/* Based on the ocean/ scuba colour scheme.                                  */
 :root {
   color-scheme: light;
   --background: oklch(1 0 0);
@@ -26,57 +30,57 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --primary: oklch(0.52 0.14 248);        /* ≈ scuba-600 (#0077b6) */
+  --primary-foreground: oklch(0.985 0 0); /* white */
+  --secondary: oklch(0.95 0.03 230);      /* ≈ scuba-50 */
+  --secondary-foreground: oklch(0.28 0.08 250); /* ≈ scuba-800 */
+  --muted: oklch(0.95 0.03 230);          /* ≈ scuba-50 */
+  --muted-foreground: oklch(0.55 0.06 230); /* ≈ scuba-500 */
+  --accent: oklch(0.93 0.05 230);         /* ≈ scuba-100 */
+  --accent-foreground: oklch(0.28 0.08 250); /* ≈ scuba-800 */
+  --destructive: oklch(0.577 0.245 27.325); /* red */
+  --border: oklch(0.85 0.04 230);         /* ≈ scuba-200 */
+  --input: oklch(0.85 0.04 230);          /* ≈ scuba-200 */
+  --ring: oklch(0.55 0.14 248);           /* ≈ scuba-500 */
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.52 0.14 248);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-accent: oklch(0.93 0.05 230);
+  --sidebar-accent-foreground: oklch(0.28 0.08 250);
+  --sidebar-border: oklch(0.85 0.04 230);
+  --sidebar-ring: oklch(0.55 0.14 248);
 }
 
 .dark {
   color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.2 0.02 250);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.2 0.02 250);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.72 0.13 235);        /* ≈ scuba-400 (#26cdff) lighter for dark */
+  --primary-foreground: oklch(0.15 0 0);  /* near-black */
+  --secondary: oklch(0.25 0.03 250);      /* ≈ scuba-800 */
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.25 0.03 250);
+  --muted-foreground: oklch(0.65 0.06 230); /* ≈ scuba-400 */
+  --accent: oklch(0.27 0.05 250);         /* ≈ scuba-700 */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --ring: oklch(0.72 0.13 235);
+  --sidebar: oklch(0.18 0.02 250);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.985 0 0);
-  --sidebar-primary-foreground: oklch(0.205 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-primary: oklch(0.72 0.13 235);
+  --sidebar-primary-foreground: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.27 0.05 250);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.72 0.13 235);
 }
 
 /* ── Custom theme tokens ────────────────────────────────────────────────── */

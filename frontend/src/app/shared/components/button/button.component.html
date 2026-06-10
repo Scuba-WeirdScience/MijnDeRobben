@@ -1,7 +1,9 @@
 <button
+  hlmBtn
   [type]="type()"
   [disabled]="disabled() || loading()"
-  [class]="cls()"
+  [variant]="spartanVariant()"
+  [size]="spartanSize()"
 >
   @if (loading()) {
     <app-spinner size="sm" />

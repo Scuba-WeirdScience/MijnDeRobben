@@ -1,10 +1,11 @@
 import { Component, computed, input, model, ChangeDetectionStrategy } from '@angular/core';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { FORM_FIELD } from '../form-field.token';
 
 @Component({
   selector: 'app-textarea',
   standalone: true,
-  imports: [],
+  imports: [...HlmTextareaImports],
   viewProviders: [{ provide: FORM_FIELD, useExisting: TextareaComponent }],
   templateUrl: './textarea.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
