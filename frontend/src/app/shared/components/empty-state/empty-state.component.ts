@@ -1,4 +1,5 @@
 import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 
 const EMPTY_STATE_ICONS: Record<string, string> = {
   box: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
@@ -23,31 +24,9 @@ const EMPTY_STATE_ICONS: Record<string, string> = {
 @Component({
   selector: 'app-empty-state',
   standalone: true,
-  template: `
-    <div class="flex flex-col items-center justify-center py-12 text-center">
-      @if (icon() !== 'none') {
-      <svg
-        class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="1.5"
-          [attr.d]="iconPath()"
-        />
-      </svg>
-      }
-      <p class="text-sm text-gray-500 dark:text-gray-400">{{ message() }}</p>
-      <div class="mt-4">
-        <ng-content />
-      </div>
-    </div>
-  `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [...HlmEmptyImports],
+  templateUrl: './empty-state.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
 })
 export class EmptyStateComponent {

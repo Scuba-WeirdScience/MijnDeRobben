@@ -1,4 +1,5 @@
 import { Component, computed, input, model, ChangeDetectionStrategy } from '@angular/core';
+import { HlmInputImports } from '@spartan-ng/helm/input';
 import { FORM_FIELD } from '../form-field.token';
 
 // Tailwind v4 safelist — classes built in computed() that the scanner cannot detect.
@@ -20,7 +21,7 @@ const _TW_SAFELIST = [
 @Component({
   selector: 'app-input',
   standalone: true,
-  imports: [],
+  imports: [...HlmInputImports],
   viewProviders: [{ provide: FORM_FIELD, useExisting: InputComponent }],
   templateUrl: './input.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

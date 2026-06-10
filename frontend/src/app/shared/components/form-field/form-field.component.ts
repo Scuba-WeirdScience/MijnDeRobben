@@ -1,34 +1,19 @@
-import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
-import { LucideTriangleAlert } from '../../lucide-icons';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
 
-// Tailwind v4 safelist — classes built in computed() that the scanner cannot detect.
-// Do NOT remove: Tailwind scans this file as plain text and picks up these tokens.
-const _TW_SAFELIST = [
-  'mb-1.5',
-  'space-y-1.5',
-  'text-red-600',
-  'dark:text-red-400',
-  'text-gray-700',
-  'dark:text-gray-300',
-];
+const _TW_SAFELIST = ['text-red-500', 'ml-0.5'];
 
 @Component({
   selector: 'app-form-field',
   standalone: true,
-  imports: [LucideTriangleAlert],
+  imports: [...HlmFieldImports],
   templateUrl: './form-field.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
 })
 export class FormFieldComponent {
-  label = input<string>('');
-  required = input<boolean>(false);
-  hint = input<string>('');
-  error = input<string | null>(null);
-
-  readonly labelCls = computed(() =>
-    this.error()
-      ? 'block text-sm font-medium mb-1.5 text-red-600 dark:text-red-400'
-      : 'block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300'
-  );
+  readonly label = input<string>('');
+  readonly required = input<boolean>(false);
+  readonly hint = input<string>('');
+  readonly error = input<string | null>(null);
 }

@@ -1,17 +1,11 @@
-<div class="flex items-center justify-center"
-     [class.fixed]="fullPage()"
-     [class.inset-0]="fullPage()"
-     [class.bg-white\/60]="fullPage()"
-     [class.dark:bg-gray-900\/60]="fullPage()"
-     [class.z-50]="fullPage()"
-     [class.py-8]="!fullPage()">
-  <div class="animate-spin rounded-full border-4 border-gray-200 dark:border-gray-700"
-       [class.h-6]="size() === 'sm'"
-       [class.w-6]="size() === 'sm'"
-       [class.h-10]="size() === 'md'"
-       [class.w-10]="size() === 'md'"
-       [class.h-16]="size() === 'lg'"
-       [class.w-16]="size() === 'lg'"
-       style="border-top-color: var(--color-scuba-600, #0077b6)">
-  </div>
+<div
+  class="flex items-center justify-center"
+  [class.fixed]="fullPage()"
+  [class.inset-0]="fullPage()"
+  [class.bg-white/60]="fullPage()"
+  [class.dark:bg-gray-900/60]="fullPage()"
+  [class.z-50]="fullPage()"
+  [class.py-8]="!fullPage()"
+>
+  <hlm-spinner [class]="sizeCls()" aria-label="Laden" />
 </div>

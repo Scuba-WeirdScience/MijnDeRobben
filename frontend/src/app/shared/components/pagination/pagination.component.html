@@ -1,0 +1,45 @@
+@if (totalPages() > 1) {
+  <div class="flex items-center justify-between gap-2 text-sm">
+    <span class="text-gray-500 dark:text-gray-400 text-xs">{{ total() }} totaal</span>
+
+    <nav hlmPagination>
+      <ul hlmPaginationContent>
+        @if (hasPrev()) {
+          <li hlmPaginationItem (click)="pageChange.emit(page() - 1)">
+            <hlm-pagination-previous
+              text="Vorige"
+              ariaLabel="Vorige pagina"
+              iconOnly="true"
+            />
+          </li>
+        }
+
+        @for (p of pages(); track $index) {
+          <li hlmPaginationItem>
+            @if (p === '...') {
+              <hlm-pagination-ellipsis srOnlyText="Meer pagina's" />
+            } @else {
+              <a
+                hlmPaginationLink
+                [isActive]="page() === +p"
+                (click)="pageChange.emit(+p)"
+              >
+                {{ p }}
+              </a>
+            }
+          </li>
+        }
+
+        @if (hasNext()) {
+          <li hlmPaginationItem (click)="pageChange.emit(page() + 1)">
+            <hlm-pagination-next
+              text="Volgende"
+              ariaLabel="Volgende pagina"
+              iconOnly="true"
+            />
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+}

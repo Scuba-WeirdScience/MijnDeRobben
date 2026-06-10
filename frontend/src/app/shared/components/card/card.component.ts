@@ -1,15 +1,12 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { HlmCardImports } from '@spartan-ng/helm/card';
 
 @Component({
   selector: 'app-card',
   standalone: true,
-  template: `<ng-content />`,
-  changeDetection: ChangeDetectionStrategy.Eager,
-  host: {
-    class:
-      'block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm',
-    '[class.p-5]': 'padding()',
-  },
+  imports: [...HlmCardImports],
+  templateUrl: './card.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardComponent {
   readonly padding = input<boolean>(true);

@@ -1,0 +1,6 @@
+<hlm-avatar [size]="spartanSize()" [class]="xsCls()">
+  @if (src()) {
+    <img hlmAvatarImage [src]="src()!" [alt]="alt()" />
+  }
+  <span hlmAvatarFallback [style.background]="bgColor()">{{ initials() }}</span>
+</hlm-avatar>

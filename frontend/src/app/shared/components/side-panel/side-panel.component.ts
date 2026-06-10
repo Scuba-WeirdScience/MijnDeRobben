@@ -11,16 +11,18 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NgTemplateOutlet } from '@angular/common';
-import { LucideX } from '../../lucide-icons';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 
 const MIN_WIDTH = 320;
 
 @Component({
   selector: 'app-side-panel',
   standalone: true,
-  imports: [NgTemplateOutlet, LucideX],
+  imports: [NgTemplateOutlet, NgIcon],
+  providers: [provideIcons({ lucideX })],
   templateUrl: './side-panel.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
 })
 export class SidePanelComponent implements OnDestroy {
@@ -29,7 +31,6 @@ export class SidePanelComponent implements OnDestroy {
   readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly closed = output<void>();
   readonly headerActions = input<TemplateRef<unknown> | null>(null);
-  /** Optional guard. Return false to block closing (handle confirmation in consumer). */
   readonly canClose = input<(() => boolean) | null>(null);
 
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -64,7 +65,7 @@ export class SidePanelComponent implements OnDestroy {
   private handleDrag(e: MouseEvent): void {
     if (!this.dragging) return;
     const maxWidth = Math.round(window.innerWidth * 0.95);
-    const delta = this.startX - e.clientX; // dragging left = wider
+    const delta = this.startX - e.clientX;
     const next = Math.min(maxWidth, Math.max(MIN_WIDTH, this.startW + delta));
     this.panelWidth.set(next);
   }
@@ -92,6 +93,6 @@ export class SidePanelComponent implements OnDestroy {
     if (s === 'sm') return 384;
     if (s === 'lg') return 672;
     if (s === 'xl') return 896;
-    return 512; // md
+    return 512;
   }
 }

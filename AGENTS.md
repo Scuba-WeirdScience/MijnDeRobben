@@ -100,7 +100,45 @@ The `as any` cast is required because `z.coerce.number()` produces `ZodCoercedNu
 
 ---
 
-## Frontend conventions
+## spartan/ui component library
+
+The project uses **spartan/ui** (`https://spartan.ng`) — an Angular UI library with two layers:
+
+- **Brain** (`@spartan-ng/brain`): accessible headless primitives installed from npm. Do not edit.
+- **Helm** (styled layer): copied into `frontend/src/lib/spartan/`. These files are ours to customise.
+
+### Import alias
+All Helm components import from `@spartan-ng/helm` (resolved via `tsconfig.json` path alias).
+
+### Adding a Spartan component to an Angular template
+1. Import from the component barrel: e.g. `import { HlmButtonImports } from '@spartan-ng/helm/button'`
+2. Add `...HlmButtonImports` to the `imports` array of your standalone component.
+3. Use the directive in the template: `<button hlmBtn variant="default">Label</button>`
+
+### Component catalog (already installed)
+`alert`, `alert-dialog`, `avatar`, `badge`, `button`, `card`, `checkbox`, `dialog`,
+`dropdown-menu`, `empty`, `field`, `icon`, `input`, `label`, `pagination`, `popover`,
+`progress`, `radio-group`, `select`, `separator`, `sheet`, `skeleton`, `sonner`, `spinner`,
+`switch`, `table`, `tabs`, `textarea`, `toggle`, `toggle-group`, `tooltip`, `utils`
+
+### Icons
+Spartan components use `@ng-icons/core` + `@ng-icons/lucide` (different from the existing `@lucide/angular`).
+When using `<ng-icon>` inside Helm components, register icons with `provideIcons({ lucideXxx })`.
+
+### CLI schematic workaround
+`ng g @spartan-ng/cli:*` fails in this project (ESM/CJS mismatch with `@nx/devkit`).
+Add new components manually: copy from `node_modules/@spartan-ng/cli/src/generators/ui/libs/<name>/files/`
+to `src/lib/spartan/<name>/`, replacing `<%- importAlias %>` with `@spartan-ng/helm`.
+
+### MCP server
+`@spartan-ng/mcp` is configured in `~/.config/opencode/opencode.json` as `spartan-ui`.
+It exposes component docs, API, examples and accessibility info.
+
+### Agent skill
+The `spartan` skill is installed at `.agents/skills/spartan/`.
+It teaches AI agents how to compose spartan/ui components correctly.
+
+---
 
 - **All DSC components** imported from `src/app/shared/components/design-system.ts` — never import the component files directly.
 - **Never write raw `<input>`, `<select>`, `<textarea>`** — always wrap in `<app-form-field>` + `<app-input>` / `<app-select>` / `<app-textarea>`.

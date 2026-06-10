@@ -17,7 +17,9 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": "src",
     "paths": {
-      "@fire": ["app/core/fb-singletons.ts"]
+      "@fire": ["app/core/fb-singletons.ts"],
+      "@spartan-ng/helm": ["lib/spartan/utils/index.ts"],
+      "@spartan-ng/helm/*": ["lib/spartan/*/index.ts"]
     }
   },
   "angularCompilerOptions": {
