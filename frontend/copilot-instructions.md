@@ -8,14 +8,14 @@ Full-stack application for managing a scuba diving club: member management, mate
 
 | Layer | Technology |
 |---|---|
-| Frontend | Angular 21, standalone components, Tailwind CSS v3 (`darkMode: 'class'`) |
+| Frontend | Angular 22, standalone components, Tailwind CSS v3 (`darkMode: 'class'`) |
 | Backend | .NET 9, EF Core, SQL Server |
 | Auth | JWT via API Gateway; member-api trusts `X-User-*` headers |
 | Ports | Angular `:4300`, Gateway `:5238`, Member API `:5107` |
 
 ### Key Conventions
 
-- **Angular 21 standalone components** — no NgModules
+- **Angular 22 standalone components** — no NgModules
 - **Dark mode** via `dark:` Tailwind classes; `darkMode: 'class'` in tailwind.config
 - **Mobile-first** — design for small screens first, enhance upward with `sm:`, `lg:` breakpoints
 - **No `cd` in bash commands** — always use `workdir` parameter
@@ -187,9 +187,8 @@ this.toast.info('Wijzigingen opgeslagen.');
 #### Signal form setup
 
 ```typescript
-import { form } from '@angular/forms/signals';
+import { FieldTree, form } from '@angular/forms/signals';
 import { z } from 'zod';
-import { field } from '@angular/forms/signals';
 
 // Zod schema
 const myFormSchema = z.object({
@@ -201,18 +200,16 @@ const myFormSchema = z.object({
 // Form type
 type MyForm = z.infer<typeof myFormSchema>;
 
-// In component — use lazy getter pattern to avoid rebuilding form on every change:
+// In component — must be initialized in constructor (form() calls inject internally):
 readonly formModel = signal<MyForm>({ naam: '', beschrijving: '', volgorde: 0 });
-private _formState: FieldTree<MyForm> | null = null;
-get formState(): FieldTree<MyForm> {
-  if (!this._formState) {
-    this._formState = form<MyForm>(this.formModel, myFormSchema as any);
-  }
-  return this._formState;
+readonly formState: FieldTree<MyForm>;
+
+constructor() {
+  this.formState = form<MyForm>(this.formModel, myFormSchema as any);
 }
 ```
 
-**Important**: The `as any` cast is required because Zod's `z.coerce.number()` produces `ZodCoercedNumber` which is incompatible with Angular's `Schema<T>` type.
+**Important**: The `as any` cast is required because Zod's `z.coerce.number()` produces `ZodCoercedNumber` which is incompatible with Angular's `Schema<T>` type. `form()` calls `inject()` internally — never use it in a lazy getter or method.
 
 #### Typed getters/setters for optional fields
 
@@ -249,13 +246,13 @@ The `[(value)]` is two-way binding on the design system's `model<string>()` sign
 When converting `@Input()` to `input()`:
 
 ```typescript
-// BEFORE (Angular < 21):
+// BEFORE:
 @Input() memberId!: string;
 ngOnChanges(changes: SimpleChanges): void {
   if (changes['memberId']) { this.load(); }
 }
 
-// AFTER (Angular 21):
+// AFTER (Angular 22):
 readonly memberId = input.required<string>();
 constructor() {
   effect(() => {
@@ -401,9 +398,9 @@ readonly items = signal<Item[]>([]);
 readonly count = computed(() => this.items().length);
 ```
 
-### input() / output() — Angular 21 Signal API
+### input() / output() — Angular 22 Signal API
 
-**NEVER use `@Input()` or `@Output()`** — use Angular 21's signal-based alternatives:
+**NEVER use `@Input()` or `@Output()`** — use Angular 22's signal-based alternatives:
 
 ```typescript
 // Required input
