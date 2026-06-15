@@ -37,9 +37,10 @@ export const getMateriaalTypesWithMaterialen = onCall({ region: REGION }, async 
 // ── createMateriaalType ────────────────────────────────────────────────────
 export const createMateriaalType = onCall({ region: REGION }, async (request) => {
   requireMateriaalCommissie(request);
-  const { naam, beschrijving, volgorde, maxLeningenPerLid, huurprijs, customProperties } = request.data as {
+  const { naam, beschrijving, volgorde, maxLeningenPerLid, huurprijs, borg, customProperties } = request.data as {
     naam: string; beschrijving?: string | null; volgorde: number;
     maxLeningenPerLid?: number | null; huurprijs?: number | null;
+    borg?: number | null;
     customProperties?: MateriaalTypeDoc['customProperties'];
   };
 
@@ -51,6 +52,7 @@ export const createMateriaalType = onCall({ region: REGION }, async (request) =>
     volgorde,
     maxLeningenPerLid: maxLeningenPerLid ?? null,
     huurprijs: huurprijs ?? null,
+    borg: borg ?? null,
     customProperties: customProperties ?? null,
     createdAt: now, updatedAt: null,
   };

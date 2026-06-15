@@ -378,6 +378,8 @@ export const MateriaalTypeSchema = z.object({
   maxLeningenPerLid: z.number().int().nullable().optional(),
   /** Huurprijs per dag/gebruik in euro. Null = gratis. */
   huurprijs: z.number().nullable().optional(),
+  /** Borgbedrag in euro. Null = geen borg. */
+  borg: z.number().nullable().optional(),
   /** Dynamic field definitions for this type. */
   customProperties: z.array(CustomPropertyDefSchema).nullable().optional(),
   createdAt: z.string(),
@@ -391,6 +393,8 @@ export const CreateMateriaalTypeSchema = z.object({
   maxLeningenPerLid: z.number().int().min(0).nullable().optional(),
   /** Huurprijs per dag/gebruik in euro. Null = gratis. */
   huurprijs: z.number().nullable().optional(),
+  /** Borgbedrag in euro. Null = geen borg. */
+  borg: z.number().nullable().optional(),
   /** Dynamic field definitions for this type. */
   customProperties: z.array(CustomPropertyDefSchema).nullable().optional(),
 });

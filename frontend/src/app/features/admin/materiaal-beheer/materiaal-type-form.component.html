@@ -26,7 +26,7 @@
       />
     </app-form-field>
 
-    <div class="grid grid-cols-3 gap-3">
+    <div class="grid grid-cols-2 gap-3">
       <app-form-field label="Volgorde">
         <app-input
           [value]="volgordeAsString()"
@@ -47,6 +47,16 @@
         <app-input
           [value]="huurprijsAsString()"
           (input)="onHuurprijsInput($any($event.target).value)"
+          type="number"
+          [min]="0"
+          [attr.step]="'0.01'"
+          placeholder="0,00"
+        />
+      </app-form-field>
+      <app-form-field label="Borg (€)" hint="Leeg = geen borg">
+        <app-input
+          [value]="borgAsString()"
+          (input)="onBorgInput($any($event.target).value)"
           type="number"
           [min]="0"
           [attr.step]="'0.01'"

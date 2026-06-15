@@ -58,6 +58,7 @@ export class MateriaalTypeFormComponent {
     volgorde: 0,
     maxLeningenPerLid: null,
     huurprijs: null,
+    borg: null,
   });
   readonly typeFormState: FieldTree<MateriaalTypeForm>;
 
@@ -99,6 +100,15 @@ export class MateriaalTypeFormComponent {
   onHuurprijsInput(value: string): void {
     const n = value ? Number(value) : null;
     this.formModel.update((m) => ({ ...m, huurprijs: n }));
+  }
+
+  readonly borgAsString = computed(() => {
+    const v = this.formModel().borg;
+    return v !== null && v !== undefined ? String(v) : '';
+  });
+  onBorgInput(value: string): void {
+    const n = value ? Number(value) : null;
+    this.formModel.update((m) => ({ ...m, borg: n }));
   }
 
   protected firstError(field: { errors(): readonly { message?: string }[] }): string {
@@ -150,6 +160,7 @@ export class MateriaalTypeFormComponent {
           volgorde: t?.volgorde ?? 0,
           maxLeningenPerLid: t?.maxLeningenPerLid ?? null,
           huurprijs: t?.huurprijs ?? null,
+          borg: t?.borg ?? null,
         });
         this.customProperties.set(
           (t?.customProperties ?? []).map((p: CustomPropertyDef) => ({
@@ -190,6 +201,7 @@ export class MateriaalTypeFormComponent {
       volgorde: model.volgorde ?? 0,
       maxLeningenPerLid: model.maxLeningenPerLid ?? null,
       huurprijs: model.huurprijs ?? null,
+      borg: model.borg ?? null,
       customProperties: customProperties.length > 0 ? customProperties : null,
     };
 
