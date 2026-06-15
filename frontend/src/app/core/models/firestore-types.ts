@@ -179,6 +179,7 @@ export interface MateriaalTypeDoc {
   volgorde: number;
   maxLeningenPerLid: number | null;
   huurprijs: number | null;
+  borg: number | null;
   customProperties: CustomFieldDef[] | null;
   createdAt: string;
   updatedAt: string | null;

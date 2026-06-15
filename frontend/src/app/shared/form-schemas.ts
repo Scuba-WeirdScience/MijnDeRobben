@@ -37,6 +37,7 @@ export const materiaalTypeFormSchema = z.object({
   volgorde: z.coerce.number().int().min(0, 'Moet >= 0 zijn.').default(0),
   maxLeningenPerLid: z.coerce.number().int().min(1).nullable().optional(),
   huurprijs: z.coerce.number().min(0).nullable().optional(),
+  borg: z.coerce.number().min(0).nullable().optional(),
 });
 
 export type MateriaalTypeForm = z.infer<typeof materiaalTypeFormSchema>;
