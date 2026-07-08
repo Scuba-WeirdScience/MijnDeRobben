@@ -98,6 +98,15 @@ function expandOccurrences(doc: ActiviteitDoc): string[] {
 
   const startBase = new Date(doc.startDatumTijd);
   const dates: string[] = [];
+  const exclusionPeriods = rule.exclusionPeriods ?? [];
+
+  const isExcluded = (dateStr: string): boolean => exclusionPeriods.some(period =>
+    !!period.startDate &&
+    !!period.endDate &&
+    period.startDate < period.endDate &&
+    dateStr >= period.startDate &&
+    dateStr < period.endDate,
+  );
 
   // Simple expansion: walk forward from startDatumTijd up to 1 year
   let current = new Date(startBase);
@@ -113,7 +122,9 @@ function expandOccurrences(doc: ActiviteitDoc): string[] {
     const dateStr = current.toISOString().substring(0, 10);
     // Respect endsOn if set
     if (rule.endsOn && dateStr > rule.endsOn) break;
-    dates.push(dateStr);
+    if (!isExcluded(dateStr)) {
+      dates.push(dateStr);
+    }
     current = advance(current, rule);
   }
 

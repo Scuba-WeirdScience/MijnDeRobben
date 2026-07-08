@@ -154,6 +154,25 @@ describe('expandRecurrence — daily', () => {
     const result = generateOccurrences([act], VAN, TOT, []);
     expect(result.length).toBe(3);
   });
+
+  it('excludes occurrences inside configured exclusion periods', () => {
+    const act = makeActiviteit({
+      startDatumTijd: '2026-06-01T10:00',
+      eindDatumTijd: '2026-06-01T12:00',
+      isHerhalend: true,
+      recurrenceRule: {
+        frequency: 'daily',
+        interval: 1,
+        exclusionPeriods: [{ startDate: '2026-06-05', endDate: '2026-06-08' }],
+      },
+    });
+    const result = generateOccurrences([act], VAN, TOT, []);
+    const dates = result.map(r => r.occurrenceDatum);
+    expect(dates).not.toContain('2026-06-05');
+    expect(dates).not.toContain('2026-06-06');
+    expect(dates).not.toContain('2026-06-07');
+    expect(dates).toContain('2026-06-08');
+  });
 });
 
 // ── expandRecurrence — weekly ────────────────────────────────────────────────

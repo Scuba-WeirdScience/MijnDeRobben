@@ -256,6 +256,11 @@ export interface LocatieDoc {
 
 export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly-date' | 'monthly-day' | 'yearly';
 
+export interface RecurrenceExclusionPeriod {
+  startDate: string;               // ISO date yyyy-MM-dd (inclusief)
+  endDate: string;                 // ISO date yyyy-MM-dd (exclusief)
+}
+
 export interface RecurrenceRule {
   frequency: RecurrenceFrequency;
   interval: number;                 // herhaal elke N dagen/weken/maanden/jaren
@@ -264,6 +269,7 @@ export interface RecurrenceRule {
   monthlyDayOfWeek?: number;        // monthly-day: 0..6
   endsOn?: string | null;           // ISO date yyyy-MM-dd (exclusief)
   endsAfter?: number | null;        // aantal occurrences waarna stopt
+  exclusionPeriods?: RecurrenceExclusionPeriod[];
 }
 
 export type RegistratiesZichtbaar = 'iedereen' | 'aangemeld' | 'beheer';

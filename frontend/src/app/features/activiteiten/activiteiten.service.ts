@@ -9,7 +9,7 @@ import {
 
 // Re-export for components that import types from this service
 export type {
-  RecurrenceFrequency, RecurrenceRule, RegistratiesZichtbaar,
+  RecurrenceExclusionPeriod, RecurrenceFrequency, RecurrenceRule, RegistratiesZichtbaar,
   LocatieDoc, ActiviteitDoc, OccurrenceStatus,
   ActiviteitOccurrenceDoc, ActiviteitRegistratieDoc
 } from '../../core/models/firestore-types';
