@@ -131,6 +131,9 @@ Add new components manually: copy from `node_modules/@spartan-ng/cli/src/generat
 to `src/lib/spartan/<name>/`, replacing `<%- importAlias %>` with `@spartan-ng/helm`.
 
 ### MCP server
+The shared workspace GitHub MCP server is configured in `.vscode/mcp.json`.
+It is repo-scoped and agent-neutral within VS Code-compatible MCP clients; each user is prompted once for a GitHub Personal Access Token.
+
 `@spartan-ng/mcp` is configured in `~/.config/opencode/opencode.json` as `spartan-ui`.
 It exposes component docs, API, examples and accessibility info.
 
@@ -390,7 +393,7 @@ Single-context layout — `CONTEXT.md` + `docs/adr/` at the repo root (neither e
 
 Use the `gh-worktree` skill to start work on a GitHub Issue:
 
-- Skill file: `.opencode/skills/gh-worktree/SKILL.md`
+- Skill file: `.agents/skills/gh-worktree/SKILL.md`
 - Fetches the issue title from GitHub, derives a branch name (`feature/[issue-number]-[sanitized-title]`), and creates a worktree at `C:\Projects\feature-[issue-number]`
 - Worktrees are placed **inside** `C:\Projects\DeRobben` (e.g. `C:\Projects\DeRobben\feature-[issue-number]`)
 - Branch protection on `main` requires a PR — never push directly to `main`
