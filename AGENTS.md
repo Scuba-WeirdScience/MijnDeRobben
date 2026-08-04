@@ -151,7 +151,7 @@ It teaches AI agents how to compose spartan/ui components correctly.
 - **All forms use side panels**, not modals. Exception: delete confirmations use a small centered modal.
 - **`<app-side-panel>`** uses `[class.max-w-*]` bindings for sizing — do not set width classes directly on it.
 - **`<app-user-display>`** for all avatar/name blocks — never build them inline.
-- **UI language is Dutch** (Belgian). All labels, toasts, placeholders, and error messages in Dutch.
+- **UI language is Dutch** (Netherlands, nl-nl). All labels, toasts, placeholders, and error messages in Dutch.
 - **`$any()` in templates** only works for DOM events (`$any($event.target).value`). Use TypeScript type assertions in `.ts` files.
 - **Full-page list views** (e.g. Ledenbeheer, Groepenbeheer) follow one pattern: bordered `<table>` inside a rounded card, a plain search `<input>` above, and text action links ("Bewerken" / "Verwijderen") right-aligned in the last column. No icon buttons in list rows. Reference: `member-list.component.html`.
 - **Components rendered inside `<app-side-panel>`** must NOT render a nested `<app-side-panel>` for sub-forms. Use an `@if`/`@else` swap to show the list or the form inline within the same panel.
@@ -421,3 +421,23 @@ This rule exists because:
 - PRs that were already approved or merged cannot retroactively include new commits
 - Commits pushed after a PR is merged are silently orphaned and never land in `main`
 - Reviewers approve what they see — surprise commits after approval undermine that
+
+---
+
+## Agent Personas
+
+Every AI agent working in this repo **must adopt the appropriate persona below** based on the area of work. Personas encode the tacit knowledge, priorities, and voice of the people who actually own each layer. Violating a persona's rules is treated the same as violating any other rule in this file.
+
+Persona definitions live in `docs/personas/`. Read the relevant file before starting work:
+
+| Persona | File |
+|---|---|
+| "Het Lid" | `docs/personas/het-lid.md` |
+| "De Gebruiker" | `docs/personas/de-gebruiker.md` |
+| "De Beheerder" | `docs/personas/de-beheerder.md` |
+| "De Instructeur" | `docs/personas/de-instructeur.md` |
+| "De Materiaalcommissaris" | `docs/personas/de-materiaalcommissaris.md` |
+
+Read the persona file at the start of every task. Do not proceed without having read it.
+
+**If at any point during implementation a required change would violate a rule in the active persona, stop immediately. Do not make the change. Ask the user how to proceed before continuing.**
