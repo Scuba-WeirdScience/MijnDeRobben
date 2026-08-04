@@ -80,12 +80,23 @@ function expandRecurrence(activiteit: ActiviteitDoc, van: Date, tot: Date): stri
 
   let count = 0;
 
+  const isExcluded = (d: Date): boolean => {
+    const dateStr = format(d, 'yyyy-MM-dd');
+    return (rule.exclusionPeriods ?? []).some(period =>
+      !!period.startDate &&
+      !!period.endDate &&
+      period.startDate < period.endDate &&
+      dateStr >= period.startDate &&
+      dateStr < period.endDate,
+    );
+  };
+
   const addIfInRange = (d: Date): boolean => {
     if (hardEnd && !isBefore(d, hardEnd)) return false;
     if (isAfter(startOfDay(d), totDay)) return false;
     count++;
     if (count > maxCount) return false;
-    if (!isBefore(startOfDay(d), vanDay)) {
+    if (!isBefore(startOfDay(d), vanDay) && !isExcluded(d)) {
       results.push(format(d, 'yyyy-MM-dd'));
     }
     return true;
@@ -127,7 +138,7 @@ function expandRecurrence(activiteit: ActiviteitDoc, van: Date, tot: Date): stri
 
           count++;
           if (count > maxCount) break;
-          if (!isBefore(startOfDay(withTime), vanDay)) {
+          if (!isBefore(startOfDay(withTime), vanDay) && !isExcluded(withTime)) {
             results.push(format(withTime, 'yyyy-MM-dd'));
           }
           addedThisWeek = true;

@@ -13,7 +13,7 @@ import {
   InputComponent,
   SelectComponent,
 } from '../../../shared/components/design-system';
-import { RecurrenceRule, RecurrenceFrequency } from '../activiteiten.service';
+import { RecurrenceExclusionPeriod, RecurrenceRule, RecurrenceFrequency } from '../activiteiten.service';
 
 @Component({
   selector: 'app-activiteit-recurrence-form',
@@ -34,6 +34,7 @@ export class ActiviteitRecurrenceFormComponent {
   readonly endsType = signal<'nooit' | 'op' | 'na'>('nooit');
   readonly endsOn = signal('');
   readonly endsAfter = signal(10);
+  readonly exclusionPeriods = signal<RecurrenceExclusionPeriod[]>([]);
 
   readonly dagNamen = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
   readonly dagWaarden = [0, 1, 2, 3, 4, 5, 6];
@@ -81,6 +82,7 @@ export class ActiviteitRecurrenceFormComponent {
         this.daysOfWeek.set(r.daysOfWeek ?? []);
         this.monthlyDayOccurrence.set(r.monthlyDayOccurrence ?? 1);
         this.monthlyDayOfWeek.set(r.monthlyDayOfWeek ?? 1);
+        this.exclusionPeriods.set(r.exclusionPeriods ?? []);
         if (r.endsOn) {
           this.endsType.set('op');
           this.endsOn.set(r.endsOn);
@@ -111,6 +113,12 @@ export class ActiviteitRecurrenceFormComponent {
       rule.endsOn = this.endsOn();
     } else if (this.endsType() === 'na') {
       rule.endsAfter = this.endsAfter();
+    }
+    const exclusionPeriods = this.exclusionPeriods().filter(period =>
+      !!period.startDate && !!period.endDate && period.startDate < period.endDate,
+    );
+    if (exclusionPeriods.length > 0) {
+      rule.exclusionPeriods = exclusionPeriods;
     }
     this.ruleGewijzigd.emit(rule);
   }
@@ -161,6 +169,30 @@ export class ActiviteitRecurrenceFormComponent {
 
   onEndsAfterChange(value: string): void {
     this.endsAfter.set(Math.max(1, parseInt(value) || 1));
+    this.emit();
+  }
+
+  voegUitsluitingsperiodeToe(): void {
+    this.exclusionPeriods.update(periods => [...periods, { startDate: '', endDate: '' }]);
+    this.emit();
+  }
+
+  verwijderUitsluitingsperiode(index: number): void {
+    this.exclusionPeriods.update(periods => periods.filter((_, i) => i !== index));
+    this.emit();
+  }
+
+  onUitsluitingStartChange(index: number, value: string): void {
+    this.exclusionPeriods.update(periods => periods.map((period, i) =>
+      i === index ? { ...period, startDate: value } : period,
+    ));
+    this.emit();
+  }
+
+  onUitsluitingEndChange(index: number, value: string): void {
+    this.exclusionPeriods.update(periods => periods.map((period, i) =>
+      i === index ? { ...period, endDate: value } : period,
+    ));
     this.emit();
   }
 }

@@ -5,6 +5,12 @@ import { Timestamp } from 'firebase/firestore';
 // Mirrors functions/src/shared/types.ts:RecurrenceFrequency
 export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly-date' | 'monthly-day' | 'yearly';
 
+// Mirrors functions/src/shared/types.ts:RecurrenceExclusionPeriod
+export interface RecurrenceExclusionPeriod {
+  startDate: string;
+  endDate: string;
+}
+
 // Mirrors functions/src/shared/types.ts:RecurrenceRule
 export interface RecurrenceRule {
   frequency: RecurrenceFrequency;
@@ -14,6 +20,7 @@ export interface RecurrenceRule {
   monthlyDayOfWeek?: number;
   endsOn?: string | null;
   endsAfter?: number | null;
+  exclusionPeriods?: RecurrenceExclusionPeriod[];
 }
 
 // Mirrors functions/src/shared/types.ts:RegistratiesZichtbaar
