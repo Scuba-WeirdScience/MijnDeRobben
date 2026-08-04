@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { LeningService, LeningDoc } from '../lening/lening.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { VerzorgerContextService } from '../../core/services/verzorger-context.service';
+import { ConfirmDialogComponent } from '../../shared/components/design-system';
 
 @Component({
   selector: 'app-mijn-materialen',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ConfirmDialogComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mijn-materialen.component.html',
 })
@@ -19,6 +20,8 @@ export class MijnMaterialenComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly leningen = signal<LeningDoc[]>([]);
+  readonly leningToReturn = signal<LeningDoc | null>(null);
+  readonly returning = signal(false);
 
   ngOnInit(): void {
     this.loadLeningen();
@@ -38,6 +41,27 @@ export class MijnMaterialenComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
+      },
+    });
+  }
+
+  retourneer(lening: LeningDoc): void {
+    this.leningToReturn.set(lening);
+  }
+
+  retourneerConfirmed(): void {
+    const lening = this.leningToReturn();
+    if (!lening) return;
+
+    this.returning.set(true);
+    this.leningService.return$(lening.id).subscribe({
+      next: () => {
+        this.leningen.update(list => list.filter(l => l.id !== lening.id));
+        this.leningToReturn.set(null);
+        this.returning.set(false);
+      },
+      error: () => {
+        this.returning.set(false);
       },
     });
   }

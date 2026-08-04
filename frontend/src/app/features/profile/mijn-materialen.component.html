@@ -51,12 +51,27 @@
                 <span class="text-gray-500 dark:text-gray-400">
                   Geleend op {{ lening.uitgeleendDatum }}
                 </span>
-                <span class="text-gray-400 dark:text-gray-500">
-                  ID: {{ lening.id.slice(0, 8) }}...
-                </span>
+                <button
+                  type="button"
+                  class="text-scuba-600 hover:text-scuba-800 dark:text-scuba-400 dark:hover:text-scuba-200 font-medium"
+                  (click)="retourneer(lening)">
+                  Retourneren
+                </button>
               </div>
             </div>
           }
         </div>
       }
     </div>
+
+    @if (leningToReturn()) {
+      <app-confirm-dialog
+        title="Materiaal retourneren"
+        [message]="'Wil je \'' + leningToReturn()!.materiaalNaam + '\' retourneren?'"
+        confirmLabel="Retourneren"
+        confirmVariant="primary"
+        [loading]="returning()"
+        (confirmed)="retourneerConfirmed()"
+        (cancelled)="leningToReturn.set(null)"
+      />
+    }
