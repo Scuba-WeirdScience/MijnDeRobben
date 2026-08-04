@@ -8,6 +8,10 @@
   },
 
   "mcp": {
+    // GitHub MCP server — provides GitHub Issues, PRs, and repo tools.
+    // Requires a GitHub Personal Access Token in the GITHUB_PERSONAL_ACCESS_TOKEN environment variable.
+    // Generate one at: https://github.com/settings/tokens
+    // Set it once: [System.Environment]::SetEnvironmentVariable("GITHUB_PERSONAL_ACCESS_TOKEN", "<token>", "User")
     "github": {
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
@@ -17,8 +21,26 @@
       }
     },
 
+    // Firebase MCP server — provides Firestore, Auth, Functions, Hosting, and more.
+    // No token needed; uses the same credentials as the Firebase CLI.
+    // One-time setup: run 'firebase login' in your terminal.
     "firebase": {
-      "enabled": false
+      "type": "local",
+      "command": ["npx", "-y", "firebase-tools@latest", "mcp"],
+      "enabled": true
+    },
+
+    // ZenHub MCP server — provides sprint, pipeline, and issue management tools.
+    // Requires a ZenHub GraphQL API token in the ZENHUB_API_TOKEN environment variable.
+    // Generate one at: ZenHub app → username (bottom-left) → Account management → API
+    // Set it once: [System.Environment]::SetEnvironmentVariable("ZENHUB_API_TOKEN", "<token>", "User")
+    "zenhub": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://api.zenhub.com/mcp", "--header", "Authorization:${API_TOKEN}", "--header", "X-zh-workspace:6a7191848ccf200031a401d6"],
+      "enabled": true,
+      "environment": {
+        "API_TOKEN": "{env:ZENHUB_API_TOKEN}"
+      }
     }
   }
 }
