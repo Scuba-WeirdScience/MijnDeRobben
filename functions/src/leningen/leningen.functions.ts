@@ -79,13 +79,14 @@ export const returnLening = onCall({ region: REGION }, async (request) => {
       throw new HttpsError('permission-denied', 'Geen toegang.');
     }
 
+    // All reads must happen before any writes in a Firestore transaction.
+    const materiaalRef = db.collection('materialen').doc(lening.materiaalId);
+    const materiaalSnap = await tx.get(materiaalRef);
+
     const today = new Date().toISOString().split('T')[0];
     tx.update(leningRef, { retourdatum: today, notities: notities ?? null });
-
-    const materiaalRef2 = db.collection('materialen').doc(lening.materiaalId);
-    const materiaalSnap2 = await tx.get(materiaalRef2);
-    if (materiaalSnap2.exists) {
-      tx.update(materiaalRef2, { actief: false });
+    if (materiaalSnap.exists) {
+      tx.update(materiaalRef, { actief: false });
     }
 
     return { success: true };
